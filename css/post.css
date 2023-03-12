@@ -1,0 +1,125 @@
+/* flex and aligning */
+
+#loaded-content, .profile-content-part, #profile-design-element-box  {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap; 
+}
+
+#edit-profile-info {
+    width: 50%;
+}
+
+fieldset {
+    display: flex;
+    flex-direction: column;
+}
+
+#form-post * {
+    padding: 1.25%;
+    float: right;
+}
+
+textarea, #login-page {
+    resize: none;
+    width: 700px;
+}
+
+textarea, #login-page {
+    height: 600px;
+}
+
+#tags-input {
+    height: 100px;
+}
+
+#loaded-content .post-block:not(.full-size) div, #loaded-content .post-block:not(.full-size) img {
+    max-width: 250px;
+    min-width: 200px;
+    height: auto;
+    font-size: 75%;
+}
+
+#post-options {
+    display: flex;
+    justify-content: center;
+    margin-top: 0%;
+    margin-bottom: 0%;
+}
+
+#post-options button {
+    padding: 7.5px;
+    font-weight: 700;
+    margin-right: 10px;
+}
+
+.full-size img {
+    max-width: 1250px;
+    min-width: 125px;
+}
+
+.full-size div {
+    max-width: 900px;
+    min-width: 700px;
+    min-height: 900px;
+}
+
+.post-block {
+    margin: 5px;
+    white-space: pre-line;
+    border: 3px solid rgba(164, 164, 164, 0.25);
+}
+
+:not(.post-block:first-child(img)) {
+    min-width: 400px;
+}
+
+.post-block:only-child {
+    padding: 1.25%;
+    padding-top: 0.5%;
+}
+
+.post-title {
+    text-align: center;
+}
+
+/* metadata settings */
+
+#metadata .user-id img {
+    width: 10%;
+    height: 10%;
+}
+
+#metadata .user-id .user-name {
+    align-self: center;
+}
+
+#submit-date {
+    margin-bottom: 0;
+    margin-left: 1%;
+}
+
+#tags {
+    padding: 1%;
+    padding-top: 0;
+}
+
+/* profile design */
+
+#profile-design {
+    display: grid;
+    gap: 25px;
+    grid-template-columns: auto auto;
+    grid-template-rows: auto auto auto;
+    
+    background-color: gray;
+    padding: 2.5%;
+    padding-bottom: 35%;
+}
+
+/*.profile-design-slot {
+    width: calc(60px + (10vw + 10vh));
+    height: calc(60px + (10vh + 10vw));
+    background-color: yellow
+}*/

@@ -1,10 +1,16 @@
 /* flex and aligning */
 
-#loaded-content, .profile-content-part, #profile-design-element-box  {
+#loaded-content:not(#post-nav), .profile-content-part, #profile-design-element-box  {
     display: flex;
-    justify-content: center;
     align-items: center;
-    flex-wrap: wrap; 
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+#loaded-content {
+    margin: 25%;
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 #edit-profile-info {

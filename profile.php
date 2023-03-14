@@ -132,6 +132,9 @@
                         // change the mode of the dropped element
                         if(ui.item.hasClass('icon-mode') && (ui.item.parent().attr('id') === 'profile-design'))
                             ui.item.replaceWith(getDesignElementByName(ui.item, 'DisplayMode'));
+                        
+                        // update the design element's data
+                        updateDesignElementData();
                     }
                 });
             });
@@ -146,6 +149,17 @@
                 return newElement[mode];
             }
             
+            // update the design element's data
+            function updateDesignElementData() {
+                /* load user data on custom profile elements */
+                
+                // refresh UserID design element
+                <?php
+                    // load profile id
+                    loadUserInfo('#profile-id-element', $_GET['profile_id'], 'true');
+                ?>
+            }
+            
             /* load profile content */
             <?php
                 /* load post data submitted to profile and its user */
@@ -155,11 +169,6 @@
                 
                 // load all posts
                 loadContentFromUser($maxKeys, $offset, $_GET['profile_id']);
-                
-                /* load user data on custom profile elements */
-                
-                // load profile id
-                loadUserInfo('#profile-id-element', $_GET['profile_id'], 'true');
             ?>
         </script>
     </body>

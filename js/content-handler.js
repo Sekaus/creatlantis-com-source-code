@@ -59,7 +59,7 @@ function loadTag(tag) {
 }
 
 // load in user info
-function loadUserInfo(HTMLTaget, username, tagline, dateOfBirth, gender, profileImage, mainUserSeeingProfile = false, userIndexOffSet = 0) {
+function loadUserInfo(HTMLTaget, username, tagline, bio, dateOfBirth, gender, profileImage, mainUserSeeingProfile = false, userIndexOffSet = 0) {
     // put the loaded data about the user profile to show
     var loadedTagetProfileImage = $(HTMLTaget + " .user-index-" + userIndexOffSet + " .profile-image");
     var loadedTagetTextInfo = $(HTMLTaget + " .user-index-" + userIndexOffSet + " .user-text-info");
@@ -72,7 +72,27 @@ function loadUserInfo(HTMLTaget, username, tagline, dateOfBirth, gender, profile
     if(mainUserSeeingProfile) {
         $(".user-details.second-user").children('.date-of-birth').text(dateOfBirth);
         $(".user-details.second-user").children('.gender').text(gender);
+        loadedTagetTextInfo.children('.user-bio').text(decodeEntities(bio));
     }
+}
+
+// replace char at index of a string
+String.prototype.replaceAt = function(index, replacement) {
+    return this.substring(0, index) + replacement + this.substring(index + replacement.length);
+};
+
+// decode HTML entities form json encoded string
+function decodeEntities(encodedString) {
+    // decode unicode from string
+    var textArea = document.createElement('textarea');
+    textArea.innerHTML = encodedString;
+    
+    // remove " form the start and the end of the string
+    var lastCharIndex = textArea.value.length - 1;
+    textArea.value = textArea.value[0] === '"' ? textArea.value.replaceAt(0, ' ') : textArea.value;
+    textArea.value = textArea.value[lastCharIndex] === '"' ? textArea.value.replaceAt(lastCharIndex, ' ') : textArea.value;
+    
+    return textArea.value;
 }
 
 // load in user info
@@ -82,13 +102,15 @@ function loadUserLogin(email) {
 }
 
 // load custom profile design from JSON file
-function loadCustomProfileDesignSlots(json) {
+function loadCustomProfileDesignSlots(json, updateFunction) {
     json.slotArray.forEach(loadCustomProfileDesignSlot);
+    updateFunction();
 }
 
 // load unused profile design elements from JSON file
-function loadUnusedProfileDesignElements(json) {
+function loadUnusedProfileDesignElements(json, updateFunction) {
     json.elementBoxArray.forEach(loadUnusedProfileDesignElement);
+    updateFunction();
 }
 
 // load custom profile design slot
@@ -127,6 +149,8 @@ const ProfileDesignElement = {
                         '<img class="profile-image" src="images/pfp.png"/>' +
                         '<div class="light-to-dark-shaded user-text-info">' +
                             '<h2 class="user-name">text</h2>' +
+                            '<hr/>' +
+                            '<h3 class="user-bio">test</h3>' +
                         '</div>' +
                     '</div>' +
                 '</div>'

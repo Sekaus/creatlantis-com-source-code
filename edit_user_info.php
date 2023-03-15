@@ -31,6 +31,10 @@
                                 <dd class="user-tagline"></dd>      <dd><input class="user-tagline" name="new_tagline" hidden/></dd>
                                 <dd><button class="edit edit-user-info" name="user_info_command" type="button" value="edit_tagline">Edit</button></dd>
                                 
+                                <dt>BIO:</dt>
+                                <dd class="user-bio"></dd>      <dd><textarea cols="30" rows="20" class="user-bio" name="new_bio" hidden></textarea></dd>
+                                <dd><button class="edit edit-user-info" name="user_info_command" type="button" value="edit_bio">Edit</button></dd>
+                                
                                 <dt>Date of birth:</dt>
                                 <dd class="date-of-birth"></dd>      <dd><input class="date-of-birth" name="new_date_of_birth" type="date" hidden/></dd>
                                 <dd><button class="edit edit-user-info" name="user_info_command" type="button" value="edit_date_of_birth">Edit</button></dd>
@@ -95,6 +99,9 @@
                     case 'edit_tagline':
                         targetInput = '.user-tagline';
                         break;
+                    case 'edit_bio':
+                        targetInput = '.user-bio';
+                        break;
                     case 'edit_date_of_birth':
                         targetInput = '.date-of-birth';
                         break;
@@ -116,6 +123,7 @@
             $(document).ready( function() {
                 autoFillInput('.user-name');
                 autoFillInput('.user-tagline');
+                autoFillInput('.user-bio', 'textarea');
                 autoFillInput('.date-of-birth');
                 autoFillInput('.gender');
                 autoFillInput('.email');
@@ -123,8 +131,8 @@
             });
             
             // autofill a single input field with some user data
-            function autoFillInput(targetInput) {
-                $('input' + targetInput).val($('dd' + targetInput).text());
+            function autoFillInput(targetInput, inputType = 'input') {
+                $(inputType + targetInput).val($('dd' + targetInput).text());
             }
         </script>
     </body>

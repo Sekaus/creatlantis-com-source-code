@@ -84,10 +84,10 @@
             };
             
             // load custom profile design from JSON file
-            loadCustomProfileDesignSlots(profileElementArray);
+            loadCustomProfileDesignSlots(profileElementArray, updateDesignElementData);
             
             // load unused profile design elements from JSON file
-            loadUnusedProfileDesignElements(profileElementArray);
+            loadUnusedProfileDesignElements(profileElementArray, updateDesignElementData);
             
             // drag and drop tool for custom profile design
             $(document).ready(function() {

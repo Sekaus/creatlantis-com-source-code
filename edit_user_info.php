@@ -88,7 +88,7 @@
             // setup input field to start edit user infor
             $('.edit-user-info').click(function(){
                 var editUserCommand = $(this).val();
-                var targetParent;
+                var inputType;
                 var targetInput;
                 
                 // do setup based on the user info command value
@@ -101,6 +101,7 @@
                         break;
                     case 'edit_bio':
                         targetInput = '.user-bio';
+                        inputType = 'textarea';
                         break;
                     case 'edit_date_of_birth':
                         targetInput = '.date-of-birth';
@@ -117,6 +118,7 @@
                 }
                 $('#edit-profile-info ' + targetInput).toggle();
                 $(this).text(($(this).text() === 'Edit' ? 'Cancel' : 'Edit'));
+                autoFillInput(targetInput, inputType);
             });
             
             // autofill inputs fields with the user's info and login data

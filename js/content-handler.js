@@ -1,7 +1,36 @@
-/* load in post blocks */
+/* Load in Post Blocks */
 
 function loadPost(json, link, fullSize = false) {
-    /* load in post form JSON data */
+    /* Load in Post form JSON Data */
+    
+    var feedback = 
+            '<hr/>' + 
+            '<div class="post-feedback">' +
+                '<!-- star rating !-->' +
+                 '<div class="feedback-option" data-id="' + generateRandomString(8) + '">' +
+                    '<div class="star-rate">' +
+                        '<div class="star-rate-grid">' +
+                            '<span class="star" alt="1 star" title="1 star" onmouseover="setRating(this, 1)" onmouseout="' + "setRating(this, 0, 'reload')" + '" onclick="' + "setRating(this, 1, 'store')" + '"> 1 </span>' +
+                            '<span class="star" alt="2 stars" title="2 stars" onmouseover="setRating(this, 2)" onmouseout="' + "setRating(this, 0, 'reload')" + '" onclick="' + "setRating(this, 2, 'store')" + '"> 2 </span>' +
+                            '<span class="star" alt="3 stars" title="3 stars" onmouseover="setRating(this, 3)" onmouseout="' + "setRating(this, 0, 'reload')" + '" onclick="' + "setRating(this, 3, 'store')" + '"> 3 </span>' +
+                            '<span class="star" alt="4 stars" title="4 stars" onmouseover="setRating(this, 4)" onmouseout="' + "setRating(this, 0, 'reload')" + '" onclick="' + "setRating(this, 4, 'store')" + '"> 4 </span>' +
+                            '<span class="star" alt="5 stars" title="5 stars" onmouseover="setRating(this, 5)" onmouseout="' + "setRating(this, 0, 'reload')" + '" onclick="' + "setRating(this, 5, 'store')" + '"> 5 </span>' +
+                        '</div>' +
+                        '<div class="star-rate-feedback-count"><var class="rate-value" title="Current star rate">0</var> / <br/><var class="vote-value" title="Current votes">0</var></div>' +
+                    '</div>' +
+                 '</div>' +
+                 
+                 '<!-- add to the favorite collection !-->' +
+                 '<button class="feedback-option fave-button" onclick="setFave(this)" title="Fave count" data-id="' + generateRandomString(8) + '">' + 
+                    '<img class="fave-icon" src="./images/icons/faveIcon.webp" style="opacity: 0.5;"/>' +
+                    '<var class="fave-feedback-count">0</var>' + 
+                '</button>' +
+                
+                '<!-- view count !-->' +
+                '<div class="feedback-option" title="View count" data-id="' + generateRandomString(8) + '">' +
+                    '<image src="./images/icons/viewIcon.webp"/>' +
+                    '<var class="view-feedback-count">0</var>'
+             '</div>';
     
     var postBody = '<a href="post_display.php?post_link=' + link + '" class="post-block">';
     
@@ -13,15 +42,18 @@ function loadPost(json, link, fullSize = false) {
         if(fullSize) {
             var imageLink = json.image.replace('%2Flow', '%2Fhigh');
             imageLink = imageLink.replace('/low_res.', '/high_res.');
-            $('#loaded-content').append(postBody + '<h1>' + json.title + '</h1> <img src="' + imageLink + '" /> <h4>' + json.text + '</h4>');
+            $('#loaded-content').append(postBody + '<h1>' + json.title + '</h1> <img src="' + imageLink + '" /> <div>' + json.text + '</div>' + feedback);
         }
         else
-            $('#loaded-content').append(postBody + '<img src="' + json.image + '" />');
+            $('#loaded-content').append(postBody + '<img src="' + json.image + '" /></div>');
     }
     
     //load in journal post from JSON data
     else if(json.data_type === 'journal') {
-        $('#loaded-content').append(postBody + '<div><h1 class="post-title">' + json.title + '</h1><hr/><span>' + json.text); 
+        if(fullSize)
+            $('#loaded-content').append(postBody + '<div><h1 class="post-title">' + json.title + '</h1><hr/><div class="journal-content">' + json.text + '</div></div>' + feedback);
+        else
+            $('#loaded-content').append(postBody + '<div><h1 class="post-title">' + json.title + '</h1><hr/><div>' + json.text + '</div></div>');
     }
     
     //there was an error when trying to load post data from JSON
@@ -34,7 +66,7 @@ function setupUserInfoBox(HTMLTaget, uuid, userIndexOffSet = 0) {
     var infoBoxBody =
             '<a href="./profile.php?profile_id=' + uuid + '">'
                 + '<div class="user-id user-index-' + userIndexOffSet + '">'
-                    + '<img class="profile-image" src="images/pfp.png"/>'
+                    + '<img class="profile-image" src="images/default_pp.webp"/>'
                     + '<div class="user-text-info">'
                         + '<h2 class="user-name">TestName</h2>'
                         + '<h5 class="user-tagline">Test wait what?</h5>'
@@ -65,20 +97,26 @@ function loadUserInfo(HTMLTaget, username, tagline, bio, dateOfBirth, gender, pr
     var loadedTagetTextInfo = $(HTMLTaget + " .user-index-" + userIndexOffSet + " .user-text-info");
     
     loadedTagetProfileImage.attr('src', profileImage);
-    loadedTagetTextInfo.children('.user-name').text(username);
-    loadedTagetTextInfo.children('.user-tagline').text(tagline);
+    loadedTagetTextInfo.children('.user-name').text(decodeEntities(username));
+    loadedTagetTextInfo.children('.user-tagline').text(decodeEntities(tagline));
     
     // if the main user is on a users profile, show them the user's details
     if(mainUserSeeingProfile) {
         $(".user-details.second-user").children('.date-of-birth').text(dateOfBirth);
-        $(".user-details.second-user").children('.gender').text(gender);
+        $(".user-details.second-user").children('.gender').text(decodeEntities(gender));
         loadedTagetTextInfo.children('.user-bio').text(decodeEntities(bio));
     }
 }
 
+// load in user info
+function loadUserLogin(email) {
+    $('#user-login-info').children('.email').text(email);
+    $('#user-login-info').children('.password').text('***************');
+}
+
 // replace char at index of a string
 String.prototype.replaceAt = function(index, replacement) {
-    return this.substring(0, index) + replacement + this.substring(index + replacement.length);
+    return this.substring(0, index) + replacement + this.substring(index + (replacement.length > 0 ? replacement.length : 1));
 };
 
 // decode HTML entities form json encoded string
@@ -88,84 +126,33 @@ function decodeEntities(encodedString) {
     textArea.innerHTML = encodedString;
     
     // remove " form the start and the end of the string
-    var lastCharIndex = textArea.value.length - 1;
+    /*var lastCharIndex = textArea.value.length - 1;
     textArea.value = textArea.value[0] === '"' ? textArea.value.replaceAt(0, ' ') : textArea.value;
-    textArea.value = textArea.value[lastCharIndex] === '"' ? textArea.value.replaceAt(lastCharIndex, ' ') : textArea.value;
+    textArea.value = textArea.value[lastCharIndex] === '"' ? textArea.value.replaceAt(lastCharIndex, ' ') : textArea.value;*/
     
     return textArea.value;
 }
 
-// load in user info
-function loadUserLogin(email) {
-    $('#user-login-info').children('.email').text(email);
-    $('#user-login-info').children('.password').text('***************');
-}
-
-// load custom profile design from JSON file
-function loadCustomProfileDesignSlots(json, updateFunction) {
-    json.slotArray.forEach(loadCustomProfileDesignSlot);
-    updateFunction();
-}
-
-// load unused profile design elements from JSON file
-function loadUnusedProfileDesignElements(json, updateFunction) {
-    json.elementBoxArray.forEach(loadUnusedProfileDesignElement);
-    updateFunction();
-}
-
-// load custom profile design slot
-function loadCustomProfileDesignSlot(slotElement) {
-    // check if selected slot index form array is not empty
-    if(slotElement !== ProfileDesignElement.Empty) {
-        // then place it on the user's profile
-        $('#profile-design').append(slotElement.DisplayMode);
+// generate a random string of the specified length
+function generateRandomString(length) {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for (var i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * characters.length));
     }
+    return result;
 }
 
-// load unused profile design elements into profile design element box
-function loadUnusedProfileDesignElement(designElement) {
-    // check if editMode is true or if selected slot index form array is not empty
-    //if(slotElement !== 'empty' || editMode)
-    $('#profile-design-element-box').append(designElement.IconMode);
+// generate a unique random string of the specified length
+let stringIDs = [];
+function generateUniqueRandomString(length, usedStrings) {
+    var result = generateRandomString(length);
+    
+    while (usedStrings.includes(result)) {
+      result = generateRandomString(length);
+    }
+    
+    usedStrings.push(result);
+    
+    return result;
 }
-
-// the list of all the profile design element types
-const ProfileDesignElement = {
-    // empty profile design slot
-    Empty: '',
-    
-    // profile ID element
-    UserID:  { 
-        IconMode: 
-                '<div id="profile-id-element" class="profile-design-element post-block icon-mode">' +
-                    '<h2 class="design-element-name">UserID</h2>' +
-                '</div>',
-        
-        DisplayMode:
-                '<div id="profile-id-element" class="profile-design-element display-mode">' +
-                    '<!-- user ID image and tagline !-->' +
-                    '<div class="user-index-0 post-block full-size">' +
-                        '<h2>UserID</h2>' +
-                        '<img class="profile-image" src="images/pfp.png"/>' +
-                        '<div class="light-to-dark-shaded user-text-info">' +
-                            '<h2 class="user-name">text</h2>' +
-                            '<hr/>' +
-                            '<h3 class="user-bio">test</h3>' +
-                        '</div>' +
-                    '</div>' +
-                '</div>'
-        },
-    
-    // custom profile design element
-    Custom: {
-        IconMode: 
-                '<div class="profile-design-element post-block custom-design-element icon-mode">' +
-                    '<h2 class="design-element-name">Custom</h2>' +
-                '</div>',
-        
-        DisplayMode:
-                '<div class="profile-design-element custom-design-element display-mode post-block full-size">' + 
-                      '<div class="custom-design-element-body"> <!-- custom design here !--> </div>' +
-                '</div>'
-        }
-};

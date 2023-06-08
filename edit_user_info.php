@@ -20,7 +20,7 @@
                         <form class="user-index-0" action="<?php echo $_SERVER['PHP_SELF']; ?>" enctype="multipart/form-data" method="POST">
                             <dl class="user-details second-user post-block user-text-info">
                                 <dt>Profile image:</dt>
-                                <dd><img class="profile-image" src="images/pfp.png"/></dd>
+                                <dd><img class="profile-image" src="images/default_pp.webp"/></dd>
                                 <a class="edit" href="submit.php?post=profile_image">Edit</a>
 
                                 <dt>User name:</dt>
@@ -82,7 +82,7 @@
             // display user id
             <?php
                 loadUserInfo('#edit-profile-info', $_SESSION['uuid'], 'true');
-                loadUserLoin();
+                loadUserLogin();
             ?>
             
             // setup input field to start edit user infor

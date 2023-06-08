@@ -22,7 +22,7 @@
                     <li>
                         <ul>
                             <!-- logo !-->
-                            <li><a href='index.php'><img src='images/TestIcon.png'/></a></li>
+                            <li><a href='index.php'><img src='images/TestIcon.webp'/></a></li>
                             
                             <!-- search filters !-->
                             <li id="search-filters">
@@ -83,7 +83,7 @@
                                     <li>
                                         <form method="POST" action="php_functions/mysql_functions/login_handler.php">
                                             <button class="action" type="submit" name="login_commando" value="logout">
-                                                Logout
+                                                Log out
                                             </button>
                                         </form>
                                     </li>

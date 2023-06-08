@@ -4,7 +4,7 @@
     
     // check for bad request
     if(!isset($_GET['post_link'])) {
-        echo "Error 400";
+        echo "Error 400: post at link is not found...";
     }
     else {  
         /* verify that the user is the owner of the post */
@@ -50,6 +50,7 @@
         
         <?php include_once './footer.php';?>
         
+        <!-- Load In Data for Content !--> 
         <script>
             // hide search filters
             hideSearchFilters = true;
@@ -59,11 +60,17 @@
             if(hideEditAndDelete)
                 $('#post-options .modify-post').hide();
             
-            /* load profile content */
+            /* load post content */
             <?php
                 // display post in full size
                 displayPostInFullSize($_GET['post_link']); 
+                
+                // load in feedback form post
+                loadFeedback($_GET['post_link']);
             ?>
+            // add one view to the post's feedback data if it is not the owner of the post that see it
+            if(hideEditAndDelete)
+                updateFeedback('view', '');
             
             //send a post command to do an action on a user post
             function userPostAction(command) {

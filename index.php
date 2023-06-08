@@ -6,6 +6,14 @@
     </head>
     <body>
         <?php include_once './nav_bar.php'; ?>
+        
+        <!-- nav taps start !-->
+        <nav id="nav-taps" class="index-nav-taps">
+            <ul>
+                <li id="show-start-page"><a class="selectet-nav-tap">Start Page</a></li>
+            </ul>
+        </nav>
+        <!-- nav taps end !-->
 
         <?php include_once './loaded_posts_nav.php'; ?>
         

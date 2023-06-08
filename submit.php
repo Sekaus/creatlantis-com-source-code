@@ -89,11 +89,7 @@
             </form>
         </div>
         
-        <!-- progress bar !-->
-        <div id="progressbar" class="post-block">
-            <label></label>
-            <!--<progress max="100" value="0"></progress>!-->
-        </div>
+        <?php include_once './progressbar.php'; ?>
 
         <?php include_once './footer.php';?>
         
@@ -154,11 +150,6 @@
                 $(this).val(text);
             });
             
-            /* progress bar jQuery */
-            // hide progress bar by defalt
-            $('#progressbar').hide();
-            
-            
             // disabled submit button clicking and start the upload
             var isUploading = false;
             function upload() {
@@ -174,66 +165,10 @@
                 if(valid && !isUploading) {
                     isUploading = true;
                     
-                    // create a new FormData object
-                    //var formData = new FormData();
-
-                    /* retrieve the inputs and append it to the FormData object */
-                    
-                    /*formData.append('data_type', postType);
-                    
-                    if(postType === 'image') {
-                        var fileInput = document.querySelector('#file-input');
-                        formData.append('image', fileInput.files[0]);
-                    }
-                    
-                    var titleInput = document.querySelector('input[name="title"]');
-                    formData.append('title', titleInput.value);
-
-                    var textInput = document.querySelector('textarea[name="text"]');
-                    formData.append('text', textInput.value);
-
-                    var tagsInput = document.querySelector('textarea[name="tags"]');
-                    formData.append('tags', tagsInput.value);*/
-                    
-                    $('#progressbar').show();
-                    $('.submit').hide();
-                    loadingScreen();
-                    //xhr.open('POST', 'php_functions/s3_functions/file_uploader.php', true);
-                    //xhr.send(formData);
+                    // show and start the loading screen
+                    startLoadingScreen();
                 }
             };
-            
-            /* update the progress bar */
-            
-            // play the update animation
-            var dots = "";
-            function loadingScreen() {
-                setTimeout(function () {
-                    $('#progressbar label').html('Uploading the post please wait' + dots);
-                    
-                    if(dots.length > 10)
-                        dots = "";
-                    else
-                        dots += "*";
-                    
-                    loadingScreen();
-                }, 500);
-            }
-            
-            /*var xhr = new XMLHttpRequest();
-
-            // listen to the 'progress' event
-            xhr.upload.addEventListener('progress', function(evt) {
-              if (evt.lengthComputable) {
-                // calculate the percentage of upload completed
-                var percentComplete = evt.loaded / evt.total;
-                percentComplete = parseInt(percentComplete * 100);
-
-                // update the progress bar
-                $('#progressbar label').html('Post uplanding: ' + percentComplete + '%');
-                $('#progressbar progress').val(percentComplete);
-              }
-            }, false);*/
     
             // if it is a old post that shold be override or a profile image that shold be uploaded or replaced, then call auto fill function call
             <?php

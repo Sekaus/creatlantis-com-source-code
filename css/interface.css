@@ -1,4 +1,4 @@
-/* flex and aligning */
+/* Flex and Aligning for Interface */
 
 body {
     margin: 0px;
@@ -11,21 +11,14 @@ input {
     border: gray;
 }
 
-#nav-bar, #profile-design-element-box {
+#nav-bar {
     position: fixed;
     width: 100%;
-}
-
-#nav-bar {
     top: 0;
+    z-index: 1;
 }
 
-#profile-design-element-box {
-    bottom: 0;
-    height: 10%;
-}
-
-nav a, footer a {
+nav a, footer a, .post-block, #metadata a,  #loaded-content a  {
     text-decoration: none;
 }
 
@@ -70,6 +63,20 @@ nav ul, #nav-bar ul ul, footer ul {
     max-height: 64px;
     min-width: 64px;
     min-height: 64px;
+}
+
+.index-nav-taps {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+.index-nav-taps ul li a {
+    border-radius: 0;
+    padding: calc(50vw);
+    padding-bottom: 20px;
+    font-size: 20px;
+    font-weight: 600;
 }
 
 .light-to-dark-shaded {
@@ -124,25 +131,26 @@ button {
 }
 
 .submit {
-    background-color: #00BD5E;
     font-size: 15px;
     padding: 10px;
     padding-top: 5px;
     padding-bottom: 5px;
 }
 
-.action {
-    background-color: red;
+#save-profile-design, #edit-profile-design, .edit-profile-design-element,  .save-profile-design-element {
+    float: right;
+    padding: 0.5%;
+    margin:  1%;
 }
 
-.edit {
-    background-color: gray;
+.edit-profile-design-element {
+    margin-top: 100%;
 }
 
 #post-nav { 
     display: flex;
     flex-grow: 4;
-    margin: 12.5%;
+    margin: 24%;
     margin-top: 5%;
     margin-bottom: 2.5%;
     align-items: baseline;
@@ -189,9 +197,9 @@ button {
     margin-top: 2.5%;
 }
 
-/* on hover over or clicking on context effects */
+/* On Hover Over or Clicking on Context Effects */
 
-nav a:hover, footer a:hover, button {
+nav a:hover, footer a:hover, button, .star {
     color: rgba(0, 0, 0, 0.7);
     cursor: pointer;
 }

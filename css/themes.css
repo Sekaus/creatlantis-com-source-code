@@ -1,6 +1,6 @@
-/* theme coloring */
+/* Theme Coloring */
 
-/* light theme */
+/* for light theme */
 
 body.light-theme * {
     color: black;
@@ -27,7 +27,7 @@ body.light-theme .post-block:hover {
     box-shadow: 0px 10px 13px -7px #000000, 5px 5px 15px 5px rgba(0, 0, 0, 0.125);
 }
 
-/* dark theme */
+/* for dark theme */
 
 body.dark-theme * {
     color: lightgray;
@@ -52,4 +52,17 @@ body.dark-theme .post-block:hover {
     
     -webkit-box-shadow: 5px 5px 15px 5px rgba(255, 255, 255, 0.125); 
     box-shadow: 5px 5px 15px 5px rgba(255, 255, 255, 0.125);
+}
+
+/* for dark and light theme  */
+
+.submit {
+    background-color: #00BD5E;
+}
+.action {
+    background-color: red;
+}
+
+.edit {
+    background-color: gray;
 }

@@ -1,16 +1,12 @@
-/* flex and aligning */
+/* Flex and Aligning for Posts */
 
 #loaded-content:not(#post-nav), .profile-content-part, #profile-design-element-box  {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
     justify-content: center;
-}
-
-#loaded-content {
-    margin: 25%;
-    margin-top: 0;
-    margin-bottom: 0;
+    align-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 #edit-profile-info {
@@ -22,7 +18,7 @@ fieldset {
     flex-direction: column;
 }
 
-#form-post * {
+#form-post:not(#form-post) *, #login-page * {
     padding: 1.25%;
     float: right;
 }
@@ -40,8 +36,8 @@ textarea, #login-page {
     height: 100px;
 }
 
-#loaded-content .post-block:not(.full-size) div, #loaded-content .post-block:not(.full-size) img {
-    max-width: 250px;
+#loaded-content .post-block:not(.full-size) > div, #loaded-content .post-block:not(.full-size) > img {
+    max-width: 500px;
     min-width: 200px;
     height: auto;
     font-size: 75%;
@@ -60,12 +56,13 @@ textarea, #login-page {
     margin-right: 10px;
 }
 
-.full-size img {
-    max-width: 1250px;
-    min-width: 125px;
+.full-size > img:not(.profile-image), #file-display {
+    max-width: 1750px;
+    min-width: 250px;
+    height: auto;
 }
 
-.full-size div {
+.journal-content, .profile-design-element:not(.icon-mode),  #profile-id-element .post-block {
     max-width: 900px;
     min-width: 700px;
     min-height: 900px;
@@ -86,11 +83,7 @@ textarea, #login-page {
     padding-top: 0.5%;
 }
 
-.post-title {
-    text-align: center;
-}
-
-/* metadata settings */
+/* Metadata Settings */
 
 #metadata .user-id img {
     width: 10%;
@@ -111,21 +104,126 @@ textarea, #login-page {
     padding-top: 0;
 }
 
-/* profile design */
+/* Profile Design */
 
 #profile-design {
     display: grid;
-    gap: 25px;
+    gap: 30px;
     grid-template-columns: auto auto;
     grid-template-rows: auto auto auto;
-    
-    background-color: gray;
-    padding: 2.5%;
-    padding-bottom: 35%;
+    padding: 100%;
 }
 
-/*.profile-design-slot {
-    width: calc(60px + (10vw + 10vh));
-    height: calc(60px + (10vh + 10vw));
-    background-color: yellow
-}*/
+.custom-design-element.display-mode, #profile-id-element.display-mode {
+    min-width: 900px; 
+}
+
+.custom-design-element.display-mode textarea {
+    margin: 25%;
+    margin-left: 15%;
+}
+
+#profile-design-element-box {
+    justify-content: flex-start;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    
+    width: 20%;
+    min-height: 250px;
+    overflow-y: scroll;
+    height: 600px;
+}
+
+.profile-image {
+    min-width: 132px;
+    max-width: 360px;
+}
+
+.mini-display {
+    zoom: 25%;
+}
+
+/* Post Feedback */
+
+:root {
+    --max-feedback-option-icon-size: 60px;
+}
+
+.post-feedback {
+    justify-content: center;
+    gap: 10px;
+}
+
+.post-feedback, .feedback-option, .star-rate-grid {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.post-feedback .feedback-option img {
+    max-width: var(--max-feedback-option-icon-size);
+}
+
+/* Star Rate */
+
+button.feedback-option {
+    background-color: rgba(0, 0, 0, 0);
+}
+
+:root {
+    --star-rate-image-width: 322px;
+    --star-rate-image-height: 42px; 
+    --star-rate-background-size: calc(90% - 40px);
+    --image-mask-url: url('../images/5-stars.webp');
+    
+    --gradient-percentage: 0%;
+    --gradient-start: #FFD700;
+    --gradient-end: #ddd;
+}
+
+.star-rate-grid span {
+    opacity: 0;
+    padding-right: calc(calc(var(--star-rate-image-width)/(8.55)));
+    padding-bottom: calc(var(--star-rate-image-height)*0.7);
+}
+
+.star-rate-grid {
+    gap: 4px;
+}
+
+.star-rate-grid {
+    background-image: -webkit-linear-gradient(left, var(--gradient-start) var(--gradient-percentage), var(--gradient-end) var(--gradient-percentage) 100%);
+    background-image: -moz-linear-gradient(left, var(--gradient-start) var(--gradient-percentage), var(--gradient-end) var(--gradient-percentage) 100%);
+    background-image: -o-linear-gradient(left, var(--gradient-start) var(--gradient-percentage), var(--gradient-end) var(--gradient-percentage) 100%);
+    background-image: linear-gradient(90deg, var(--gradient-start) var(--gradient-percentage), var(--gradient-end) var(--gradient-percentage) 100%);
+    background-position: center;
+    
+    mask-image: var(--image-mask-url);
+    -webkit-mask-image: var(--image-mask-url);
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-position: center;
+    mask-position: center;
+    
+    width: var(--star-rate-image-width);
+    height: var(--star-rate-image-height);
+    
+    opacity: 0.75;
+}
+
+.star-rate-feedback-count {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    gap: 3px;
+}
+
+.rate-value:after {
+    content: "⭐";
+}
+
+.vote-value:after {
+    content:  "🗳";
+}

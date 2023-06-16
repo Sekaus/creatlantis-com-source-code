@@ -29,6 +29,12 @@
             <!-- display post in full size !-->
         </div>
         
+        <!-- add edit and delete buttons on the post in full size mode !-->
+        <div id="post-options" class="post-block">
+            <button class="edit modify-post" onclick="userPostAction('edit_post')">Edit</button>
+            <button class="action modify-post" onclick="userPostAction('delete_post')">Delete</button>
+        </div>
+        
         <!-- metadata display !-->
         <div id="metadata" class="post-block">
             <div class="user-info-box second-user">
@@ -42,16 +48,23 @@
             </div>
         </div>
         
-        <!-- add edit and delete buttons on the post in full size mode !-->
-        <div id="post-options" class="post-block">
-            <button class="edit modify-post" onclick="userPostAction('edit_post')">Edit</button>
-            <button class="action modify-post" onclick="userPostAction('delete_post')">Delete</button>
-        </div>
+        <?php include_once './comment_stack.php';?>
         
         <?php include_once './footer.php';?>
         
         <!-- Load In Data for Content !--> 
         <script>
+            // ONLY FOR TESTING
+            // FIX-ME: don't disply profile ID
+            addComment('22a925bb-7637-11ed-b9bd-887873f061ed', '', 'Hellow, world!', 'a');
+            addComment('72d4ed95-7a06-11ed-8259-887873f061ed', '', 'This is hardcoded btw...', 'b');
+            addComment('22a925bb-7637-11ed-b9bd-887873f061ed', 'b', 'yes...');
+            addComment('72d4e157-7a06-11ed-8259-887873f061ed', '', 'Looking good so far...', 'c');
+            addComment('72d4ed95-7a06-11ed-8259-887873f061ed', 'c', 'hardcoded.', 'd');
+            addComment('72d4ed95-7a06-11ed-8259-887873f061ed', 'c', 'nah', 'e');
+            addComment('22a925bb-7637-11ed-b9bd-887873f061ed', 'e', 'Way?', 'f');
+            addComment('72d4ed95-7a06-11ed-8259-887873f061ed', 'f', 'It is missing something...', 'g');
+            
             // hide search filters
             hideSearchFilters = true;
             

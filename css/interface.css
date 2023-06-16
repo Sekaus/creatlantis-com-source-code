@@ -73,10 +73,22 @@ nav ul, #nav-bar ul ul, footer ul {
 
 .index-nav-taps ul li a {
     border-radius: 0;
-    padding: calc(50vw);
-    padding-bottom: 20px;
     font-size: 20px;
     font-weight: 600;
+}
+
+@media screen and (max-width: 1920px) and (max-height: 1080px) {
+    .index-nav-taps ul li a {
+        padding: 50vw; /* devide it with the number of taps */ 
+        padding-bottom: 20px;
+    }
+}
+
+@media screen and (max-width: 1536px) and (max-height: 864px) {
+    .index-nav-taps ul li a {
+        padding: 46.5vw; /* devide it with the number of taps */ 
+        padding-bottom: 20px;
+    }
 }
 
 .light-to-dark-shaded {

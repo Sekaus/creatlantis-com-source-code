@@ -222,6 +222,25 @@ function loadFeedback(feedbackJSON, task='post_display_feedback') {
     }
 }
 
+/* Comment Stack */
+
+// add a comment or reply
+// TO-DO. add date of the comment
+function addComment(userUUID, replyUUID = 'comment', text, commentUUID = generateRandomString(8)) {
+    // setup a new comment element
+    var comment = '<div class="comment ' + (replyUUID !== '' ? 'reply  ' : '') + 'post-block" data-id="' + commentUUID + '" from-user="' + userUUID  + '">' 
+            + setupUserInfoBox('#comment-stack .comment[data-id="' + commentUUID + '"]', userUUID)
+            + '<p class="comment-text">' + text + '</p></div>';
+    
+    // add the comment element to the comment stack and the target comment (if it is a reply)
+    if(replyUUID == '')
+        $('#comment-stack').append(comment);
+    else
+        $('#comment-stack .comment[data-id="' + replyUUID+ '"]').append(comment);
+    
+    // TO-DO save the comment on the MySQL satabase
+}
+
 /* Start and Update the Progress Bar */
             
 function startLoadingScreen() {

@@ -62,6 +62,7 @@ function loadPost(json, link, fullSize = false) {
 }
 
 // setup a user info box to display a user's info
+// TO-DO: make user-index- + "value" to its own data value
 function setupUserInfoBox(HTMLTaget, uuid, userIndexOffSet = 0) {
     var infoBoxBody =
             '<a href="./profile.php?profile_id=' + uuid + '">'

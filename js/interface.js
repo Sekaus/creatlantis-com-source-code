@@ -224,21 +224,40 @@ function loadFeedback(feedbackJSON, task='post_display_feedback') {
 
 /* Comment Stack */
 
-// add a comment or reply
-// TO-DO. add date of the comment
-function addComment(userUUID, replyUUID = 'comment', text, commentUUID = generateRandomString(8)) {
+// load a comment or reply
+function loadComment(comment, date, commentUUID, replyUUID = "") {
     // setup a new comment element
-    var comment = '<div class="comment ' + (replyUUID !== '' ? 'reply  ' : '') + 'post-block" data-id="' + commentUUID + '" from-user="' + userUUID  + '">' 
-            + setupUserInfoBox('#comment-stack .comment[data-id="' + commentUUID + '"]', userUUID)
-            + '<p class="comment-text">' + text + '</p></div>';
+    var commentElement = '<div class="comment ' + (replyUUID !== '' ? 'reply  ' : '') + 'post-block" data-id="' + commentUUID +  '">' 
+            + '<p class="comment-text">' + comment + '</p><time>' + date + '</time></div>';
     
     // add the comment element to the comment stack and the target comment (if it is a reply)
-    if(replyUUID == '')
-        $('#comment-stack').append(comment);
+    if(replyUUID === '')
+        $('#comment-stack').append(commentElement);
     else
-        $('#comment-stack .comment[data-id="' + replyUUID+ '"]').append(comment);
-    
-    // TO-DO save the comment on the MySQL satabase
+        $('#comment-stack .comment[data-id="' + replyUUID+ '"]').append(commentElement);
+}
+
+// add a comment or reply to the comment stack
+function addComment(fromUUID, toType, comment, replyUUID = null) {
+    // save as MySQL
+    $.ajax({
+        url: 'php_functions/mysql_functions/comment_handler.php',
+        method: 'POST',
+        data: {
+            from_uuid: fromUUID,
+            to: ((toType === "post" ? new URLSearchParams(window.location.search).get('post_link') : URLSearchParams(window.location.search).get('profile_id'))),
+            to_type: toType,
+            comment: $(comment).parent().children('textarea').val(),
+            reply_uuid: replyUUID
+        },
+        success: (data) => {
+            console.log(data);
+            location.reload();
+        },
+        error: (xhr, textStatus, error) => {
+            console.error('Request failed. Status code: ' + xhr.status);
+        }
+    });
 }
 
 /* Start and Update the Progress Bar */

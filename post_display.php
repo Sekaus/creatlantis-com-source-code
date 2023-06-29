@@ -54,17 +54,6 @@
         
         <!-- Load In Data for Content !--> 
         <script>
-            // ONLY FOR TESTING
-            // FIX-ME: don't disply profile ID
-            addComment('22a925bb-7637-11ed-b9bd-887873f061ed', '', 'Hellow, world!', 'a');
-            addComment('72d4ed95-7a06-11ed-8259-887873f061ed', '', 'This is hardcoded btw...', 'b');
-            addComment('22a925bb-7637-11ed-b9bd-887873f061ed', 'b', 'yes...');
-            addComment('72d4e157-7a06-11ed-8259-887873f061ed', '', 'Looking good so far...', 'c');
-            addComment('72d4ed95-7a06-11ed-8259-887873f061ed', 'c', 'hardcoded.', 'd');
-            addComment('72d4ed95-7a06-11ed-8259-887873f061ed', 'c', 'nah', 'e');
-            addComment('22a925bb-7637-11ed-b9bd-887873f061ed', 'e', 'Way?', 'f');
-            addComment('72d4ed95-7a06-11ed-8259-887873f061ed', 'f', 'It is missing something...', 'g');
-            
             // hide search filters
             hideSearchFilters = true;
             
@@ -80,6 +69,13 @@
                 
                 // load in feedback form post
                 loadFeedback($_GET['post_link']);
+                
+                // load in comments form post
+                static $commentStackOffset = 0;
+                loadComments($_GET['post_link'], NULL, 10, $commentStackOffset);
+                
+                // disply the main user's id in the comment stack
+                SetupAndLoadUserID('#comment-stack #add-new-comment', $_SESSION['uuid']);
             ?>
             // add one view to the post's feedback data if it is not the owner of the post that see it
             if(hideEditAndDelete)

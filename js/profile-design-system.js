@@ -25,6 +25,7 @@ const ProfileDesignElement = {
                         '</div>' +
                     '</div>' +
                 '</div>',
+        
         CustomHTML: null
     },
 
@@ -43,8 +44,21 @@ const ProfileDesignElement = {
                     '<textarea cols="200" rows="20" class="user-bio" name="new_custom_design_element" hidden></textarea>' +
                     '<button class="edit-profile-design-element edit" onclick="editProfileElement(this)">Edit</button> <button class="save-profile-design-element submit" onclick="saveProfileElement(this)" style="display: none;">Save</button>' +
                 '</div>',
+        
         CustomHTML: '<div><h2>Write some custom HTML and CSS here...</h2></div>'
-    }
+    },
+    
+    // comments section element
+    /*Comments: {
+        IconMode:
+                '<div class="profile-design-element post-block custom-design-element icon-mode">' +
+                    '<h2 class="design-element-name">Comments</h2>' +
+                '</div>',
+        
+        DisplayMode: '<div id="comment-stack-element" class="post-block"></div>',
+        
+        CustomHTML: null
+    }*/
 };
 
 /* drag and drop tool state handle */
@@ -128,6 +142,8 @@ function changeModeOfDroppedElements(elementArray, mode, stringIDOffset = 0) {
 }
 
 // load custom profile design slots
+// FIX-ME: not loading any ProfileDesignElement.Comments on profile
+// TO-DO: Reset profile layout/design on TestUser4
 function loadCustomProfileDesignSlots(collectionClass, elementArray) {
     for (var index = 0; index < elementArray.length; index++) {
         if (elementArray[index] !== ProfileDesignElement.Empty) {

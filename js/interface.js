@@ -225,10 +225,20 @@ function loadFeedback(feedbackJSON, task='post_display_feedback') {
 /* Comment Stack */
 
 // load a comment or reply
-function loadComment(comment, date, commentUUID, replyUUID = "") {
-    // setup a new comment element
+// NOTE:  loadComments works best after comment_stack.php is loaded
+function loadComment(comment, date, commentUUID, replyUUID = "", userUUID) {
+    /* Setup a new Comment Element */
+            
     var commentElement = '<div class="comment ' + (replyUUID !== '' ? 'reply  ' : '') + 'post-block" data-id="' + commentUUID +  '">' 
-            + '<p class="comment-text">' + comment + '</p><time>' + date + '</time></div>';
+                + '<div class="post-block">' 
+                    + '<p class="comment-text">' + comment + '</p>'
+                    + '<time>' + date + '</time>'
+                + '</div>'
+                // TO-DO: append/show newReply when clicking on "Reply"
+                + '<div class="comment-options">'
+                    + '<button class="submit" onclick="$(this).parent().append(newReply)">Reply</button><button class="action">Delete</button>'
+                +'</div>'
+            + '</div>';
     
     // add the comment element to the comment stack and the target comment (if it is a reply)
     if(replyUUID === '')
@@ -238,25 +248,35 @@ function loadComment(comment, date, commentUUID, replyUUID = "") {
 }
 
 // add a comment or reply to the comment stack
-function addComment(fromUUID, toType, comment, replyUUID = null) {
-    // save as MySQL
+// NOTE:  loadComments works best after comment_stack.php is loaded
+// FIX-ME: error when trying to reply on a commment
+// TO-DO: clean me up
+function addComment(fromUUID, comment, replyUUID = null) {
+    /* Save as MySQL */
+    
+    var GetURLVar = new URLSearchParams(window.location.search);
+    var toData = ({
+        to: GetURLVar.get('post_link') ?? GetURLVar.get('profile_id') ?? 'NaN',
+        to_type: GetURLVar.get('post_link') !== null ? 'post' : 'profile'
+    });
+    
     $.ajax({
         url: 'php_functions/mysql_functions/comment_handler.php',
         method: 'POST',
         data: {
             from_uuid: fromUUID,
-            to: ((toType === "post" ? new URLSearchParams(window.location.search).get('post_link') : URLSearchParams(window.location.search).get('profile_id'))),
-            to_type: toType,
+            to: toData.to,
+            to_type: toData.to_type,
             comment: $(comment).parent().children('textarea').val(),
-            reply_uuid: replyUUID
-        },
-        success: (data) => {
+            reply_uuid: $(replyUUID).parent().parent().attr('data-id') ?? null
+         },
+         success: (data) => {
             console.log(data);
             location.reload();
-        },
-        error: (xhr, textStatus, error) => {
+         },
+         error: (xhr, textStatus, error) => {
             console.error('Request failed. Status code: ' + xhr.status);
-        }
+         }
     });
 }
 

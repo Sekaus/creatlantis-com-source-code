@@ -16,6 +16,7 @@
     </head>
     <body>
         <?php include_once './nav_bar.php';?>
+        
         <!-- profile info start !-->
         
         <!-- edit and save buttons for profile content parts !-->
@@ -30,6 +31,7 @@
                 <li id="show-profile"><a class="<?php if(!isset($_GET['tap']) || $_GET['tap'] == 'show-profile') echo 'selectet-nav-tap'; ?>">Profile</a></li>
                 <li id="show-gallery"><a class="<?php if(isset($_GET['tap']) && $_GET['tap'] == 'show-gallery') echo 'selectet-nav-tap'; ?>">Gallery</a></li>
                 <li id="show-faves"><a class="<?php if(isset($_GET['tap']) && $_GET['tap'] == 'show-faves') echo 'selectet-nav-tap'; ?>">Faves</a></li>
+                <li id="show-comments"><a class="<?php if(isset($_GET['tap']) && $_GET['tap'] == 'show-comments') echo 'selectet-nav-tap'; ?>">Comments</a></li>
             </ul>
         </nav>
         
@@ -62,6 +64,10 @@
          <div id="profile-fave" class="profile-content-part" style="display: none;">
              <?php include './loaded_posts_nav.php'; ?>
          </div>
+         
+         <!-- comments part !-->
+         <!-- FIX-ME: Don't load any comments on profile !-->
+         <?php include './comment_stack.php'; ?>
         
         <!-- profile content parts end !-->
         
@@ -88,6 +94,7 @@
                 switchNavTapOnProfile(<?php if (isset($_GET['tap']) && $_GET['tap']) echo ('"' . $_GET['tap'] . '"'); else '' ?>);
             
             // switch nav tap
+            // FIX-ME: comments section don't show up
             function switchNavTapOnProfile(tapID) {
                 // start by hiding all profile content parts
                 $('.profile-content-part').hide();
@@ -95,18 +102,20 @@
                 // then show a certain part of the profile based on which tap is clicked
                 switch(tapID) {
                     case 'show-profile':
-                        $('#profile-gallery').remove();
-                        $('#profile-fave').remove();
                         $('#profile-design').show();
                         break;
                     case 'show-gallery':
-                        $('#profile-fave').remove();
+                        $('#comment-stack').remove();
                         $('#profile-gallery').show();
                         break;
                     case 'show-faves':
+                        $('#comment-stack').remove();
                         $('#profile-gallery').remove();
                         $('#profile-fave').show();
                         break;
+                    //case 'show-comments':
+                        //$('profile-comments').show();
+                        //break;
                 }
             }
             
@@ -118,6 +127,13 @@
                 // TO-DO: try make me less hacky
                 if(!isset($profileDesign['Body']) && $_SESSION['uuid'] != $_GET['profile_id'])
                     exit('window.location.href = "html_documents/error_pages/error_404_user_not_found.html"; </script>');
+                
+                // load in comments form profile
+                static $commentStackOffset = 0;
+                loadComments(-1, $_GET['profile_id'], 10, $commentStackOffset);
+                
+                // disply the main user's id in the comment stack
+                SetupAndLoadUserID('#comment-stack #add-new-comment', $_SESSION['uuid']);
             ?>
             
             // loaded profileElementArray JSON

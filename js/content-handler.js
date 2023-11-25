@@ -28,9 +28,15 @@ function loadPost(json, link, fullSize = false) {
                 
                 '<!-- view count !-->' +
                 '<div class="feedback-option" title="View count" data-id="' + generateRandomString(8) + '">' +
-                    '<image src="./images/icons/viewIcon.webp"/>' +
-                    '<var class="view-feedback-count">0</var>'
-             '</div>';
+                    '<img src="./images/icons/viewIcon.webp"/>' +
+                    '<var class="view-feedback-count">0</var>' +
+                '</div>' +
+                
+                '<!-- comment count !-->' +
+                '<div class="feedback-option" title="Comment count" data-id="' + generateRandomString(8) + '">' +
+                    '<img src="./images/icons/commentIcon.webp"/>' +
+                    '<var class="comment-feedback-count">0</var>' +
+                '</div>';
     
     var postBody = '<a href="post_display.php?post_link=' + link + '" class="post-block">';
     

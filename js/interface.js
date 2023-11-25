@@ -51,8 +51,7 @@ const Theme = {
 function switchTheme(theme) {
     $('body').removeClass();
     $('body').addClass(theme);
-}
-;
+};
 
 switchTheme(Theme.Dark); //load in default theme
 
@@ -222,11 +221,16 @@ function loadFeedback(feedbackJSON, task='post_display_feedback') {
     }
 }
 
+// read comment count
+function readCommentCount(count) {
+    $('.comment-feedback-count').text(count);
+}
+
 /* Comment Stack */
 
 // load a comment or reply
 // NOTE:  loadComments works best after comment_stack.php is loaded
-function loadComment(comment, date, commentUUID, replyUUID = "", userUUID) {
+function loadComment(comment, date, commentUUID, replyUUID = "", showDelete, showEdit) {
     /* Setup a new Comment Element */
             
     var commentElement = '<div class="comment ' + (replyUUID !== '' ? 'reply  ' : '') + 'post-block" data-id="' + commentUUID +  '">' 
@@ -236,20 +240,27 @@ function loadComment(comment, date, commentUUID, replyUUID = "", userUUID) {
                 + '</div>'
                 // TO-DO: append/show newReply when clicking on "Reply"
                 + '<div class="comment-options">'
-                    + '<button class="submit" onclick="$(this).parent().append(newReply)">Reply</button><button class="action">Delete</button>'
+                    + '<button class="submit" onclick="$(this).parent().append(newReply)">Reply</button>'
+                    + ((showDelete == 1) ? '<button class="action" onclick="userCommentAction(' + "'delete_comment', " + "'" + commentUUID + "'" + ')">Delete</button>' : '')
+                    + (showEdit == 1 ? '<button class="edit" onclick="$(this).parent().append(editCommment)">Edit</button>' : '')
                 +'</div>'
             + '</div>';
     
     // add the comment element to the comment stack and the target comment (if it is a reply)
     if(replyUUID === '')
         $('#comment-stack').append(commentElement);
-    else
-        $('#comment-stack .comment[data-id="' + replyUUID+ '"]').append(commentElement);
+    else {
+        var countCommentAtDataID = $('#comment-stack .comment[data-id="' + replyUUID+ '"]').length;
+        
+        if(countCommentAtDataID <= 0)
+            $('#comment-stack').append("<div class='post-block'><i>Deleted comment...</i></div>").append(commentElement);
+        else
+            $('#comment-stack .comment[data-id="' + replyUUID+ '"]').append(commentElement);
+    }
 }
 
 // add a comment or reply to the comment stack
 // NOTE:  loadComments works best after comment_stack.php is loaded
-// FIX-ME: error when trying to reply on a commment
 // TO-DO: clean me up
 function addComment(fromUUID, comment, replyUUID = null) {
     /* Save as MySQL */
@@ -268,7 +279,7 @@ function addComment(fromUUID, comment, replyUUID = null) {
             to: toData.to,
             to_type: toData.to_type,
             comment: $(comment).parent().children('textarea').val(),
-            reply_uuid: $(replyUUID).parent().parent().attr('data-id') ?? null
+            reply_uuid: $(replyUUID).parent().parent().parent().attr('data-id') ?? null
          },
          success: (data) => {
             console.log(data);

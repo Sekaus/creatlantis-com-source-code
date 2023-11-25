@@ -71,8 +71,7 @@
                 loadFeedback($_GET['post_link']);
                 
                 // load in comments form post
-                static $commentStackOffset = 0;
-                loadComments($_GET['post_link'], NULL, 10, $commentStackOffset);
+                loadComments($_GET['post_link'], NULL, 10, $commentOffset, isset($_GET['load_times']));
                 
                 // disply the main user's id in the comment stack
                 SetupAndLoadUserID('#comment-stack #add-new-comment', $_SESSION['uuid']);
@@ -81,7 +80,7 @@
             if(hideEditAndDelete)
                 updateFeedback('view', '');
             
-            //send a post command to do an action on a user post
+            // send a post command to do an action on a user post
             function userPostAction(command) {
                 var mainPost = '<?php echo $_GET['post_link']; ?>';
                 switch(command) {
@@ -94,7 +93,7 @@
                 }
             }
                 
-            //ask user to confirm before deleteing the post
+            // ask user to confirm before deleteing the post
             function deletePost(post) {
                 if (confirm('Are you sure you want to delet this post (can not be undo)')) {
                     //delete the post
@@ -104,12 +103,12 @@
             
             function sendRequestAsAJAX(command, post) {
                 xhr.onreadystatechange = function() {
-                    //when getting a response back
+                    // when getting a response back
                     if (this.readyState === 4 && this.status === 200) {
-                        //log response
+                        // log response
                         console.log(this.responseText);
                         
-                        //leads user to another page
+                        // leads user to another page
                         if(command === 'edit_post')
                             window.location.href = './submit.php?post=overwrite';
                         else if(command === 'delete_post')
@@ -117,7 +116,7 @@
                     }
                 };
                 
-                //send post command by POST reqerst
+                // send post command by GET reqerst
                 var url = 'php_functions/s3_functions/user_post_actions.php?post_command='+command+"&post="+post;
                 xhr.open('GET', url, true);
                 xhr.send();

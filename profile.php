@@ -66,7 +66,6 @@
          </div>
          
          <!-- comments part !-->
-         <!-- FIX-ME: Don't load any comments on profile !-->
          <?php include './comment_stack.php'; ?>
         
         <!-- profile content parts end !-->
@@ -106,10 +105,13 @@
                         break;
                     case 'show-gallery':
                         $('#comment-stack').remove();
+                        //$('.comment-stack-nav').remove();
                         $('#profile-gallery').show();
                         break;
                     case 'show-faves':
                         $('#comment-stack').remove();
+                        $('#loaded-comments-nav').remove();
+                        //$('.comment-stack-nav').remove();
                         $('#profile-gallery').remove();
                         $('#profile-fave').show();
                         break;
@@ -129,8 +131,7 @@
                     exit('window.location.href = "html_documents/error_pages/error_404_user_not_found.html"; </script>');
                 
                 // load in comments form profile
-                static $commentStackOffset = 0;
-                loadComments(-1, $_GET['profile_id'], 10, $commentStackOffset);
+                loadComments(-1, $_GET['profile_id'], 10, $commentOffset, isset($_GET['load_times']));
                 
                 // disply the main user's id in the comment stack
                 SetupAndLoadUserID('#comment-stack #add-new-comment', $_SESSION['uuid']);

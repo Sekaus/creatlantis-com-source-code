@@ -155,10 +155,6 @@ button {
     margin:  1%;
 }
 
-.edit-profile-design-element {
-    margin-top: 100%;
-}
-
 #post-nav { 
     display: flex;
     flex-grow: 4;

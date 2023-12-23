@@ -70,7 +70,7 @@
                                     <li><a href="./edit_user_info.php">Profile sittings</a></li>
                                     <!-- select theme !-->
                                     <li class="dropdown-buttons">
-                                        <span>Theme</span>
+                                        <span>Theme:</span>
 
                                         <!-- themes !-->
                                         <div>

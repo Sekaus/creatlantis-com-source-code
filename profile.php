@@ -1,8 +1,11 @@
 <?php 
     session_start();
     
-    /* verify that the user is the owner of the profile */
-
+    include_once 'php_functions/mysql_functions/store_data.php';
+    
+   $isTheMainUserWatching = isTheUserWatching($_SESSION['uuid'], $_GET['profile_id']);
+    
+    // verify that the user is the owner of the profile
     $isMainUserNotTheOwner = ($_GET['profile_id'] != $_SESSION['uuid']);
 ?>
 
@@ -30,14 +33,24 @@
                 </li>
                 <li id="show-profile"><a class="<?php if(!isset($_GET['tap']) || $_GET['tap'] == 'show-profile') echo 'selectet-nav-tap'; ?>">Profile</a></li>
                 <li id="show-gallery"><a class="<?php if(isset($_GET['tap']) && $_GET['tap'] == 'show-gallery') echo 'selectet-nav-tap'; ?>">Gallery</a></li>
-                <li id="show-faves"><a class="<?php if(isset($_GET['tap']) && $_GET['tap'] == 'show-faves') echo 'selectet-nav-tap'; ?>">Faves</a></li>
+                <li id="show-faves"><a class="<?php if(isset($_GET['tap']) && $_GET['tap'] == 'show-faves') echo 'selectet-nav-tap'; ?>">Favorites</a></li>
                 <li id="show-comments"><a class="<?php if(isset($_GET['tap']) && $_GET['tap'] == 'show-comments') echo 'selectet-nav-tap'; ?>">Comments</a></li>
+                <li id="show-more"><a class="<?php if(isset($_GET['tap']) && $_GET['tap'] == 'show-more') echo 'selectet-nav-tap'; ?>">More</a></li>
+                <li>
+                    <!-- Watch button !-->
+                    <button id="watch-button" class="submit" onclick="<?php echo (!$isTheMainUserWatching ? "storeWatch('add_watcher')" : "storeWatch('remove_watcher')");?>"><?php echo (!$isTheMainUserWatching ? "Watch" : "Stop watching");?></button>
+                </li>
             </ul>
         </nav>
         
         <!-- user details !-->
-        <div class="light-to-dark-shaded user-details second-user">
-            <p class="gender">test</p>
+        <div id="about-user" class="light-to-dark-shaded">
+            <div class="user-details second-user">
+                <span class="date-of-birth">test</span> / <span class="gender">test</span> |
+            </div>
+            <div id="user-statics">
+                <span><var id="watch-count">0</var> Watchers</span>
+            </div>
         </div>
         
         <!-- profile content parts start !-->
@@ -67,6 +80,21 @@
          
          <!-- comments part !-->
          <?php include './comment_stack.php'; ?>
+         
+         <!-- show more part !-->
+         <div id="show-more" style="display: none;">
+             <!-- show watchers of profile !-->
+             <h1>watchers</h1>
+             <div id="loaded-watchers" class="post-block">
+             </div>
+             
+             <!-- show the one that the profile is watching !-->
+             <h1>watching</h1>
+             <div id="loaded-watching" class="post-block">
+             </div>
+             
+             <?php include './loaded_posts_nav.php'; ?>
+         </div>
         
         <!-- profile content parts end !-->
         
@@ -105,19 +133,18 @@
                         break;
                     case 'show-gallery':
                         $('#comment-stack').remove();
-                        //$('.comment-stack-nav').remove();
                         $('#profile-gallery').show();
                         break;
                     case 'show-faves':
                         $('#comment-stack').remove();
                         $('#loaded-comments-nav').remove();
-                        //$('.comment-stack-nav').remove();
                         $('#profile-gallery').remove();
                         $('#profile-fave').show();
                         break;
-                    //case 'show-comments':
-                        //$('profile-comments').show();
-                        //break;
+                    case 'show-more':
+                        $('#comment-stack').remove();
+                        $("div#show-more").show();
+                        break;
                 }
             }
             
@@ -338,6 +365,9 @@
                 // setup the user info box for the displayed profile
                 SetupAndLoadUserID('#nav-taps .user-info-box.second-user', $_GET['profile_id']);
                 
+                // load watch count for profile
+                CountWatchers($_GET['profile_id']);
+                
                 // load all posts made by user
                 if(isset($_GET['tap']) && $_GET['tap'] == 'show-gallery')
                     loadContentFromUser($maxKeys, $offset, $_GET['profile_id']);
@@ -345,11 +375,40 @@
                 // load all faved posts from user
                 else if(isset($_GET['tap']) && $_GET['tap'] == 'show-faves')
                     loadFavesFromUser($maxKeys, $offset, $_GET['profile_id']);
+                
+                // load all watchers_stack data from user
+                else if(isset($_GET['tap']) && $_GET['tap'] == 'show-more') {
+                    loadWatchersProfiles($maxKeys, $offset, $_GET['profile_id']);
+                    loadWatchingProfiles($maxKeys, $offset, $_GET['profile_id']);
+                }
             ?>
+                                
             // hide edit element and layout buttons if the user is not the owner of the profile or if user is not on the profile tap
-            if(<?php echo  json_encode(($isMainUserNotTheOwner || (isset($_GET['tap']) && $_GET['tap'] != 'show-profile'))); ?>) {
+            if(<?php echo  json_encode(($isMainUserNotTheOwner || (isset($_GET['tap']) && $_GET['tap'] != 'show-profile'))); ?>)
                 $('#edit-profile-design, #save-profile-design, .edit-profile-design-element, .save-profile-design-element').hide();
-            }
+            else
+                $('#watch-button').hide();
+            
+            // store watch data
+            function storeWatch(command) {
+                $.ajax({
+                        url: 'php_functions/s3_functions/watch_actions.php',
+                        method: 'POST',
+                        data: {
+                            command: command,
+                            uuid: "<?php echo $_SESSION['uuid'];?>",
+                            watcher_uuid: "<?php echo $_GET['profile_id'];?>"
+                        },
+                        success: (data) => {
+                          console.log(data);
+                          // when done, refresh page
+                          location.reload();
+                        },
+                        error: (xhr, textStatus, error) => {
+                          console.error('Request failed. Status code: ' + xhr.status);
+                        }
+                });
+         }
         </script>
     </body>
 </html>

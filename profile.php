@@ -386,7 +386,9 @@
             // hide edit element and layout buttons if the user is not the owner of the profile or if user is not on the profile tap
             if(<?php echo  json_encode(($isMainUserNotTheOwner || (isset($_GET['tap']) && $_GET['tap'] != 'show-profile'))); ?>)
                 $('#edit-profile-design, #save-profile-design, .edit-profile-design-element, .save-profile-design-element').hide();
-            else
+            
+            // hide watch button if user is the owner of the profile
+            if(<?php echo  json_encode(!$isMainUserNotTheOwner); ?>)
                 $('#watch-button').hide();
             
             // store watch data

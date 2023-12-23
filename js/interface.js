@@ -221,12 +221,12 @@ function loadFeedback(feedbackJSON, task='post_display_feedback') {
     }
 }
 
+/* Comment Stack */
+
 // read comment count
 function readCommentCount(count) {
     $('.comment-feedback-count').text(count);
 }
-
-/* Comment Stack */
 
 // load a comment or reply
 // NOTE:  loadComments works best after comment_stack.php is loaded
@@ -289,6 +289,12 @@ function addComment(fromUUID, comment, replyUUID = null) {
             console.error('Request failed. Status code: ' + xhr.status);
          }
     });
+}
+
+/* Watchers Stack */
+
+function readWatchCount(count) {
+    $('#watch-count').text(count);
 }
 
 /* Start and Update the Progress Bar */

@@ -1,6 +1,6 @@
 /* Flex and Aligning for Posts */
 
-#loaded-content:not(#post-nav), .profile-content-part, #profile-design-element-box  {
+#loaded-content:not(#post-nav), .profile-content-part, #profile-design-element-box, #loaded-watchers, #loaded-watching {
     display: flex;
     align-items: center;
     justify-content: center;

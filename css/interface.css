@@ -109,6 +109,12 @@ nav ul, #nav-bar ul ul, footer ul {
     margin: 0;
 }
 
+#about-user {
+    display: flex;
+    gap: 5px;
+    padding: 10px;
+}
+
 a.selectet-nav-tap {
     border: 5px hidden;
     border-radius: 5px 5px 0px 0px;

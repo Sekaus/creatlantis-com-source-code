@@ -217,3 +217,8 @@ nav a:hover, footer a:hover, button, .star {
     color: rgba(0, 0, 0, 0.7);
     cursor: pointer;
 }
+
+/* Celect Content Effects */
+.selected-post-block {
+    border-color: yellow !important;
+}

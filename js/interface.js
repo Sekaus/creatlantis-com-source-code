@@ -232,7 +232,7 @@ function readCommentCount(count) {
 // NOTE:  loadComments works best after comment_stack.php is loaded
 function loadComment(comment, date, commentUUID, replyUUID = "", showDelete, showEdit) {
     /* Setup a new Comment Element */
-            
+        
     var commentElement = '<div class="comment ' + (replyUUID !== '' ? 'reply  ' : '') + 'post-block" data-id="' + commentUUID +  '">' 
                 + '<div class="post-block">' 
                     + '<p class="comment-text">' + comment + '</p>'
@@ -242,7 +242,7 @@ function loadComment(comment, date, commentUUID, replyUUID = "", showDelete, sho
                 + '<div class="comment-options">'
                     + '<button class="submit" onclick="$(this).parent().append(newReply)">Reply</button>'
                     + ((showDelete == 1) ? '<button class="action" onclick="userCommentAction(' + "'delete_comment', " + "'" + commentUUID + "'" + ')">Delete</button>' : '')
-                    + (showEdit == 1 ? '<button class="edit" onclick="$(this).parent().append(editCommment)">Edit</button>' : '')
+                    + (showEdit == 1 ? '<button class="edit" onclick="$(this).parent().append(editAComment);autoFillEditText(this);">Edit</button>' : '')
                 +'</div>'
             + '</div>';
     

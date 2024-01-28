@@ -64,7 +64,7 @@ function loadPost(json, link, fullSize = false) {
     
     //there was an error when trying to load post data from JSON
     else
-        $('#loaded-content').append('<p>ERROR');
+        $('#loaded-content').append('<p>ERROR</p>');
 }
 
 // setup a user info box to display a user's info

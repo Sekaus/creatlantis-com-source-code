@@ -38,14 +38,32 @@ const ProfileDesignElement = {
 
         DisplayMode:
                 '<div class="profile-design-element custom-design-element display-mode post-block full-size">' +
+                    '<button class="edit-profile-design-element edit" onclick="editProfileElement(this)">Edit</button> <button class="save-profile-design-element submit" onclick="saveProfileElement(this)" style="display: none;">Save</button>' +
                     '<div class="custom-design-element-body">' +
                         '<!-- custom design here !-->' +
                     '</div>' +
                     '<textarea cols="200" rows="20" class="user-bio" name="new_custom_design_element" hidden></textarea>' +
-                    '<button class="edit-profile-design-element edit" onclick="editProfileElement(this)">Edit</button> <button class="save-profile-design-element submit" onclick="saveProfileElement(this)" style="display: none;">Save</button>' +
                 '</div>',
         
         CustomHTML: '<div><h2>Write some custom HTML and CSS here...</h2></div>'
+    },
+    
+    Spotlight: {
+        IconMode:
+                '<div class="profile-design-element post-block spotlight-element icon-mode">' +
+                    '<h2 class="design-element-name">Spotlight</h2>' +
+                '</div>',
+
+        DisplayMode:
+                '<div class="profile-design-element spotlight-element display-mode post-block full-size">' +
+                    '<button class="edit-profile-design-element edit" onclick="editProfileElement(this, ProfileElementTypes.Spotlight)">Edit</button>' +
+                    '<h2>Spotlight</h2>'+
+                    '<div class="spotlight-element-body">' +
+                        '<!-- spotlight for a post here !-->' +
+                    '</div>' +
+                '</div>',
+        
+        CustomHTML: '<img src="images/default_sp.webp"/>'
     },
     
     // comments section element
@@ -123,11 +141,17 @@ function changeModeOfDroppedElements(elementArray, mode, stringIDOffset = 0) {
         // only do anything if selected slot is not empty
         if (elementArray[index] !== ProfileDesignElement.Empty) {
             var slot = $('div[data-id="' + stringIDs[stringIDOffset] + '"]');
-            var newElement = $(getDesignElementByName(slot, mode));
+            var newElementName = getDesignElementName(slot);
+            var newElement = getDesignElementByName(newElementName);
+            newElement = $((mode === "IconMode" ? newElement.IconMode : newElement.DisplayMode));
 
             // check if the new element is a custom element
-            if (getDesignElementByName(slot) === ProfileDesignElement.Custom)
+            if (newElementName === "Custom")
                 newElement.children('.custom-design-element-body').html(elementArray[index].CustomHTML);
+            
+            // check if the new element is a spotlight element
+            if (newElementName === "Spotlight")
+                newElement.children('.spotlight-element-body').html(elementArray[index].CustomHTML);
 
             //set DataID for the new element
             newElement.attr('data-id', stringIDs[stringIDOffset]);
@@ -143,15 +167,16 @@ function changeModeOfDroppedElements(elementArray, mode, stringIDOffset = 0) {
 
 // load custom profile design slots
 // FIX-ME: not loading any ProfileDesignElement.Comments on profile
-// TO-DO: Reset profile layout/design on TestUser4
 function loadCustomProfileDesignSlots(collectionClass, elementArray) {
     for (var index = 0; index < elementArray.length; index++) {
-        if (elementArray[index] !== ProfileDesignElement.Empty) {
-            var newElement = $(elementArray[index].DisplayMode);
+        if (elementArray[index] !== "") {
+            var newElement = $(getDesignElementByName(elementArray[index].ElementName).DisplayMode);
 
             // check if selected slot index is a custom element
-            if (getDesignElementByName(elementArray[index].DisplayMode) === ProfileDesignElement.Custom)
+            if (elementArray[index].ElementName === "Custom")
                 newElement.children('.custom-design-element-body').html(elementArray[index].CustomHTML);
+            else if (elementArray[index].ElementName === "Spotlight")
+                newElement.children('.spotlight-element-body').html(elementArray[index].CustomHTML);
 
             //set DataID for new element
             //elementArray[index].DataID = generateUniqueRandomString(8, stringIDs);
@@ -163,31 +188,79 @@ function loadCustomProfileDesignSlots(collectionClass, elementArray) {
     }
 }
 
+/* Save and Edit Profile Elements */
+
+// profile element type enum
+const ProfileElementTypes = {
+    Custom: 0,
+    Spotlight: 1,
+}
+
 // edit custom profile element
-function editProfileElement(designElement) {
+function editProfileElement(designElement, elementType = ProfileElementTypes.Custom) {
     var parent = $(designElement).parent();
-    parent.children('textarea').show();
-    parent.children('textarea').text(parent.children('.custom-design-element-body').html());
-    parent.children('.custom-design-element-body').hide();
-    parent.children('.edit-profile-design-element').hide();
-    parent.children('.save-profile-design-element').show();
+    switch(elementType) {
+        case ProfileElementTypes.Custom:
+            parent.children('textarea').show();
+            parent.children('textarea').text(parent.children('.custom-design-element-body').html());
+            parent.children('.custom-design-element-body').hide();
+            parent.children('.edit-profile-design-element').hide();
+            parent.children('.save-profile-design-element').show();
+            break;
+        case ProfileElementTypes.Spotlight:
+            window.location.href = "select_posts.php?element_index=" + $(parent).index();
+            break;
+    }
 }
 
 // save custom profile element
-function saveProfileElement(designElement) {
+function saveProfileElement(designElement, elementType = ProfileElementTypes.Custom) {
     var parent = $(designElement).parent();
-    parent.children('textarea').hide();
-    parent.children('.custom-design-element-body').show();
-    parent.children('.custom-design-element-body').html(parent.children('textarea').val());
-    parent.children('.edit-profile-design-element').show();
-    parent.children('.save-profile-design-element').hide();
+    switch(elementType) {
+        case ProfileElementTypes.Custom:
+            parent.children('textarea').hide();
+            parent.children('.custom-design-element-body').show();
+            parent.children('.custom-design-element-body').html(parent.children('textarea').val());
+            parent.children('.edit-profile-design-element').show();
+            parent.children('.save-profile-design-element').hide();
+            break;
+    }
     saveProfileDesignData();
 }
 
 /* handle custom HTML and CSS */
 
+// get the design element by name
+function getDesignElementByName(name, mode = "") {
+    var newElement = ProfileDesignElement.Empty;
+    if (name === 'UserID')
+        newElement = ProfileDesignElement.UserID;
+    else if (name === 'Custom')
+        newElement = ProfileDesignElement.Custom;
+    else if(name === 'Spotlight')
+        newElement = ProfileDesignElement.Spotlight;
+
+    if (mode !== "")
+        return newElement[mode];
+    else
+        return newElement;
+    }
+            
+    // get the name of a design element slot
+    function getDesignElementName(slot) {
+        var name = "";
+        if ($(slot).attr('id') === 'profile-id-element')
+            name = "UserID";
+        else if ($(slot).hasClass('custom-design-element'))
+            name = "Custom";
+        else if($(slot).hasClass('spotlight-element'))
+            name = "Spotlight";
+
+        return name;
+     }
+
 // convert HTML element to JSON
-function elementToJson(element) {
+/*function elementToJson(element) {
     const json = {};
     // Add attributes
     const attributes = element.getAttributeNames();
@@ -222,10 +295,10 @@ function elementToJson(element) {
     }
 
     return {[element.tagName.toLowerCase()]: json};
-}
+}*/
 
 // convert JSON element to HTML
-function jsonToElement(json) {
+/*function jsonToElement(json) {
     const tagName = Object.keys(json)[0];
     const data = json[tagName];
 
@@ -261,4 +334,4 @@ function jsonToElement(json) {
     }
 
     return element;
-}
+}*/

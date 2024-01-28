@@ -108,7 +108,6 @@ function filterUnwantedCode($string) {
 }
 
 // convert slotArray and elementBoxArray for custom profile design
-// TO-DO: make the JSON output readable
 function convertCustomProfileDesign($profileDesignJSON) {
     /* make the JSON file readable for the profile design load */
 
@@ -126,15 +125,12 @@ function makeLoadedDesignElementsReadable($elementArray) {
     foreach ($elementArray as $element) {
         if ($element != "") {
             $newElement = new class() {
-
-                public $IconMode;
-                public $DisplayMode;
+                public $ElementName;
                 public $CustomHTML;
             };
 
-            $newElement->IconMode = $element->IconMode;
-            $newElement->DisplayMode = $element->DisplayMode;
-            $newElement->CustomHTML = filterUnwantedCode($element->CustomHTML);
+            $newElement->ElementName = $element->ElementName;
+            $newElement->CustomHTML = $element->CustomHTML;
             array_push($phpArray, $newElement);
         } else
             array_push($phpArray, "");

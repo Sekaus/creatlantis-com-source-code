@@ -238,7 +238,7 @@
                         $data['text'] = filterUnwantedCode($data['text']);
                     }
                     else
-                        $data['data'] = convertCustomProfileDesign($data['data']);
+                        $data['data'] = convertCustomProfileDesign(filterUnwantedCode($data['data']));
                     
                     // JSON encode post data
                     $json = json_encode($data);

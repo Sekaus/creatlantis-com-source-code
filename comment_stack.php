@@ -4,13 +4,14 @@
      // scroll to loaded comments
      <?php if(isset($_GET['load_times'])) {?>
         $(document).ready(function () {
-            if((".comment").length <= <?php echo $maxKeys; ?> ) {
+           /*if((".comment").length <= <?php echo $maxKeys; ?> ) {
                 var commentOffset = $(".comment").length - <?php echo $maxKeys; ?>;
                 $('html, body').animate( {
                     scrollTop: $(".comment").eq(commentOffset).offset().top
                 }, 
                 0);
-            }
+            }*/
+            window.scrollTo(0, <?php echo isset($_GET['page_y_offset']) ? $_GET['page_y_offset'] - 38 : 0;?>);
          });
      <?php }?>
      
@@ -19,7 +20,7 @@
         let commentOffset = 10;
         $(window).scroll(function() {
              if($(window).scrollTop() == $(document).height() - $(window).height()) {
-                 window.location.href = location.protocol + '//' + location.host + location.pathname + "<?php echo isset($_GET['post_link']) ? "?post_link=" . $_GET['post_link'] : "?profile_id=" . $_GET['profile_id']?>" + "&load_times=" +<?php echo isset($_GET['load_times']) ? $_GET['load_times']+1 : 2;?> + "<?php echo (isset($_GET['tap']) && $_GET['tap'] == "show-comments") ? "&tap=show-comments" : ""?>";
+                 window.location.href = location.protocol + '//' + location.host + location.pathname + "<?php echo isset($_GET['post_link']) ? "?post_link=" . $_GET['post_link'] : "?profile_id=" . $_GET['profile_id']?>" + "&load_times=" +<?php echo isset($_GET['load_times']) ? $_GET['load_times']+1 : 2;?> + "<?php echo (isset($_GET['tap']) && $_GET['tap'] == "show-comments") ? "&tap=show-comments" : ""?>" + "&page_y_offset=" + window.pageYOffset;
             }
         });
      <?php }?>
@@ -28,15 +29,20 @@
             '<h3>Add new reply:</h3>' +
             '<div id="add-new-comment" class="post-block">' +
                 '<textarea placeholder="Add new commwnt..." rows="4" cols="50"></textarea>' +
-                '<button class="submit" onclick="addComment(' + "'<?php echo $_SESSION["uuid"]; ?>'" + ', this, this)">Submit</button>' +
+                '<button class="submit" onclick="addComment(' + "'<?php echo $_SESSION["uuid"]; ?>'" + ', this, this);">Submit</button>' +
             '</div>';
     
-    let editCommment = '<!-- add a new comment !-->' +
+    let editAComment = '<!-- add a new comment !-->' +
             '<h3>Edit comment:</h3>' +
             '<div id="edit-comment" class="post-block">' +
                 '<textarea placeholder="edit commwnt..." rows="4" cols="50"></textarea>' +
-                '<button class="submit" onclick="editComment(this)">Submit</button>' +
+                '<button class="submit" onclick="editComment(this);">Submit</button>' +
             '</div>';
+    
+    // TO-DO: make me less hacky
+    function autoFillEditText(target) {
+        $('#edit-comment textarea').text($(target).parent().parent('.comment').find('.comment-text').first().text());
+    }
             
             // send a comment command to do an action on a user comment
             function userCommentAction(command, commentUUID, commentText='') {
@@ -82,6 +88,10 @@
             };
             
             var xhr = new XMLHttpRequest();
+            
+            $(document).ready(function () {
+                $('#comment-stack').append('<h3>Scroll to load more comments and replies.</h3>');
+            });
  </script>
  
  <div id="comment-stack" class="post-block">
@@ -96,7 +106,6 @@
     </div>
     
     <!-- load comments here !-->
-    <h3>Scroll to load more comments and replies.</h3>
 </div>
 
 <?php //include_once './loaded_comments_nav.php'; ?>

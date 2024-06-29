@@ -2,16 +2,6 @@
         
         <div id="loaded-content">
             <!-- content will be loaded here !-->
-            <?php
-                /* next and previous loaded posts nav system  */
-                include_once 'php_functions/mysql_functions/load_content.php';
-                
-                if(isset($_POST["previous_posts"]) && $_POST["previous_posts"] > 0)
-                    $offset -= $maxKeys;
-                
-                else if(isset($_POST["next_posts"]) && $_POST["next_posts"] < ($postCount - $maxKeys))
-                    $offset += $maxKeys;
-            ?>
         </div>
         
         <!-- next and previous posts nav !-->

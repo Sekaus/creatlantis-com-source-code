@@ -2,6 +2,7 @@
     session_start();
     
     include_once 'php_functions/mysql_functions/store_data.php';
+    include_once 'php_functions/mysql_functions/load_content.php';
     
    $isTheMainUserWatching = isTheUserWatching($_SESSION['uuid'], $_GET['profile_id']);
     
@@ -23,7 +24,7 @@
         <!-- profile info start !-->
         
         <!-- edit and save buttons for profile content parts !-->
-        <div><button id="edit-profile-design" class="edit" onclick="editProfileDesignLayout()">Edit profile layout</button> <button id="save-profile-design" class="submit" onclick="saveProfileDesignLayout()">Save</button> </div>
+        <div><button id="edit-profile-design" class="edit" onclick="editProfileDesignLayout()">Edit profile layout</button> <button id="save-profile-design" class="submit" onclick="saveProfileDesignLayout()">Save</button></div>
         
         <!-- nav taps !-->
         <nav id="nav-taps">
@@ -70,7 +71,21 @@
 
          <!-- gallery part !-->
          <div id="profile-gallery" class="profile-content-part" style="display: none;">
-             <?php include './loaded_posts_nav.php'; ?>
+             <!-- folder list start !-->
+             <ul id="folder-list" class="post-block">
+                 <li><?php if(!$isMainUserNotTheOwner) {?><a id="add-folder" class="submit" href="submit_folder.php">Add folder</a><?php };?><?php if(isset($_GET['folder']) && $_GET['folder'] != 'all' && !$isMainUserNotTheOwner) {?><button class="action" onclick="deleteFolder()">Remove folder</button><?php };?></li>
+                 <li class="selectet-folder"><a href="profile.php?profile_id=<?php echo $_GET['profile_id'];?>&tap=show-gallery&folder=all"><p class="folder-name">All</p></a></li>
+             </ul>
+             <!-- folder list end !-->
+             <div>
+                <h1 id="selected-folder-name">All</h1>
+                <p id="selected-folder-description">This is a folder...</p>
+                <?php if(isset($_GET['folder']) && $_GET['folder'] != 'all' && !$isMainUserNotTheOwner) {?>
+                    <a class="submit" href="select_posts.php?folder=<?php echo $_GET['folder'];?>&mode=add_item">Add to folder</a>
+                    <a class="action" href="select_posts.php?folder=<?php echo $_GET['folder'];?>&mode=remove_item">Remove from folder</a>
+                <?php };?>
+                <?php include './loaded_posts_nav.php';?>
+             </div>
          </div>
          
          <!-- fave collection part !-->
@@ -93,7 +108,7 @@
              <div id="loaded-watching" class="post-block">
              </div>
              
-             <?php include './loaded_posts_nav.php'; ?>
+             <?php if(isset($_GET['tap']) && $_GET['tap'] == 'show-more') include './loaded_posts_nav.php'; ?>
          </div>
         
         <!-- profile content parts end !-->
@@ -170,17 +185,23 @@
             
                 $defaultLayout = '{
                                                 "slotArray": [
-                                                    ProfileDesignElement.Custom, ProfileDesignElement.UserID,
-                                                    ProfileDesignElement.Empty, ProfileDesignElement.Empty,
-                                                    ProfileDesignElement.Empty, ProfileDesignElement.Empty
+                                                    { "ElementName": "Custom", "CustomHTML": ProfileDesignElement.Custom.CustomHTML}, { "ElementName": "UserID" },
+                                                    "", "",
+                                                    "", "",
+                                                    "", "",
+                                                    "", "",
                                                 ],
                                                 "elementBoxArray" : [
-                                                    ProfileDesignElement.Custom,
-                                                    ProfileDesignElement.Custom,
-                                                    ProfileDesignElement.Custom,
-                                                    ProfileDesignElement.Custom,
-                                                    ProfileDesignElement.Empty,
-                                                    ProfileDesignElement.Empty
+                                                    { "ElementName": "Custom", "CustomHTML": ProfileDesignElement.Custom.CustomHTML},
+                                                    { "ElementName": "Custom", "CustomHTML": ProfileDesignElement.Custom.CustomHTML},
+                                                    { "ElementName": "Custom", "CustomHTML": ProfileDesignElement.Custom.CustomHTML},
+                                                    { "ElementName": "Custom", "CustomHTML": ProfileDesignElement.Custom.CustomHTML},
+                                                    { "ElementName": "Spotlight", "CustomHTML": ProfileDesignElement.Spotlight.CustomHTML},
+                                                    { "ElementName": "Spotlight", "CustomHTML": ProfileDesignElement.Spotlight.CustomHTML},
+                                                    { "ElementName": "Spotlight", "CustomHTML": ProfileDesignElement.Spotlight.CustomHTML},
+                                                    { "ElementName": "Spotlight", "CustomHTML": ProfileDesignElement.Spotlight.CustomHTML},
+                                                    "",
+                                                    "",
                                                 ]
                                             }; 
                                             
@@ -193,8 +214,31 @@
                 else
                     echo $defaultLayout;
             ?>
-                        
-                        console.log(profileElementArray);
+            
+            // missing desing elements check list
+            const ProfileMustHave = [
+                {Count: 1, Element: { "ElementName": "UserID" }},
+                {Count: 5, Element: { "ElementName": "Custom", "CustomHTML": ProfileDesignElement.Custom.CustomHTML}},
+                {Count: 4, Element: { "ElementName": "Spotlight", "CustomHTML": ProfileDesignElement.Spotlight.CustomHTML}}
+            ]
+            
+            // check for missing design elements on profileElementArray
+            // NOTE: this may be a bit hacky but it works
+            for (const key in ProfileMustHave) {
+                var countOfSelected = 0;
+                
+                profileElementArray.slotArray.forEach((element) => {
+                   if(element.ElementName === ProfileMustHave[key].Element.ElementName) 
+                       countOfSelected++;
+                });
+                profileElementArray.elementBoxArray.forEach((element) => {
+                   if(element.ElementName === ProfileMustHave[key].Element.ElementName) 
+                       countOfSelected++;
+                });
+                
+                for(var i = 0; i < ProfileMustHave[key].Count - countOfSelected; i++)
+                    profileElementArray.elementBoxArray.push(ProfileMustHave[key].Element)
+            }
                         
             // load custom profile design elements from JSON file
             loadCustomProfileDesignSlots('#profile-design', profileElementArray.slotArray);
@@ -233,36 +277,36 @@
                     for (var index = 0; index < elementArray.length; index++) {
                         //var slot = $('div[data-id="' + stringIDs[stringIDOffset] + '"]');
                         var slot = $(target + ' .profile-design-element').eq(index);
-                        var element = (slot !== undefined) ? getDesignElementByName(slot) : ProfileDesignElement.Empty;
+                        var elementName = getDesignElementName(slot);
                         
                         // check if selected element is not empty before moving on to the next stringID index
-                        if(element !== ProfileDesignElement.Empty) {
-                            // check if element is a custom element
+                        if(slot.length !== 0) {
+                            // check if element is a custom element or a spotlight
                             var customHTML = null;
-                            if(element === ProfileDesignElement.Custom)
-                                customHTML = $(jsonToElement(elementToJson(slot.children('.custom-design-element-body').children()[0]))).prop('outerHTML');
+                            if(elementName === "Custom")
+                                customHTML = slot.children('.custom-design-element-body').html();
+                            else if(elementName === "Spotlight")
+                                customHTML = slot.children('.spotlight-element-body').html();
 
-                            // directly modify CustomHTML property in profileElementArray
+                            // directly modify the properties in profileElementArray
                             if(target === '#profile-design') {
                                 profileElementArray.slotArray[index] = {
-                                    IconMode: element.IconMode,
-                                    DisplayMode: element.DisplayMode,
+                                    ElementName: elementName,
                                     CustomHTML: customHTML
                                 };
                             }
                             else if(target === '#profile-design-element-box') {
                                 profileElementArray.elementBoxArray[index] = {
-                                    IconMode: element.IconMode,
-                                    DisplayMode: element.DisplayMode,
+                                    ElementName: elementName,
                                     CustomHTML: customHTML
                                 };
                             }
                         }
                         else {
                             if(target === '#profile-design')
-                                profileElementArray.slotArray[index] = ProfileDesignElement.Empty;
+                                profileElementArray.slotArray[index] = "";
                             else if(target === '#profile-design-element-box')
-                                profileElementArray.elementBoxArray[index] = ProfileDesignElement.Empty;
+                                profileElementArray.elementBoxArray[index] = "";
                         }
                     }
                 }
@@ -271,7 +315,7 @@
                 convertHTML(profileElementArray.slotArray, '#profile-design');
                 convertHTML(profileElementArray.elementBoxArray, '#profile-design-element-box');
                 
-                console.log(profileElementArray);
+                //console.log(profileElementArray);
                 
                 // save to AWS S3
                 saveProfileDesignAsJSON();
@@ -281,7 +325,7 @@
             // TO-DO: let me take profileElementArray and data_type as an input
             function saveProfileDesignAsJSON() {
                 // show and start the loading screen
-                startLoadingScreen()
+                startLoadingScreen();
                 
                 // save to AWS S3
                 $.ajax({
@@ -332,24 +376,9 @@
                 saveProfileDesignData();
             }
             
-            // get the design element by string in body of an item
-            function getDesignElementByName(item, mode = "") {
-                if ($(item).attr('id') === 'profile-id-element')
-                    var newElement = ProfileDesignElement.UserID;
-               else if ($(item).hasClass('custom-design-element'))
-                    var newElement = ProfileDesignElement.Custom;
-                else
-                    var newElement = ProfileDesignElement.Empty;
-
-                if (mode !== "")
-                    return newElement[mode];
-                else
-                    return newElement;
-            }
-            
             // update the design element's data
             function updateDesignElementData() {
-                /* load user data on custom profile elements */
+                /* load user data on profile elements */
                 
                 // refresh UserID design element
                 <?php
@@ -369,8 +398,14 @@
                 CountWatchers($_GET['profile_id']);
                 
                 // load all posts made by user
-                if(isset($_GET['tap']) && $_GET['tap'] == 'show-gallery')
-                    loadContentFromUser($maxKeys, $offset, $_GET['profile_id']);
+                if(isset($_GET['tap']) && $_GET['tap'] == 'show-gallery') {
+                    if(!isset($_GET['folder']) || $_GET['folder'] == 'all')
+                        loadContentFromUser($maxKeys, $offset, $_GET['profile_id']);
+                    else
+                        loadContentFromFolder($maxKeys, $offset, $_GET['folder']);
+                    
+                    loadFolders($_GET['profile_id'], 10);
+                }
                 
                 // load all faved posts from user
                 else if(isset($_GET['tap']) && $_GET['tap'] == 'show-faves')
@@ -411,6 +446,64 @@
                         }
                 });
          }
+         
+                // ask user to confirm before deleteing a folder
+                function deleteFolder() {
+                    if (confirm('Are you sure you want to delet this folder? (can not be undo)'))
+                        //delete the folder
+                        sendRequestAsAJAX(); 
+                }
+                
+                function sendRequestAsAJAX() {
+                    xhr.onreadystatechange = function() {
+                        // when getting a response back
+                        if (this.readyState === 4 && this.status === 200) {
+                            // log response
+                            console.log(this.responseText);
+                        
+                            // reload page
+                            location.reload();
+                        }
+                  };
+                  
+                  // send folder command by GET reqerst
+                  var url = "php_functions/mysql_functions/folder_actions.php?folder=<?php if(isset($_GET['folder'])) echo $_GET['folder'];?>&mode=remove_folder";
+                  xhr.open('GET', url, true);
+                  xhr.send();
+            }
+            
+            var xhr = new XMLHttpRequest();
+            
+            // scroll to loaded folders
+            <?php if(isset($_GET['load_times'])) {?>
+               $(document).ready(function () {
+                   // UNSTABLE
+                   $('#folder-list').scrollTop(($('#folder-list').outerHeight()-$('#folder-list').innerHeight()) * loadedFolderCount * 18);
+                });
+            <?php }?>
+                
+            // scroll to load more folders
+            <?php if(isset($_GET['tap']) && $_GET['tap'] == 'show-gallery' && !$atFolderStackEnd) {?>
+               let folderOffset = 10;
+               $('#folder-list').scroll(function() {
+                    if($('#folder-list')[0].scrollHeight - $('#folder-list').scrollTop() <= $('#folder-list').outerHeight()) {
+                        window.location.href = location.protocol + '//' + location.host + location.pathname + "?profile_id=<?php echo $_GET['profile_id'] ?>" + "&load_times=" +<?php echo isset($_GET['load_times']) ? $_GET['load_times']+1 : 2;?> + "&tap=show-gallery<?php echo isset($_GET['folder']) ? "&folder=" . $_GET['folder'] : ""?>";
+                   }
+               });
+            <?php }?>
+        
+            //highlight selectet folder
+            <?php if(isset($_GET['folder']) && $_GET['folder'] != 'all') {?>
+                $('.selectet-folder').removeClass("selectet-folder");
+                $('li a[href*=<?php echo $_GET['folder'];?>]').addClass('selectet-folder');
+            <?php };?>
+             $('.selectet-folder .folder-name').text($('.selectet-folder .folder-name').text() + " <");
+             
+            // edit a folder
+            function editFolder(folderUUID) {
+                // send folderUUID as GET data
+                // then go to submit_folder.php
+                window.location.href = "./submit_folder.php?edit_folder_uuid=" + folderUUID;
+            }
         </script>
     </body>
-</html>

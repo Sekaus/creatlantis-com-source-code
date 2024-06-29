@@ -95,7 +95,7 @@
                 
             // ask user to confirm before deleteing the post
             function deletePost(post) {
-                if (confirm('Are you sure you want to delet this post (can not be undo)')) {
+                if (confirm('Are you sure you want to delet this post? (can not be undo)')) {
                     //delete the post
                     sendRequestAsAJAX("delete_post", post);
                 }

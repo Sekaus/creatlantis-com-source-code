@@ -283,6 +283,127 @@
          
          return ($result_count > 0);
     }
+    
+    /* Folder Data */
+    
+    // add a new folder
+    function addFolder($owner, $title, $description, $thumbnail) {
+        global $mysqli;
+        
+        // check if the user is the owner of the profile that $owner pointing to
+        if(checkLoginOwnership($owner, $_SESSION['password'])) {
+            $folder_uuid;
+            
+            $stmt_get = $mysqli->prepare("SELECT folder_uuid FROM folder_stack WHERE folder_uuid=?");
+            
+            // generate folder_uuid
+            do {  
+                $folder_uuid = bin2hex(random_bytes(8));
+                
+                $stmt_get->bind_param("s", $folder_uuid);
+                $stmt_get->execute();
+                
+                $result = $stmt_get->get_result();
+            } while (mysqli_num_rows($result) > 0);
+            
+            $stmt_check = $mysqli->prepare("INSERT INTO folder_stack (owner, folder_uuid, title, description, thumbnail) VALUES (?, ?, ?, ?, ?)");
+            $stmt_check->bind_param("sssss", $owner, $folder_uuid, $title, $description, $thumbnail);
+            $stmt_check->execute();
+        }
+    }
+    
+    // edit a folder
+    function editFolder($owner, $title, $description, $thumbnail, $folderUUID) {
+        global $mysqli;
+        // check if the user is the owner of the profile that $owner pointing to
+        if(checkLoginOwnership($owner, $_SESSION['password'])) {
+            // check if folder belong to $owner
+            
+            $stmt_check = $mysqli->prepare("SELECT * FROM folder_stack WHERE owner=? AND folder_uuid=?");
+            $stmt_check->bind_param("ss", $owner, $folderUUID);
+            $stmt_check->execute();
+        
+            $result = $stmt_check->get_result();
+            
+            if(mysqli_num_rows($result) > 0) {
+                $stmt_check = $mysqli->prepare("UPDATE folder_stack SET title=?, description=?, thumbnail=? WHERE folder_uuid=?");
+                $stmt_check->bind_param("ssss", $title, $description, $thumbnail, $folderUUID);
+                $stmt_check->execute();
+            }
+        }
+    }
+    
+    // remove a folder
+    function removeFolder($owner, $folderUUID) {
+        global $mysqli;
+        
+        // check if the user is the owner of the profile that $owner pointing to
+        if(checkLoginOwnership($owner, $_SESSION['password'])) {
+            // check if folder belong to $owner
+            
+            $stmt_check = $mysqli->prepare("SELECT * FROM folder_stack WHERE owner=? AND folder_uuid=?");
+            $stmt_check->bind_param("ss", $owner, $folderUUID);
+            $stmt_check->execute();
+        
+            $result = $stmt_check->get_result();
+            
+            if(mysqli_num_rows($result) > 0) {
+                // first remove all items from selected folder
+                $stmt_remove_items = $mysqli->prepare("DELETE FROM folder_items WHERE folder_uuid=?");
+                $stmt_remove_items->bind_param("s", $folderUUID);
+                $stmt_remove_items->execute();
+
+                // then remove the selected folder
+                $stmt_remove_folder = $mysqli->prepare("DELETE FROM folder_stack WHERE folder_uuid=?");
+                $stmt_remove_folder->bind_param("s", $folderUUID);
+                $stmt_remove_folder->execute();
+            }
+        }
+    }
+
+    // add item to folder
+    function addFolderItem($owner, $folderUUID, $itemURL) {
+        global $mysqli;
+        
+        // check if the user is the owner of the profile that $owner pointing to
+        if(checkLoginOwnership($owner, $_SESSION['password'])) {
+            // check if folder belong to $owner
+            
+            $stmt_check = $mysqli->prepare("SELECT * FROM folder_stack WHERE owner=? AND folder_uuid=?");
+            $stmt_check->bind_param("ss", $owner, $folderUUID);
+            $stmt_check->execute();
+        
+            $result = $stmt_check->get_result();
+            
+            if(mysqli_num_rows($result) > 0) {
+                $stmt_insert = $mysqli->prepare("INSERT INTO folder_items (folder_uuid, post_url) VALUES (?, ?)");
+                $stmt_insert->bind_param("ss", $folderUUID, $itemURL);
+                $stmt_insert->execute();
+            }
+        }
+    }
+    
+    // remove item from folder
+    function removeFolderItem($owner, $folderUUID, $itemURL) {
+        global $mysqli;
+        
+        // check if the user is the owner of the profile that $owner pointing to
+        if(checkLoginOwnership($owner, $_SESSION['password'])) {
+            // check if folder belong to $owner
+            
+            $stmt_check = $mysqli->prepare("SELECT * FROM folder_stack WHERE owner=? AND folder_uuid=?");
+            $stmt_check->bind_param("ss", $owner, $folderUUID);
+            $stmt_check->execute();
+        
+            $result = $stmt_check->get_result();
+            
+            if(mysqli_num_rows($result) > 0) {
+                $stmt_insert = $mysqli->prepare("DELETE FROM folder_items WHERE folder_uuid=? AND post_url=?");
+                $stmt_insert->bind_param("ss", $folderUUID, $itemURL);
+                $stmt_insert->execute();
+            }
+        }
+    }
 
     /* Profile Data and Login */
     

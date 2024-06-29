@@ -6,6 +6,13 @@
     include_once "$absolute_path/../../php_functions/s3_functions/object_loader.php";
     include_once "$absolute_path/../../php_functions/data_filter.php";
     
+    /* Clear selected_posts_array Session When Moveing To a New Page */
+    
+    $_SESSION['previous_page'] = basename($_SERVER['PHP_SELF']);
+    
+    if((isset($_SESSION['previous_page']) && $_SESSION['previous_page'] != 'select_posts.php' || !isset($_SESSION['previous_page'])) && isset($_SESSION['selected_posts_array']))
+        unset($_SESSION['selected_posts_array']);
+    
     /* Filter, Order and Search Engine */
     
     $filter = "%";
@@ -29,6 +36,12 @@
     static $postCount = 0;
     static $commentOffset = 0;
     static $commentCount = 0;
+    
+    /* next and previous loaded posts nav system  */
+    if(isset($_POST["previous_posts"]) && $_POST["previous_posts"] > 0)
+        $offset -= $maxKeys;
+    else if(isset($_POST["next_posts"]) && $_POST["next_posts"] < ($postCount - $maxKeys))
+        $offset += $maxKeys;
     
     // update post count and offset GUI
     function updatePostCountAndOffset($message = 'no more posts have been made yet...') { 
@@ -102,39 +115,60 @@
     }
 
     // load all content from post_list from offset to offset + maxKeys from a single user   
-    function loadContentFromUser($maxKeys, $offset, $uuid) {
+    function loadContentFromUser($maxKeys, $offset, $uuid, $folder_uuid = "") {
         global $mysqli;
         global $postCount;
         global $filter;
         global $order;
         global $search;
-        
-        $stmt = $mysqli->prepare(
-                    "SELECT * FROM post_list "
-                  . "WHERE owner=? "
-                  . "AND type LIKE ? "
-                  . "AND (tags LIKE ? OR title LIKE ?) "
-                  . "ORDER BY date $order "
-                  . "LIMIT ? "
-                  . "OFFSET ?"
-                );
-        $stmt->bind_param("ssssii", $uuid, $filter, $search, $search, $maxKeys, $offset);
-        $stmt->execute();
-        
-        $result = $stmt->get_result();
-        
-        // count rows and update post count and offset
-        $postCount = mysqli_num_rows($result);
-        updatePostCountAndOffset();
-        
-        // output data of each row
-        while ($row = $result->fetch_assoc()) {
-            // output data of each row
-            $key = strchr($row['link'], $uuid);
-            echo loadS3Object($key);
+
+        // prepare the SQL query with the NOT EXISTS subquery and folder filtering
+        $query = "
+            SELECT * FROM post_list 
+            WHERE owner = ? 
+            AND type LIKE ? 
+            AND (tags LIKE ? OR title LIKE ?) 
+            AND NOT EXISTS (
+                SELECT 1 
+                FROM folder_items 
+                WHERE post_list.link LIKE CONCAT('%', folder_items.post_url, '%')
+                AND folder_items.folder_uuid = ?
+            )
+            ORDER BY date $order 
+            LIMIT ? 
+            OFFSET ?
+        ";
+
+        if ($stmt = $mysqli->prepare($query)) {
+            // bind parameters
+            $stmt->bind_param("sssssii", $uuid, $filter, $search, $search, $folder_uuid, $maxKeys, $offset);
+
+            // execute the statement
+            if ($stmt->execute()) {
+                $result = $stmt->get_result();
+
+                // loop through the results and load S3 objects
+                while ($row = $result->fetch_assoc()) {
+                    $key = strchr($row['link'], $uuid);
+                    echo loadS3Object($key);
+                }
+
+                // count the number of rows in the result set
+                $postCount = $result->num_rows;
+
+                // update post count and offset
+                updatePostCountAndOffset();
+            } else {
+                echo "Error executing query: " . $stmt->error . "\n";
+            }
+
+            // close the statement
+            $stmt->close();
+        } else {
+            echo "Error preparing statement: " . $mysqli->error . "\n";
         }
-        $stmt->close();
-    }
+}
+
     
     // load all profiles from user_info from offset to offset + maxKeys
     function loadAllProfiles($maxKeys, $offset) {
@@ -547,6 +581,94 @@
         
         // print out the count value
         echo "readWatchCount($count);";
+    }
+    // load in a single folder
+    function loadFolder($row, $folderOben = false, $onEdit = false) {
+        if(!$onEdit)
+            echo 'loadFolder("' . $_GET['profile_id'] . '", "' . $row['folder_uuid'] . '", "' . $row['title'] . '", "' . $row['description'] . '", "' . $row['thumbnail'] . '", "' . (isset($_GET['load_times']) ? $_GET['load_times'] : 1) . '", "' . ($folderOben ? "true" : "false") . '");';
+        else
+            echo 'loadFolderMetadata("' . $row['title'] . '", "' . $row['description'] . '", "' . $row['thumbnail'] . '");';
+    }
+    
+    static $atFolderStackEnd = false;
+    static $loadedFolderCountSum = 0;
+    
+    // load in folders form profile
+    function loadFolders($uuid, $maxKeys, $offset = 0) {
+        global $mysqli;
+        global $atFolderStackEnd;
+        global $loadedFolderCountSum;
+        
+        $loadTimes = isset($_GET['load_times']) ? $_GET['load_times'] : 1;
+        for($times = 0; $times < $loadTimes; $times++) {
+            // get folder from database
+            $stmt = $mysqli->prepare(
+                        "SELECT * FROM folder_stack "
+                       . "WHERE owner=? "
+                       . "LIMIT ? "
+                       . "OFFSET ?"
+                    );
+
+            $stmt->bind_param("sii", $uuid, $maxKeys, $offset);
+            $stmt->execute();
+
+            $result = $stmt->get_result();
+            
+            $loadedFolderCount = mysqli_num_rows($result);
+            $atFolderStackEnd = ($loadedFolderCount < $maxKeys * $loadTimes);
+            $loadedFolderCountSum += $loadedFolderCount;
+            
+            while ($row = $result->fetch_assoc()) {
+                loadFolder($row, (isset($_GET['folder']) && $_GET['folder'] != 'all'  ? ($row['folder_uuid'] == $_GET['folder']) : false));
+             }
+             
+             $offset += $maxKeys;
+        }
+        
+        echo "let loadedFolderCount =" . $loadedFolderCountSum . ";";
+    }
+    
+    // load items from folder
+    function loadContentFromFolder($maxKeys, $offset, $folder_uuid) {
+        global $mysqli;
+        global $postCount;
+        
+        // get folder and items form database
+        $stmt_url = $mysqli->prepare(
+              "SELECT post_url FROM folder_items "
+            . "WHERE folder_uuid=? "
+            . "LIMIT ? "
+            . "OFFSET ?"
+         );
+        
+        $stmt_url->bind_param("sii", $folder_uuid, $maxKeys, $offset);
+        $stmt_url->execute();
+        
+        $result_url = $stmt_url->get_result();
+        
+        // count rows and update post count and offset
+        $postCount = mysqli_num_rows($result_url);
+        updatePostCountAndOffset();
+        
+        // output data of each row
+        while ($row_url = $result_url->fetch_assoc()) {
+            // select all posts from post_list by link
+            $stmt_posts = $mysqli->prepare(
+                        "SELECT * FROM post_list "
+                      . "WHERE link LIKE ? "
+                    );
+            $row_url['post_url'] = "%" . $row_url['post_url'];
+            $stmt_posts->bind_param('s', $row_url['post_url']);
+            $stmt_posts->execute();
+
+            $result_posts = $stmt_posts->get_result();
+            
+            $row_post = $result_posts->fetch_assoc();
+            $key = strchr($row_post['link'] , $row_post['owner']);
+            echo loadS3Object($key);
+            $stmt_posts->close();
+        }
+        $stmt_url->close();
     }
 
     // load a user id and set up its HTML

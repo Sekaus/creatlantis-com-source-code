@@ -18,7 +18,7 @@ input {
     z-index: 1;
 }
 
-nav a, footer a, .post-block, #metadata a,  #loaded-content a  {
+nav a, footer a, .post-block, #metadata a,  #loaded-content a, #folder-list a {
     text-decoration: none;
 }
 
@@ -148,11 +148,12 @@ button {
     border: 0px;
 }
 
-.submit {
+.submit, .action, .edit {
     font-size: 15px;
     padding: 10px;
     padding-top: 5px;
     padding-bottom: 5px;
+    text-decoration: none;
 }
 
 #save-profile-design, #edit-profile-design, .edit-profile-design-element,  .save-profile-design-element {
@@ -219,6 +220,48 @@ nav a:hover, footer a:hover, button, .star {
 }
 
 /* Celect Content Effects */
+
 .selected-post-block {
     border-color: yellow !important;
+}
+
+/* Folder Display */
+
+#profile-gallery {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    gap: 0px;
+}
+
+#folder-list {
+    list-style: none;
+    max-height: 1000px;
+    min-height: 1000px;
+    max-width: 230px;
+    padding-right: 30px;
+    overflow-y: scroll;
+}
+
+#folder-list .submit {
+    white-space: nowrap;
+}
+
+#selected-folder-name, #selected-folder-description {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.folder-icon {
+    width: 80%;
+    height: 30%;
+}
+
+/*.selectet-folder:after {
+    content: " <";
+}*/
+
+.selectet-folder *, .selectet-folder:after {
+    color: yellow !important;
 }

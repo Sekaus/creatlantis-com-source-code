@@ -86,7 +86,7 @@ $('.filter').change(function () {
         url += encodeSearch(search);
     }
     // send user to the url
-    window.location.href = url + "&tap=" + selectetNavTap;
+    window.location.href = url + "&tap=" + (selectetNavTap ? undefined : ( mainUserIsOnProfile === '' ? 'show-start-page' : 'show-gallery'));
 });
 
 // encode search before useing it in the url
@@ -291,6 +291,35 @@ function addComment(fromUUID, comment, replyUUID = null) {
     });
 }
 
+/* Folder Stack */
+
+function loadFolder(profileUUID, folderUUID, title, description, thumbnail, loadTimes = 1, folderOben = false) {
+    /* Setup a new Folder Element */
+    
+    var folderElement = '<li>' + 
+            '<a class="folder" href="profile.php?profile_id=' + profileUUID + '&tap=show-gallery&load_times=' + loadTimes + '&folder=' + folderUUID + '">' + 
+                '<img class="folder-icon" src="' + thumbnail + '"/>' + 
+                '<p class="folder-name">' + title + '</p>' + 
+            '</a>' + 
+            "<a class='edit' onclick='editFolder(\"" + folderUUID + "\")'>Edit</a>" +
+        '</li>';
+    
+    $('#folder-list').append(folderElement);
+    
+    if(folderOben === "true") {
+        $('#selected-folder-name').text(title);
+        $('#selected-folder-description').text(description);
+    }
+}
+
+function loadFolderMetadata(title, description, thumbnail) {
+    /* Load folder metadata and auto fill it in inputs*/
+    
+    $('[name="title"]').val(title);
+    $('[name="description"]').val(description);
+    $('[name="thumbnail"]').val(thumbnail);
+}
+
 /* Watchers Stack */
 
 function readWatchCount(count) {
@@ -309,7 +338,7 @@ function startLoadingScreen() {
             
 // play the update animation
 function loadingScreen() {
-    const dots = "";
+    var dots = "";
                 
     setTimeout(function () {
         $('#progressbar label').html('Uploading the post please wait' + dots);

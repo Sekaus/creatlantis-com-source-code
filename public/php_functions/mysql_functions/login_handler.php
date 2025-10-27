@@ -30,13 +30,13 @@
         global $mysqli;
 
         // prepare an select statement of user_info
-        $stmt = $mysqli->prepare("SELECT uuid, username, tagline, email, date_of_birth, gender FROM user_info WHERE username=? AND password=PASSWORD(?)");
+        $stmt = $mysqli->prepare("SELECT uuid, username, tagline, email, date_of_birth, gender, color_theme FROM user_info WHERE username=? AND password=PASSWORD(?)");
         // bind variables to the prepared statement as parameters to user_info and get input variables from login form POST
         $stmt->bind_param("ss", $username_input, $password_input);
         $stmt->execute();
 
         // bind result variables
-        $stmt->bind_result($UUID, $USERNAME, $TAGLINE, $EMAIL, $DATE_OF_BIRTH, $GENDER);
+        $stmt->bind_result($UUID, $USERNAME, $TAGLINE, $EMAIL, $DATE_OF_BIRTH, $GENDER, $color_theme);
 
         // fetch values
         while ($stmt->fetch()) {
@@ -48,6 +48,7 @@
             $_SESSION['date_of_birth'] = $DATE_OF_BIRTH;
             $_SESSION['gender'] = $GENDER;
             $_SESSION['password'] = $password_input;
+            $_SESSION['color_theme'] = $color_theme;
         }
         
         $stmt->close();

@@ -191,7 +191,7 @@ button {
     left: 0;
 }
 
-#read-and-accept-box {
+#read-and-accept-box, #write-note-box {
     position: fixed;
     max-width: 75%;
     max-height: 75%;
@@ -258,10 +258,13 @@ nav a:hover, footer a:hover, button, .star {
     height: 30%;
 }
 
-/*.selectet-folder:after {
-    content: " <";
-}*/
-
 .selectet-folder *, .selectet-folder:after {
     color: yellow !important;
+}
+
+/* notes and notes icon button */
+
+#nodes img {
+   width: 50%;
+   height: 50%;
 }

@@ -21,6 +21,11 @@ const ProfileDesignElement = {
                         '<div class="light-to-dark-shaded user-text-info">' +
                             '<h2 class="user-name">text</h2>' +
                             '<hr/>' +
+                            '<div id="more>' +
+                                '<p class="land">test</p>' +
+                                '<hr/>' +
+                                '<p class="hobbies">Test</p>' +
+                            '</div>' +
                             '<p class="user-bio">test</p>' +
                         '</div>' +
                     '</div>' +

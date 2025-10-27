@@ -51,9 +51,30 @@ const Theme = {
 function switchTheme(theme) {
     $('body').removeClass();
     $('body').addClass(theme);
+    
+    var themeText = "";
+    
+    switch(theme) {
+        case Theme.Dark:
+            themeText = "dark";
+            break;
+        case Theme.Light:
+            themeText = 'light';
+            break;
+    }
+    
+    $.ajax({
+         type: "POST",
+         url: "php_functions/mysql_functions/profile_settings_actions.php",
+         data: {
+             command: 'swap_theme',
+             theme: themeText
+              },
+                  error: function (jqXHR, textStatus, errorThrown){
+                     console.log(errorThrown);
+              }
+         });
 };
-
-switchTheme(Theme.Dark); //load in default theme
 
 /* Search Engine and Filters */
 

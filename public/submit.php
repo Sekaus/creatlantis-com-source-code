@@ -79,9 +79,9 @@
                             }
                         }
                     ?>
-                    <textarea name="text" cols="30" rows="2" placeholder="description..."></textarea>
+                  <textarea name="text" cols="30" rows="2" placeholder="description..."></textarea>
                     
-                    <textarea id="tags-input" cols="15" rows="1" type="text" name="tags" maxlength="2250" placeholder="#tags..."/></textarea>
+                 <textarea id="tags-input" cols="15" rows="1" type="text" name="tags" maxlength="2250" placeholder="#tags..."/></textarea>
                     
                 <button class="submit" value="Submit" onclick="upload()">Submit</button>
             

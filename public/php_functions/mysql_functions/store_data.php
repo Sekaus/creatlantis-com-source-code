@@ -1,8 +1,10 @@
 <?php
     session_start();
     
+    $absolute_path = dirname(__FILE__);
     include_once 'db_connect.php';
     include_once 'login_handler.php';
+    include_once "$absolute_path/../../php_functions/data_filter.php";
     
     /* Post Data and Linking */
     
@@ -408,7 +410,7 @@
     /* Profile Data and Login */
     
     // update a user's profile info (not email or password)
-    function updateUserProfileInfo($newUsername = '', $newTagline = '', $newBIO = '', $newDateOfBirth = '', $newGender = '', $newProfileImage = '') {
+    function updateUserProfileInfo($newUsername = '', $newTagline = '', $newBIO = '', $dateOfBirthVisibility = null, $newDateOfBirth = '', $genderVisibility = null, $newGender = '', $newProfileImage = '') {
         global $mysqli;
         $response = '';
         
@@ -416,7 +418,7 @@
         // then set the old username to the new
         if($newUsername != '' && $newUsername != $_SESSION['username']) {
             $stmt_check = $mysqli->prepare("SELECT * FROM user_info WHERE username=?");
-            $stmt_check->bind_param("s", $newUsername);
+            $stmt_check->bind_param("s", filterUnwantedCode($newUsername));
             $stmt_check->execute();
         
             $result = $stmt_check->get_result();
@@ -428,12 +430,12 @@
                 $response = "Sorry the username is already taken...";
             else {
                 $stmt_update = $mysqli->prepare("UPDATE user_info SET username=? WHERE uuid=? AND password=PASSWORD(?)");
-                $stmt_update->bind_param("sss", $newUsername, $_SESSION['uuid'], $_SESSION['password']);
+                $stmt_update->bind_param("sss", filterUnwantedCode($newUsername), $_SESSION['uuid'], $_SESSION['password']);
                 $stmt_update->execute();
                 $stmt_update->close();
                 
                 // update username session
-                $_SESSION['username'] = $newUsername;
+                $_SESSION['username'] = filterUnwantedCode($newUsername);
             }
             $stmt_check->close();
         }
@@ -441,18 +443,18 @@
         // set the old tagline to the new (if it is set to a new value)
         if($response == '') {
             $stmt_update = $mysqli->prepare("UPDATE user_info SET tagline=? WHERE uuid=? AND password=PASSWORD(?)");
-            $stmt_update->bind_param("sss", $newTagline, $_SESSION['uuid'], $_SESSION['password']);
+            $stmt_update->bind_param("sss", filterUnwantedCode($newTagline), $_SESSION['uuid'], $_SESSION['password']);
             $stmt_update->execute();
             $stmt_update->close();
             
             // update tagline session
-            $_SESSION['tagline'] = $newTagline;
+            $_SESSION['tagline'] = filterUnwantedCode($newTagline);
         }
         
         // set the old bio to the new (if it is set to a new value)
         if($response == '') {
             $stmt_update = $mysqli->prepare("UPDATE user_info SET bio=? WHERE uuid=? AND password=PASSWORD(?)");
-            $stmt_update->bind_param("sss", $newBIO, $_SESSION['uuid'], $_SESSION['password']);
+            $stmt_update->bind_param("sss", filterUnwantedCode($newBIO), $_SESSION['uuid'], $_SESSION['password']);
             $stmt_update->execute();
             $stmt_update->close();
         }
@@ -460,29 +462,45 @@
         // set the old date of birh to the new (if it is set to a new value)
         if($newDateOfBirth != '' && $response == '') {
             $stmt_update = $mysqli->prepare("UPDATE user_info SET date_of_birth=? WHERE uuid=? AND password=PASSWORD(?)");
-            $stmt_update->bind_param("sss", $newDateOfBirth, $_SESSION['uuid'], $_SESSION['password']);
+            $stmt_update->bind_param("sss", filterUnwantedCode($newDateOfBirth), $_SESSION['uuid'], $_SESSION['password']);
             $stmt_update->execute();
             $stmt_update->close();
             
             // update date of birth session
-            $_SESSION['date_of_birth'] = $newDateOfBirth;
+            $_SESSION['date_of_birth'] = filterUnwantedCode($newDateOfBirth);
+        }
+        
+        // change visiblity on date of birth
+        if($response == "") {
+            $stmt_update = $mysqli->prepare("UPDATE user_info SET date_of_birth_visible=? WHERE uuid=? AND password=PASSWORD(?)");
+            $stmt_update->bind_param('iss', $dateOfBirthVisibility, $_SESSION['uuid'], $_SESSION['password']);
+            $stmt_update->execute();
+            $stmt_update->close();
         }
         
         // set the old gender to the new (if it is set to a new value)
         if($newGender != '' && $response == '') {
             $stmt_update = $mysqli->prepare("UPDATE user_info SET gender=? WHERE uuid=? AND password=PASSWORD(?)");
-            $stmt_update->bind_param("sss", $newGender, $_SESSION['uuid'], $_SESSION['password']);
+            $stmt_update->bind_param("sss", filterUnwantedCode($newGender), $_SESSION['uuid'], $_SESSION['password']);
             $stmt_update->execute();
             $stmt_update->close();
             
             // update gender session
-            $_SESSION['gender'] = $newGender;
+            $_SESSION['gender'] = filterUnwantedCode($newGender);
+        }
+        
+        // change visiblity on gender
+        if($response == "") {
+            $stmt_update = $mysqli->prepare("UPDATE user_info SET gender_visible=? WHERE uuid=? AND password=PASSWORD(?)");
+            $stmt_update->bind_param('iss', $genderVisibility, $_SESSION['uuid'], $_SESSION['password']);
+            $stmt_update->execute();
+            $stmt_update->close();
         }
         
         // set the old profile image to the new (if it is set to a new value)
         if($newProfileImage != '' && $response == '') {
             $stmt_update = $mysqli->prepare("UPDATE user_info SET profile_image=? WHERE uuid=? AND password=PASSWORD(?)");
-            $stmt_update->bind_param("sss", $newProfileImage, $_SESSION['uuid'], $_SESSION['password']);
+            $stmt_update->bind_param("sss", filterUnwantedCode($newProfileImage), $_SESSION['uuid'], $_SESSION['password']);
             $stmt_update->execute();
             $stmt_update->close();
         }
@@ -555,6 +573,18 @@
             return $response;
     }
     
+    function updateUserSettings($theme = "") {
+        global $mysqli;
+        
+        // set the old color theme to the new (if it is set to a new value)
+        if($theme != "") {
+            $stmt_update = $mysqli->prepare("UPDATE user_info SET color_theme=? WHERE uuid=? AND password=PASSWORD(?)");
+            $stmt_update->bind_param("sss", filterUnwantedCode($theme), $_SESSION['uuid'], $_SESSION['password']);
+            $stmt_update->execute();
+            $stmt_update->close();
+        }
+    }
+    
     // alert update user response in JavaScript
     function alertResponse($response) {
         echo "<script>alert('$response');</script>";
@@ -566,5 +596,128 @@
         
         // change the value of the read_and_accept_opup enum
         $mysqli->query("UPDATE user_info SET read_and_accept_opup=2 WHERE uuid='" . $_SESSION['uuid'] . "'");
+    }
+    
+    /* Notes */
+    
+    // send a note to a user
+    function sendNode($transmitter, $recipient, $title, $text) {
+        global $mysqli;
+
+        // check login ownership on $transmitter before sending the note
+         if (checkLoginOwnership($transmitter, $_SESSION['password'])) {
+             $note_uuid;
+             
+             // check if recipient exsist befor sending the note
+             $stmt_recipient = $mysqli->prepare("SELECT uuid FROM user_info WHERE uuid=?");
+             $stmt_recipient->bind_param("s", $recipient);
+             $stmt_recipient->execute();
+             
+             $result_recipient = $stmt_recipient->get_result();
+             
+             if(mysqli_num_rows($result_recipient) > 0) {
+                 // genarate a uuid to the note and make sure it is uniqer
+                 $stmt_get = $mysqli->prepare("SELECT uuid FROM note_stack WHERE uuid=?");
+                 do {
+                     $note_uuid = bin2hex(random_bytes(8));
+                
+                     $stmt_get->bind_param("s", $note_uuid);
+                     $stmt_get->execute();
+                     
+                     $result_uuid = $stmt_get->get_result();
+                 } while (mysqli_num_rows($result_uuid) > 0);
+                 
+                // send note to the recipient
+                $stmt_send = $mysqli->prepare("INSERT INTO note_stack (transmitter, recipient, text, title, uuid) VALUES (?, ?, ?, ?, ?)");
+                $stmt_send->bind_param("sssss", $transmitter,  $recipient, $text, $title, $note_uuid);
+                $stmt_send->execute();
+                $stmt_send->close();
+             }
+             
+             $stmt_recipient->close();
+         }
+    }
+    
+    // edit a note from a user
+    function editNote($transmitter, $uuid, $title, $text) {
+        global $mysqli;
+        
+        // check login ownership on $transmitter before editing the note
+         if (checkLoginOwnership($transmitter, $_SESSION['password'])) {
+              // try edit it the selected note
+              $stmt_update = $mysqli->prepare("UPDATE note_stack SET text=?, title=? WHERE transmitter=? AND uuid=?");
+              $stmt_update->bind_param("ssss", $text, $title, $transmitter, $uuid);
+              $stmt_update->execute();
+                  
+              $stmt_update->close();
+         }
+    }
+    
+    // delete a note form a user
+    function deleteNote($transmitter, $uuid) {
+        global $mysqli;
+        
+        // check login ownership on $transmitter before deleting the note
+         if (checkLoginOwnership($transmitter, $_SESSION['password'])) {
+              // if the note was found, try delete it
+              $stmt_delete = $mysqli->prepare("DELETE FROM note_stack WHERE uuid=? OR reply=?");
+              
+              $stmt_delete->bind_param("ss", $uuid, $uuid);
+              $stmt_delete->execute();
+                  
+              $stmt_delete->close();
+         }
+    }
+    
+    // reply a note from a user
+    function replyNote($transmitter, $uuid, $text) {
+        global $mysqli;
+        
+        // check login ownership on $transmitter before replying the note
+         if (checkLoginOwnership($transmitter, $_SESSION['password'])) {
+             // try find the note to reply
+              $stmt_get = $mysqli->prepare("SELECT uuid FROM note_stack WHERE uuid=?");
+              $stmt_get->bind_param("s", $uuid);
+              $stmt_get->execute();
+              
+              $result_uuid = $stmt_get->get_result();
+              
+              // if the note was found, try reply it
+              if(mysqli_num_rows($result_uuid) > 0) {
+                  $note_uuid;
+                  
+                  // genarate a uuid to the note reply and make sure it is uniqer
+                  $stmt_get = $mysqli->prepare("SELECT uuid FROM note_stack WHERE uuid=?");
+                  do {
+                        $note_uuid = bin2hex(random_bytes(8));
+                
+                        $stmt_get->bind_param("s", $note_uuid);
+                        $stmt_get->execute();
+                     
+                        $result_uuid = $stmt_get->get_result();
+                  } while (mysqli_num_rows($result_uuid) > 0);
+                  
+                  $stmt_reply = $mysqli->prepare("INSERT INTO note_stack (transmitter, text, uuid, reply) VALUES (?, ?, ?, ?)");
+                  $stmt_reply->bind_param("ssss", $transmitter, $text, $note_uuid, $uuid);
+                  $stmt_reply->execute();
+                  
+                  $stmt_reply->close();
+              }
+              $stmt_get->close();
+         }
+    }
+
+    // change note read status
+    function setNoteReadStatus($uuid, $recipient, $readed) {
+        global $mysqli; 
+        
+        // check login ownership on $recipient before setting the note read status
+        if (checkLoginOwnership($recipient, $_SESSION['password'])) {
+            // set note read status at $uuid
+                $stmt_send = $mysqli->prepare("UPDATE note_stack SET readed=? WHERE uuid=?");
+                $stmt_send->bind_param("ss", $readed, $uuid);
+                $stmt_send->execute();
+                $stmt_send->close();
+        }
     }
 ?>

@@ -32,11 +32,12 @@
                 <li class="user-info-box second-user">
                 <!-- user display !-->
                 </li>
-                <li id="show-profile"><a class="<?php if(!isset($_GET['tap']) || $_GET['tap'] == 'show-profile') echo 'selectet-nav-tap'; ?>">Profile</a></li>
-                <li id="show-gallery"><a class="<?php if(isset($_GET['tap']) && $_GET['tap'] == 'show-gallery') echo 'selectet-nav-tap'; ?>">Gallery</a></li>
-                <li id="show-faves"><a class="<?php if(isset($_GET['tap']) && $_GET['tap'] == 'show-faves') echo 'selectet-nav-tap'; ?>">Favorites</a></li>
-                <li id="show-comments"><a class="<?php if(isset($_GET['tap']) && $_GET['tap'] == 'show-comments') echo 'selectet-nav-tap'; ?>">Comments</a></li>
-                <li id="show-more"><a class="<?php if(isset($_GET['tap']) && $_GET['tap'] == 'show-more') echo 'selectet-nav-tap'; ?>">More</a></li>
+                    <li id="show-profile"><a class="<?php if(!isset($_GET['tap']) || $_GET['tap'] == 'show-profile') echo 'selectet-nav-tap'; ?>">Profile</a></li>
+                    <li id="show-gallery"><a class="<?php if(isset($_GET['tap']) && $_GET['tap'] == 'show-gallery') echo 'selectet-nav-tap'; ?>">Gallery</a></li>
+                    <li id="show-faves"><a class="<?php if(isset($_GET['tap']) && $_GET['tap'] == 'show-faves') echo 'selectet-nav-tap'; ?>">Favorites</a></li>
+                    <li id="show-comments"><a class="<?php if(isset($_GET['tap']) && $_GET['tap'] == 'show-comments') echo 'selectet-nav-tap'; ?>">Comments</a></li>
+                    <li id="show-more"><a class="<?php if(isset($_GET['tap']) && $_GET['tap'] == 'show-more') echo 'selectet-nav-tap'; ?>">More</a></li>
+                    <li id="write-a-note"><button class='submit' onclick="$('#write-note-box').show()">Write a note</button></li>
                 <li>
                     <!-- Watch button !-->
                     <button id="watch-button" class="submit" onclick="<?php echo (!$isTheMainUserWatching ? "storeWatch('add_watcher')" : "storeWatch('remove_watcher')");?>"><?php echo (!$isTheMainUserWatching ? "Watch" : "Stop watching");?></button>
@@ -47,7 +48,7 @@
         <!-- user details !-->
         <div id="about-user" class="light-to-dark-shaded">
             <div class="user-details second-user">
-                <span class="date-of-birth">test</span> / <span class="gender">test</span> |
+                <span class="date-of-birth">test</span> <span class="gender">test</span> |
             </div>
             <div id="user-statics">
                 <span><var id="watch-count">0</var> Watchers</span>
@@ -128,38 +129,43 @@
             // when the main user clicks on a tap, then change which part of the profile is showing
             $('#nav-taps a').click(function() {
                 // switch nav tap
-                switchNavTapOnProfile($(this).parent().attr('id'));
+                var tap = $(this).parent().attr('id') ;
+                if(tap !== 'write-a-note')
+                    switchNavTapOnProfile(tap);
             });
             
             // get the tap variabel from the url
-            if(<?php echo json_encode(isset($_GET['tap'])); ?>)
+            if(<?php echo json_encode(isset($_GET['tap'])); ?>) {
                 switchNavTapOnProfile(<?php if (isset($_GET['tap']) && $_GET['tap']) echo ('"' . $_GET['tap'] . '"'); else '' ?>);
+            }
             
             // switch nav tap
             // FIX-ME: comments section don't show up
             function switchNavTapOnProfile(tapID) {
-                // start by hiding all profile content parts
-                $('.profile-content-part').hide();
-                
-                // then show a certain part of the profile based on which tap is clicked
-                switch(tapID) {
-                    case 'show-profile':
-                        $('#profile-design').show();
-                        break;
-                    case 'show-gallery':
-                        $('#comment-stack').remove();
-                        $('#profile-gallery').show();
-                        break;
-                    case 'show-faves':
-                        $('#comment-stack').remove();
-                        $('#loaded-comments-nav').remove();
-                        $('#profile-gallery').remove();
-                        $('#profile-fave').show();
-                        break;
-                    case 'show-more':
-                        $('#comment-stack').remove();
-                        $("div#show-more").show();
-                        break;
+                    if(tapID != "write-a-note") {
+                        // start by hiding all profile content parts
+                        $('.profile-content-part').hide();
+
+                        // then show a certain part of the profile based on which tap is clicked
+                        switch(tapID) {
+                            case 'show-profile':
+                                $('#profile-design').show();
+                                break;
+                            case 'show-gallery':
+                                $('#comment-stack').remove();
+                                $('#profile-gallery').show();
+                                break;
+                            case 'show-faves':
+                                $('#comment-stack').remove();
+                                $('#loaded-comments-nav').remove();
+                                $('#profile-gallery').remove();
+                                $('#profile-fave').show();
+                                break;
+                            case 'show-more':
+                                $('#comment-stack').remove();
+                                $("div#show-more").show();
+                                break;
+                        }
                 }
             }
             

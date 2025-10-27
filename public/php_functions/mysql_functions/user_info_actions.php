@@ -6,7 +6,14 @@
     if(isset($_POST['user_info_command'])) {
         // update the old profile info to the new
         if($_POST['user_info_command'] == 'update_user_profile_info') {
-            $response = updateUserProfileInfo($_POST['new_username'], $_POST['new_tagline'], $_POST['new_bio'], $_POST['new_date_of_birth'], $_POST['new_gender']);
+            $response = updateUserProfileInfo(
+                    $_POST['new_username'], 
+                    $_POST['new_tagline'], 
+                    $_POST['new_bio'], 
+                    isset($_POST['date_of_birth_visibility']) ? 1 : 0,
+                    $_POST['new_date_of_birth'],
+                    isset($_POST['gender_visibility']) ? 1 : 0,
+                    $_POST['new_gender']);
             alertResponse($response);
         }
         else {

@@ -36,6 +36,8 @@
     static $postCount = 0;
     static $commentOffset = 0;
     static $commentCount = 0;
+    static $noteOffset = 0;
+    static $noteCount = 0;
     
     /* next and previous loaded posts nav system  */
     if(isset($_POST["previous_posts"]) && $_POST["previous_posts"] > 0)
@@ -167,7 +169,7 @@
         } else {
             echo "Error preparing statement: " . $mysqli->error . "\n";
         }
-}
+    }
 
     
     // load all profiles from user_info from offset to offset + maxKeys
@@ -628,6 +630,78 @@
         echo "let loadedFolderCount =" . $loadedFolderCountSum . ";";
     }
     
+    static $atNoteStackEnd = false;
+    static $loadedNoteCountSum = 0;
+    
+    // load data from notes send to user
+    function loadNotes($uuid, $maxKeys, $offset, $formTransmitter) {
+        global $mysqli;
+        global $atNoteStackEnd;
+        global $loadedNoteCountSum;
+        
+        $loadTimes = isset($_GET['load_times']) ? $_GET['load_times'] : 1;
+        $noteIndex = 0;
+        for($times = 0; $times < $loadTimes; $times++) {
+            $stmt = $mysqli->prepare(
+                    "SELECT * FROM note_stack "
+                  . "WHERE " .  ( $formTransmitter ? "transmitter" : "recipient") . "=? "
+                  . "LIMIT ? "
+                  . "OFFSET ?"
+            );
+
+            $stmt->bind_param("sii", $uuid, $maxKeys, $offset);
+            $stmt->execute();
+
+            $result = $stmt->get_result();
+
+            $loadedNoteCount = mysqli_num_rows($result);
+            $atNoteStackEnd = ($loadedNoteCount < $maxKeys * $loadTimes);
+            $loadedNoteCountSum += $loadedNoteCount;
+
+            // loop over all loaded notes and output there data
+            $loadedNoteInboxJson = "loadedNotes =[";
+
+            while ($row = $result->fetch_assoc()) {
+                $transmitter = loadUserInfo("#transmitter", $row["transmitter"], 'false', 0, true);
+                $text = convertQuotesToUnicode($row["text"]);
+                $title = convertQuotesToUnicode($row["title"]) . " <i>";
+                $date = $row["date"] . "</i>";
+                $readed = $row["readed"]  ? 1 : 0;
+                $noteUUID = $row["uuid"];
+
+                echo "loadNoteInbox('$title', '$date', $readed, $noteIndex);";
+
+                $loadedNoteInboxJson .= "{text: '$text', title: '$title', date: '$date', readed: $readed, transmitter: $transmitter, note_uuid: '$noteUUID'},";
+                
+                $noteIndex++;
+            }
+            
+            $offset += $maxKeys;
+        }
+        
+        $loadedNoteInboxJson .= "];";
+        
+        echo $loadedNoteInboxJson;
+    }
+    
+    // count notes from inbox
+    function countNotes($uuid) {
+        global $mysqli;
+        
+        $stmt = $mysqli->prepare(
+                "SELECT transmitter FROM note_stack "
+               . "WHERE recipient=? "
+               . "AND (readed IS NULL OR readed = 0)"
+        );
+        
+        $stmt->bind_param("s", $uuid);
+        $stmt->execute();
+        
+         $result = $stmt->get_result();
+         
+         return mysqli_num_rows($result);
+    }
+
     // load items from folder
     function loadContentFromFolder($maxKeys, $offset, $folder_uuid) {
         global $mysqli;
@@ -670,6 +744,51 @@
         }
         $stmt_url->close();
     }
+    
+    // load all the replies forme the note
+    function loadAllNoteReplies($recipient, $uuid) {
+        global $mysqli;
+        
+        // check login ownership on $recipient before reading the replies to the note at $uuid
+        if (checkLoginOwnership($recipient, $_SESSION['password'])) {
+            // prepare the SQL query
+            $query = "SELECT * FROM note_stack WHERE reply=?";
+
+        if ($stmt = $mysqli->prepare($query)) {
+            // bind parameters
+            $stmt->bind_param("s", $uuid);
+            $stmt->execute();
+            $profiles = [];
+            $data = "var json = [";
+            
+            // execute the statement
+            $result = $stmt->get_result();
+
+            // loop through the results and load the replies
+            $userIndex = 0;
+            while ($row = $result->fetch_assoc()) {
+                  $profiles[$userIndex] = $row['transmitter'];
+                  $transmitter = $row['transmitter'];
+                  $text = $row['text'];
+                  $data .= "{ transmitter:  '$transmitter', text: '$text' },";
+                  $userIndex++;
+            }
+            
+            $data .= "];";
+            
+            echo $data;
+            return $profiles;
+            } 
+            else {
+                 echo "Error executing query: " . $stmt->error . "\n";
+             }
+
+             // close the statement
+             $stmt->close();
+             } else {
+                echo "Error preparing statement: " . $mysqli->error . "\n";
+            }
+    }
 
     // load a user id and set up its HTML
     function SetupAndLoadUserID($HTMLTaget, $uuid, $mainUserSeeingProfile = 'false', $userIndexOffset = 0) {
@@ -681,7 +800,7 @@
     }
     
     // load and print user info as HTML elements (PS. keep in mind that non of the sensitive user data is printed)
-    function loadUserInfo($HTMLTaget, $uuid, $mainUserSeeingProfile = 'false', $userIndexOffSet = 0) {
+    function loadUserInfo($HTMLTaget, $uuid, $mainUserSeeingProfile = 'false', $userIndexOffSet = 0, $asJSON = false) {
         global $mysqli;
         
         $stmt = $mysqli->prepare("SELECT * FROM user_info WHERE uuid=?");
@@ -692,16 +811,46 @@
         
         while ($row = $result->fetch_assoc()) {
             // load in user info
-            echo "loadUserInfo('" .  
-                    $HTMLTaget . "', '" 
-                    . htmlentities($row['username']) . "', '" 
-                    . htmlentities($row['tagline']) . "', '" 
-                    . htmlentities($row['bio']) . "', '"
-                    . $row['date_of_birth'] . "', '" 
-                    . htmlentities($row['gender']) . "', '" 
-                    . $row['profile_image'] . "', '" 
-                    . $mainUserSeeingProfile . "', '" 
-                    . $userIndexOffSet . "');";
+            
+            $date_of_birth_display = $row['date_of_birth_visible'] == 1 ? $row['date_of_birth'] : "";
+            $gender_display = $row['gender_visible'] == 1 ? htmlentities($row['gender']) : "";
+            
+            if(!$asJSON) {
+                echo "loadUserInfo('" .  
+                        $HTMLTaget . "', '" 
+                        . htmlentities($row['username']) . "', '" 
+                        . htmlentities($row['tagline']) . "', '" 
+                        . htmlentities($row['land']) . "', '" 
+                        . htmlentities($row['hobbies']) . "', '" 
+                        . htmlentities(
+                                str_replace(
+                                    ["\r\n", "\n", "\r"], 
+                                    "<br />",
+                                    $row['bio'])
+                                ) . "', '"
+                        . $date_of_birth_display . "', '" 
+                        . $gender_display . "', '" 
+                        . $row['profile_image'] . "', '" 
+                        . $mainUserSeeingProfile . "', '" 
+                        . $userIndexOffSet . "');";
+                  echo "loadUserInfoVisibility(" .
+                          $row['date_of_birth_visible'] . ", "
+                         . $row['gender_visible'] . ", " 
+                         . $row['land_visible'] . ");";
+            }
+            else {
+                return "{"
+                    . "uuid: '" . $uuid . "'"
+                    . ", username: '" . htmlentities($row['username']) . "'"
+                    . ", tagline: '" . htmlentities($row['tagline']) . "'"
+                    . ", land: '" . htmlentities($row['land']) . "'"
+                    . ", hobbies: '" . htmlentities($row['hobbies']) . "'"
+                    . ", bio: '" . htmlentities($row['bio']) . "'"
+                    . ", date_of_birth: '" . $date_of_birth_display . "'"
+                    . ", gender: '" . $gender_display . "'"
+                    . ", profile_image: '" . $row['profile_image'] . "'"
+                    . "}";
+            }
         }
     }
     

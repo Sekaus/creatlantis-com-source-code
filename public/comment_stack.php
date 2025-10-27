@@ -4,13 +4,6 @@
      // scroll to loaded comments
      <?php if(isset($_GET['load_times'])) {?>
         $(document).ready(function () {
-           /*if((".comment").length <= <?php echo $maxKeys; ?> ) {
-                var commentOffset = $(".comment").length - <?php echo $maxKeys; ?>;
-                $('html, body').animate( {
-                    scrollTop: $(".comment").eq(commentOffset).offset().top
-                }, 
-                0);
-            }*/
             window.scrollTo(0, <?php echo isset($_GET['page_y_offset']) ? $_GET['page_y_offset'] - 38 : 0;?>);
          });
      <?php }?>

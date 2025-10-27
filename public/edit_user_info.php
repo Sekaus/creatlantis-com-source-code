@@ -31,6 +31,15 @@
                                 <dd class="user-tagline"></dd>      <dd><input class="user-tagline" name="new_tagline" hidden/></dd>
                                 <dd><button class="edit edit-user-info" name="user_info_command" type="button" value="edit_tagline">Edit</button></dd>
                                 
+                                <dt>Land:</dt>
+                                <dd class="user-land"></dd>      <dd><input cols="30" rows="20" class="user-land" name="new_land" hidden/></dd>
+                                <dd><button class="edit edit-user-info" name="user_info_command" type="button" value="edit_land">Edit</button></dd>
+                                <dd><input type="checkbox" id="land-public" name="land_visibility" value="1">Show it to other?</dd>
+                                
+                                <dt>Hobbies:</dt>
+                                <dd class="user-hobbies"></dd>      <dd><input class="user-hobbies" name="new_hobbies" hidden/></dd>
+                                <dd><button class="edit edit-user-info" name="user_info_command" type="button" value="edit_hobbies">Edit</button></dd>
+                                
                                 <dt>BIO:</dt>
                                 <dd class="user-bio"></dd>      <dd><textarea cols="30" rows="20" class="user-bio" name="new_bio" hidden></textarea></dd>
                                 <dd><button class="edit edit-user-info" name="user_info_command" type="button" value="edit_bio">Edit</button></dd>
@@ -38,10 +47,12 @@
                                 <dt>Date of birth:</dt>
                                 <dd class="date-of-birth"></dd>      <dd><input class="date-of-birth" name="new_date_of_birth" type="date" hidden/></dd>
                                 <dd><button class="edit edit-user-info" name="user_info_command" type="button" value="edit_date_of_birth">Edit</button></dd>
+                                <dd><input type="checkbox" id="date-of-birth-public" name="date_of_birth_visibility" value="1"> Show it to other?</dd>
 
                                 <dt>Gender:</dt>
                                 <dd class="gender"></dd>        <dd><input class="gender" name="new_gender" hidden/></dd>
                                 <dd><button class="edit edit-user-info" name="user_info_command" type="button" value="edit_gender">Edit</button></dd>
+                                <dd><input type="checkbox" id="gender-public" name="gender_visibility" value="1">Show it to other?</dd>
                             </dl>
                             <button class="submit" name="user_info_command" type="submit" value="update_user_profile_info">Save</button>
                         </form>
@@ -57,7 +68,7 @@
 
                                 <dt>Password:</dt>
                                 <dd class="password"></dd>      <dd><input class="password" name="new_password" type="password" hidden/></dd>
-                                <dd><button class="edit edit-user-info" name="user_info_command" type="button" value="edit_password">Edit</button></dd>
+                                <dd><button class="edit edit-user-info" name="user_info_command" type="button" value="edit_password>Edit</button></dd>
                             </dl>
 
                             <label>Please enter your password to perform the changes to your login:</label>
@@ -99,6 +110,12 @@
                     case 'edit_tagline':
                         targetInput = '.user-tagline';
                         break;
+                    case 'edit_land':
+                        targetInput = '.user-land';
+                        break;
+                    case 'edit_hobbies':
+                        targetInput = '.user-hobbies';
+                        break;
                     case 'edit_bio':
                         targetInput = '.user-bio';
                         inputType = 'textarea';
@@ -125,6 +142,8 @@
             $(document).ready( function() {
                 autoFillInput('.user-name');
                 autoFillInput('.user-tagline');
+                autoFillInput('.user-land');
+                autoFillInput('.user-hobbies');
                 autoFillInput('.user-bio', 'textarea');
                 autoFillInput('.date-of-birth');
                 autoFillInput('.gender');
@@ -134,7 +153,7 @@
             
             // autofill a single input field with some user data
             function autoFillInput(targetInput, inputType = 'input') {
-                $(inputType + targetInput).val($('dd' + targetInput).text());
+                $(inputType + targetInput).val($('dd' + targetInput).html());
             }
         </script>
     </body>

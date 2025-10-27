@@ -60,6 +60,16 @@
                     </li>
                     <li>
                         <ul>
+                            
+                            <!-- notifications start !-->
+                            
+                            <i id="nodes">
+                                <a href="notes.php"><img src="images/icons/noteIcon.webp"/></a>
+                                <var id="note-count"><?php echo countNotes($_SESSION['uuid']); ?></var>
+                            </i>
+                            
+                            <!-- notifications end !-->
+                            
                             <li class="user-info-box main-user">
                                 <!-- main user id display !-->
                             </li>
@@ -105,6 +115,18 @@
         
         <!-- load in the users info !-->
         <script type='text/javascript'>
+            var selectedTheme = Theme.Dark;
+            switch('<?php echo $_SESSION['color_theme'];?>') {
+                case "dark":
+                    selectedTheme = Theme.Dark;
+                    break;
+                case 'light':
+                    selectedTheme = Theme.Light;
+                    break;
+            }            
+            
+            switchTheme(selectedTheme);
+            
             // load main user id
             <?php
                 SetupAndLoadUserID('.main-user', $_SESSION['uuid']);
@@ -123,3 +145,5 @@
         </script>
         
         <?php include_once 'read_and_accept_popup.php' ?>
+
+        <?php include_once 'write_note_popup.php';?>

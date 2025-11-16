@@ -1,2 +1,2 @@
-dev/*
+public/third_party/*
 .git/*

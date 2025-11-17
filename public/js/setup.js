@@ -11,7 +11,7 @@ export function RulesAndPrivacyPopup() {
                             <strong>I have read and agree to the Terms of Service and rules for using this website. </strong>
                             <input name="had-read-terms-of-service" type="checkbox" value="yes" required/>
                             <br/>
-                            Read the Terms of Service and the rules here: <a href="./html_documents/terms_of_use.html">Terms of Service</a>
+                            Read the Terms of Service and the rules here: <a href="./html_documents/terms_of_use.html"><u>Terms of Service</u></a>
                         </div>
 
                         <br/>
@@ -20,7 +20,7 @@ export function RulesAndPrivacyPopup() {
                             <strong>I have read and agree to the Privacy Policy for using this website. </strong>
                             <input name="had-read-privacy-policy" type="checkbox" value="yes" required/>
                             <br />
-                            Read the Privacy Policy here: <a href="./html_documents/privacy_policy.html">Privacy Policy</a>
+                            Read the Privacy Policy here: <a href="./html_documents/privacy_policy.html"><u>Privacy Policy</u></a>
                         </div>
 
                         <br/>

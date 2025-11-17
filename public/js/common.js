@@ -1,9 +1,9 @@
-const FileType = {
+export const FileType = {
     "image" : 0,
     "model" : 1
 }
 
- class File {
+ export class File {
     path = "";
     metadata = {
         "name" : "",
@@ -18,7 +18,7 @@ const FileType = {
     }
 }
 
-function UserMetadata() {
+export function UserMetadata() {
     return /*html*/`
         <a href="#" title="Go to the user's profile" class="profile-link">
           <img class="user-icon" src="../images/default_pp.webp"/>
@@ -30,13 +30,13 @@ function UserMetadata() {
     `;
 }
 
-function Image(file) {
+export function Image(file) {
     return /*html*/`
         <img src="${file.path}" title="${file.metadata.name}" class="post"/>
     `;
 }
 
-function Comment(userMetadata, body) {
+export function Comment(userMetadata, body) {
     return /*html*/ `
         <div class="comment">
           ${userMetadata}
@@ -45,7 +45,7 @@ function Comment(userMetadata, body) {
     `;
 }
 
-function CommentSection() {
+export function CommentSection() {
     return /*html*/ `
         <div id="comment-section">
             <p id="comment-section-title" class="big-text">Comment section</p>
@@ -68,7 +68,7 @@ function CommentSection() {
         `;
 }
 
-function RulesAndPrivacyPopup() {
+export function RulesAndPrivacyPopup() {
     return /*html*/ `
             <div id="rules-and-privacy-popup">
               <div id="rules-and-privacy-popup-content">

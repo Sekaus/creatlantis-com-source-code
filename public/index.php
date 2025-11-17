@@ -20,7 +20,6 @@
       </div>
     </div>
 
-    <script src="./js/common.js"></script>
     <script type="module">
       function Folder() {
         return (

@@ -1,15 +1,26 @@
 <?php
-    session_start();
+    static $lastUpdateOnRulesAndPrivacy = "2025-11-16";
 
+    session_start();
     include_once("./user_classes.php");
 
     // Setup the user's sessions
-    if(!isset($_SESSION["user_data"])) {
-        $guest = new User();
-        $_SESSION["user_data"] = serialize($guest);
+    if (!isset($_SESSION["user_data"])) {
+        $_SESSION["user_data"] = serialize(new User());
     }
 
+    $user = unserialize($_SESSION["user_data"]);
     
+    $shouldShowPopup = $user->lastVersionOfReadAndAccept() !== $lastUpdateOnRulesAndPrivacy;
+
+    if (isset($_POST["agreed"]) && $_POST["agreed"] === "yes") {
+        global $lastUpdateOnRulesAndPrivacy;
+
+        $user->setLastVersionOfReadAndAccept($lastUpdateOnRulesAndPrivacy);
+        $_SESSION["user_data"] = serialize($user);
+
+        exit;
+    }
 ?>
 
 <script type="module">
@@ -18,6 +29,20 @@
     $(document).ready(() => {
         Startup();
         ChangeTheme(Themes.dark);
-        $("body").prepend(RulesAndPrivacyPopup());
+        
+        // Show popup for the new user
+        <?php if ($shouldShowPopup): ?>
+            $(document).ready(() => {
+                $("body").prepend(RulesAndPrivacyPopup());
+            });
+        <?php endif; ?>
+
+        $(document).on("submit", "#rules-privacy-form", function (event) {
+            event.preventDefault();
+
+            $.post(window.location.pathname, $(this).serialize(), () => {
+                location.reload(); // refresh page so PHP sees updated session
+            });
+        });
     });
 </script>

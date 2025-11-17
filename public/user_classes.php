@@ -74,6 +74,9 @@
         public function lastVersionOfReadAndAccept() {
             return $this->lastVersionOfReadAndAccept;
         }
+        public function setLastVersionOfReadAndAccept($v) {
+            $this->lastVersionOfReadAndAccept = $v;
+        }
 
         private $colorTheme = "dark";
         public function colorTheme() { 

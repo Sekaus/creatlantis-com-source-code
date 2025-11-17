@@ -33,7 +33,7 @@
 
                 if(mysqli_num_rows($result) > 0)  {
                     $login = new Login($email, $password);
-                    $_SESSION["login"] = serialize(login);
+                    $_SESSION["login"] = serialize($login);
 
                     $user = new User($result->fetch_assoc());
                     $_SESSION["user_data"] = serialize($user);

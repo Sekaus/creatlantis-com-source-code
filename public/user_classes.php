@@ -1,19 +1,5 @@
 <?php
     class User {
-        private $uuid = "";
-        private $username = "guest";
-        private $tagline = "";
-        private $biography = "";
-        private $dateOfBirth = "";
-        private $dateOfBirthVisible = false;
-        private $gender = "";
-        private $genderVisible = false;
-        private $registrationDate = "";
-        private $profileImage = "./images/default_pp.webp";
-        private $colorTheme = "dark";
-        private $land = "";
-        private $landVisible = false;
-
         public function __construct($dataRow = null) {
             if(isset($dataRow)) {
                 $this->uuid = $dataRow["uuid"];
@@ -31,10 +17,90 @@
                 $this->landVisible = $dataRow["land_visible"];
             }
         }
+
+        private $uuid = "";
+        public function uuid() { 
+            return $this->uuid;
+        }
+
+        private $username = "guest";
+        public function username() {
+            return $this->username;
+        }
+
+        private $tagline = "";
+        public function tagline() {
+            return $this->tagline;
+        }
+
+        private $biography = "";
+        public function bography() {
+            return $this->biography;
+        }
+
+        private $dateOfBirth = "";
+        public function dateOfBirth() {
+            if($this->dateOfBirthVisible)
+                return $this->dateOfBirth;
+        }
+
+        private $dateOfBirthVisible = false;
+        public function dateOfBirthVisible() {
+            return $this->dateOfBirthVisible;
+        }
+
+        private $gender = "";
+        public function gender() {
+            if($this->genderVisible)
+                return $this->gender;
+        }
+
+        private $genderVisible = false;
+        public function genderVisible() {
+            return $this->genderVisible;
+        }
+        
+        private $registrationDate = "";
+        public function registrationDate() {
+            return $this->registrationDate;
+        }
+
+        private $profileImage = "./images/default_pp.webp";
+        public function profileImage() { 
+            return $this->profileImage;
+        }
+
+        private $colorTheme = "dark";
+        public function colorTheme() { 
+            return $this->colorTheme;
+        }
+
+        private $land = "";
+        public functionland() {
+            if($this->landVisible)
+                return $this->land;
+        }
+
+        private $landVisible = false;
+        public function landVisible() {
+            return $this->landVisible;
+        }
     }
 
     class Login {
+        pubilc function __construct($email, $password) { 
+            $this->email = $email;
+            $this->password = $password;
+        }
+
         private $email = "";
+        public function email() {
+            return $this->email;
+        }
+
         private $password = "";
+        public function password() {
+            return $this->password;
+        }
     }
 ?>

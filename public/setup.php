@@ -1,17 +1,9 @@
 <?php
-    $host = "localhost";
-    $username = "root";
-    $password = "Test-13579";
-    $database = "userdb";
-    $port = 3306;
+    session_start();
 
-    // Create connection
-    $mysqli = new mysqli($host, $username, $password, $database, $port);
-
-    // Check connection
-    if ($mysqli->connect_error) {
-        die("Connection failed: " . $mysqli->connect_error);
-    }
+    // Setup the user's sessions
+    if(!isset($_SESSION["user_data"])) 
+        $newUser = new User();
 ?>
 
 <script type="module">

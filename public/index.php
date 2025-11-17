@@ -66,7 +66,7 @@
               {UploadingFile(true)}
               {UploadingFile()}
             </ol>
-            <form id="upload-new-post">
+            <form id="upload-new-post" enctype="multipart/form-data" method="POST">
               <div id="upload-top">
                 <label>Post type: </label>
                 <select id="submit-options" name="post-type" class="upload-input" required>
@@ -102,7 +102,7 @@
         return (
           <>
             <div id="login-form-box">
-              <form id="login-form" type="POST">
+              <form id="login-form" enctype="multipart/form-data" type="POST">
                 <div id="login-box">
                   <h1 class="extra-big-text">Login</h1>
                   <br />

@@ -23,14 +23,51 @@
         }
 
         public function loginAsUser($email, $password) {
-            
+            if (isset($mysqli)) {
+                $sql = "SELECT * FROM user_info WHERE email=? AND password=PASSWORD(?)";
+                $stmt = $this->$mysqli->prepare($sql);
+                $stmt->bind_param("ss", $email, $password);
+                $stmt->execute();
+                
+                $result = $stmt->get_result();
+
+                if(mysqli_num_rows($result) > 0)  {
+                    $login = new Login($email, $password);
+                    $_SESSION["login"] = serialize(login);
+
+                    $user = new User($result->fetch_assoc());
+                    $_SESSION["user_data"] = serialize($user);
+                }
+            }
         }
 
         // Check ownership of the viewed profile
         function verifyOwnership(Login $login, $username ) { 
-            $sql = "SELECT uuid FROM user_info WHERE username=? AND email=? AND password=PASSWORD(?)";
-            $stmt = $this->mysqli->prepare($sql);
-            $stmt->bind_param("sss", $login);
+            if (isset($mysqli)) {
+                $sql = "SELECT uuid FROM user_info WHERE username=? AND email=? AND password=PASSWORD(?)";
+                $stmt = $this->mysqli->prepare($sql);
+                $stmt->bind_param("sss", $login);
+                $stmt->execute();
+            
+                $result = $stmt->get_result();
+
+                $isTheOwner = false;
+
+                // test if user by email has ownership of the login
+                if(mysqli_num_rows($result) > 0)
+                    $isTheOwner = true;
+                
+                $stmt->close();
+
+                return $isTheOwner;
+            }
+
+            return false;
+        }
+
+        public static function logout() { 
+            if(isset($_SESSION["login"]))
+                session_destroy();
         }
 
         public function __destruct() {

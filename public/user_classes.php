@@ -70,13 +70,18 @@
             return $this->profileImage;
         }
 
+        private $lastVersionOfReadAndAccept = "";
+        public function lastVersionOfReadAndAccept() {
+            return $this->lastVersionOfReadAndAccept;
+        }
+
         private $colorTheme = "dark";
         public function colorTheme() { 
             return $this->colorTheme;
         }
 
         private $land = "";
-        public functionland() {
+        public function functionland() {
             if($this->landVisible)
                 return $this->land;
         }
@@ -88,7 +93,7 @@
     }
 
     class Login {
-        pubilc function __construct($email, $password) { 
+        public function __construct($email, $password) { 
             $this->email = $email;
             $this->password = $password;
         }

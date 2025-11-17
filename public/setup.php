@@ -1,9 +1,15 @@
 <?php
     session_start();
 
+    include_once("./user_classes.php");
+
     // Setup the user's sessions
-    if(!isset($_SESSION["user_data"])) 
-        $newUser = new User();
+    if(!isset($_SESSION["user_data"])) {
+        $guest = new User();
+        $_SESSION["user_data"] = serialize($guest);
+    }
+
+    
 ?>
 
 <script type="module">

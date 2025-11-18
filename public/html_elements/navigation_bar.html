@@ -1,10 +1,10 @@
 <nav id="navigation-bar">
-    <img src="./images/TestIcon.webp" alt="Webside logo icon" class="navigation-icon" />
+    <img src="./images/TestIcon.webp" alt="Webside logo icon" class="navigation-icon"/>
     <div id="search-console">
         <label>Find:</label>
         <input type="search" name="search-text" maxlength="10" size="12" placeholder="Search on..."
             alt="Search text input" class="navigation-bar-input" />
-        <img src="./images/icons/searchIcon.webp" alt="Search botton" title="Start your text input search" class="navigation-icon" />
+        <img src="./images/icons/searchIcon.webp" alt="Search botton" title="Start your text input search" class="navigation-icon"/>
 
         <label>Show only:</label>
 
@@ -32,7 +32,7 @@
             <img class="user-icon" src="./images/default_pp.webp" />
             <p class="user-name">Name</p>
         </a>
-        <img src="./images/icons/noteIcon.webp" title="Go to your inbox" alt="Inbox icon" class="navigation-icon" />
+        <img src="./images/icons/noteIcon.webp" title="Go to your inbox" alt="Inbox icon" class="navigation-icon"/>
         <var id="inbox-count" title="The content count in the inbox that are marked as not readed">-1</var>
         <p>(<var id="note-count">-1 Notes</var>)</p>
     </div>
@@ -40,17 +40,21 @@
     <div id="settings">
         <p>Settings</p>
         <div class="dorp-down-content">
-            <a id="go-to-account" href="#">Account</a>
+            <button id="go-to-account" title="Go to account settings">Account</button>
 
-            <br />
+            <br/>
+
+            <button id="logout" title="Logout this user">Logout</button>
+
+            <br/>
 
             <div id="points-balance">
                 <lable>Points balance:</lable>
                 <var id="point-count" title="The number of points you have collected">-200</var>
-                <img id="point-icon" src="./images/icons/pointIcon.webp" alt="Point icon" />
+                <img id="point-icon" src="./images/icons/pointIcon.webp" alt="Point icon"/>
             </div>
 
-            <br />
+            <br/>
 
             <label>Swith threme</label>
             <div id="theme-settings">

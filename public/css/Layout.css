@@ -57,7 +57,7 @@
         --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
         --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
         --color-red-200: #ffcaca;
-        --color-red-600: #e40014;
+        --color-red-500: #fb2c36;
         --color-yellow-400: #fac800;
         --color-blue-400: #54a2ff;
         --color-slate-500: #62748e;
@@ -92,7 +92,7 @@
         :root,
         :host {
             --color-red-200: lab(86.017% 19.8815 7.75869);
-            --color-red-600: lab(48.4493% 77.4328 61.5452);
+            --color-red-500: lab(55.4814% 75.0732 48.8528);
             --color-yellow-400: lab(83.2664% 8.65132 106.895);
             --color-blue-400: lab(65.0361% -1.42062 -56.9803);
             --color-slate-500: lab(48.0876% -2.03595 -16.5814);
@@ -610,7 +610,8 @@
     .upload-tap,
     #star-rateing,
     #inbox-filter-list li,
-    #inbox-content-list li {
+    #inbox-content-list li,
+    button {
         cursor: pointer
     }
 
@@ -1082,7 +1083,6 @@
     }
 
     button,
-    #go-to-account,
     input.submit {
         padding-inline: calc(var(--spacing)*4);
         padding-block: calc(var(--spacing)*1)
@@ -1105,8 +1105,9 @@
         background-color: #317955
     }
 
-    #delete {
-        background-color: var(--color-red-600)
+    #delete,
+    #logout {
+        background-color: var(--color-red-500)
     }
 
     #cancel,

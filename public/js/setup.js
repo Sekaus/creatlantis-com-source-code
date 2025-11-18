@@ -1,10 +1,14 @@
-export function RulesAndPrivacyPopup() {
+export function RulesAndPrivacyPopup(update = false) {
+    var title = `You must go through and agree with the rules of our site and have read and accept our Terms of Service and Privacy Policy.`;
+
+    if(update)
+        title = `We have updated our Terms of Service and Privacy Policy. Please review them first before proceeding.`
+
     return /*html*/ `
             <div id="rules-and-privacy-popup">
                 <div id="rules-and-privacy-popup-content">
                     <form id="rules-privacy-form" enctype="multipart/form-data" action="" method="POST">
-                        <p class="big-text">You must go through and agree with the rules of our site and have read and accept our Terms of Service and Privacy Policy.</p>
-
+                        <p class="big-text">${title}</p>
                         <br/>
 
                         <div>

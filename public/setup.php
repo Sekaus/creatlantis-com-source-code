@@ -1,6 +1,6 @@
 <?php
     static $lastUpdateOnRulesAndPrivacy = "2025-11-16";
-
+    
     session_start();
     include_once("./user_classes.php");
 
@@ -12,6 +12,7 @@
     $user = unserialize($_SESSION["user_data"]);
     
     $shouldShowPopup = $user->lastVersionOfReadAndAccept() !== $lastUpdateOnRulesAndPrivacy;
+    $isNotANewUser = $user->lastVersionOfReadAndAccept() !== "";
 
     if (isset($_POST["agreed"]) && $_POST["agreed"] === "yes") {
         global $lastUpdateOnRulesAndPrivacy;
@@ -33,7 +34,7 @@
         // Show popup for the new user
         <?php if ($shouldShowPopup): ?>
             $(document).ready(() => {
-                $("body").prepend(RulesAndPrivacyPopup());
+                $("body").prepend(RulesAndPrivacyPopup(<?php echo ($isNotANewUser ? "true" : "false") ?>));
             });
         <?php endif; ?>
 

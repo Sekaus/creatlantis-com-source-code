@@ -65,5 +65,19 @@ export function CommentSection() {
                 <!-- Comments here !-->
             </div>
         </div>
-        `;
+    `;
+}
+
+export function Folder() {
+    return /*html*/ `
+        <li class="folder">
+            <img src={defaultImg} class="folder-thumbnail" />
+            
+            <p class="folder-name">Name</p>
+              <div class="folder-icon-container">
+                <img src={folderContentIcon} class="folder-icon" />
+                <var title="The number of items in this folder" class="folder-content-count">-999</var>
+              </div>
+        </li>
+    `;
 }

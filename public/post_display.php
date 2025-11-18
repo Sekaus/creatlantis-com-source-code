@@ -66,6 +66,15 @@
 
         <script>
             $(document).prop('title', 'test')
+
+            function PostReaction(emoji) {
+                return /*html*/ `
+                    <div class="post-reaction">
+                        <var title="The count of this reaction" class="reaction-count">-5</var>
+                        <p title="Add this reaction to this post" class="reaction-emoji">${emoji}</p>
+                    </div>
+                `;
+            }
         </script>
     </body>
 </html>

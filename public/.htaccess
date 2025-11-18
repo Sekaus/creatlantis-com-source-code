@@ -1,0 +1,2 @@
+# Ensure JavaScript files are served with the correct MIME type for modules
+AddType text/javascript .js

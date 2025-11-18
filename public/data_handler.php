@@ -3,6 +3,17 @@
 
     include_once("./user_classes.php");
 
+    enum FileType : string {
+        case all = "all";
+        case image = "image";
+        case journal = "journal";
+    }
+
+    enum FileLoadOrder: string {
+        case newest = "DESC";   // Newest first
+        case oldest = "ASC";    // Oldest first
+    }
+
     class DataHandle {
         private $mysqli;
 
@@ -14,18 +25,18 @@
             $port = 3306;
 
             // Create connection
-            $mysqli = new mysqli($host, $username, $password, $database, $port);
+            $this->mysqli = new mysqli($host, $username, $password, $database, $port);
 
             // Check connection
-            if ($mysqli->connect_error) {
-                die("Connection failed: " . $mysqli->connect_error);
+            if ($this->mysqli->connect_error) {
+                die("Connection failed: " . $this->mysqli->connect_error);
             }
         }
 
         public function loginAsUser($email, $password) {
-            if (isset($mysqli)) {
+            if (isset($this->mysqli)) {
                 $sql = "SELECT * FROM user_info WHERE email=? AND password=PASSWORD(?)";
-                $stmt = $this->$mysqli->prepare($sql);
+                $stmt = $this->mysqli->prepare($sql);
                 $stmt->bind_param("ss", $email, $password);
                 $stmt->execute();
                 
@@ -43,7 +54,7 @@
 
         // Check ownership of the viewed profile
         function verifyOwnership(Login $login, $username ) { 
-            if (isset($mysqli)) {
+            if (isset($$this->mysqli)) {
                 $sql = "SELECT uuid FROM user_info WHERE username=? AND email=? AND password=PASSWORD(?)";
                 $stmt = $this->mysqli->prepare($sql);
                 $stmt->bind_param("sss", $login);
@@ -71,8 +82,49 @@
         }
 
         public function __destruct() {
-            if(isset($mysqli))
-                $mysqli->close();
+            if(isset($this->mysqli))
+                $this->mysqli->close();
+        }
+
+        function loadAllFiles(FileType $filter, string $search, FileLoadOrder $order, int $maxKeys, int $offset) {
+            if (isset($this->mysqli)) {
+                $orderString = $order->value;
+                
+                $filterString = "type LIKE ? AND (tags LIKE ? OR title LIKE ?)";
+                if ($filter == FileType::all)
+                    $filterString = "tags LIKE ? OR title LIKE ?";
+
+                $sql = "SELECT * FROM post_list WHERE $filterString ORDER BY date $orderString LIMIT ? OFFSET ?";
+                $stmt = $this->mysqli->prepare($sql);
+
+                if ($filter != FileType::all)
+                    $stmt->bind_param("sssii", $filter->value, $search, $search, $maxKeys, $offset);
+                else
+                    $stmt->bind_param("ssii",  $search, $search, $maxKeys, $offset);
+
+                $stmt->execute();
+
+                $result = $stmt->get_result();
+
+                // output data of each row
+
+                $json = "[ ";
+
+                while ($row = $result->fetch_assoc()) {
+                    if($row['id'] >= 0) {
+                        $json .= json_encode($row) . ", ";
+                        
+                        //$key = strchr($row['link'] , $row['owner']);
+                        //echo loadS3Object($key);
+                    }
+                }
+
+                $json .= " ]";
+
+                $result->close();
+
+                return $json;
+            }
         }
     }
 ?>

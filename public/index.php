@@ -15,12 +15,21 @@
         <li className="">Paintings</li>
         <li className="">Other</li>
       </ol>
-      
+
       <div id="content-view">
         <!-- Post links here -->
       </div>
     </div>
-
+    
+    <?php include_once("./html_elements/side_render.html"); ?>
     <?php include_once("./html_elements/footer.html"); ?>
+    <script>
+      <?php
+        include_once("./data_handler.php");
+        $data = new DataHandle();
+
+        echo "let posts = '" . $data->loadAllFiles(FileType::all,"", FileLoadOrder::newest, 10, 0) . "';";
+      ?>
+    </script>
   </body>
 </html>

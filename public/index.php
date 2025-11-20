@@ -24,7 +24,10 @@
     <?php include_once("./html_elements/side_render.html"); ?>
     <?php include_once("./html_elements/footer.html"); ?>
     <script>
+      import {Image, Journal} from "./js/common.js"
+
       // Page data
+      let posts = [];
       <?php
         include_once("./data_handler.php");
 
@@ -46,10 +49,19 @@
         // Now create DataHandle correctly:
         $dh = new DataHandle($dbConfig, $s3Config, S3BotType::readOnly);
 
-        echo "let posts = '" . $dh->loadAllFiles(FileType::all, "", FileLoadOrder::newest, 10, 0) . "';";
+        echo "posts = '" . $dh->loadAllFiles(FileType::all, "", FileLoadOrder::newest, 10, 0) . "';";
       ?>
 
-
+      posts.forEach(element => {
+        switch(element.data_type) {
+          case "image":
+            Image();
+            break;
+          case "journal":
+            break;
+        }
+      });
+      $("#content-view")
     </script>
   </body>
 </html>

@@ -1,23 +1,3 @@
-export const FileType = {
-    "image" : 0,
-    "model" : 1
-}
-
- export class File {
-    path = "";
-    metadata = {
-        "name" : "",
-        "type" : -1,
-        "description" : "",
-        "creationDate" : ""
-    };
-
-    constructor(path, metadata) {
-        this.path = path;
-        this.metadata = metadata;
-    }
-}
-
 export function UserMetadata() {
     return /*html*/`
         <a href="#" title="Go to the user's profile" class="profile-link">
@@ -30,9 +10,9 @@ export function UserMetadata() {
     `;
 }
 
-export function Image(file) {
+export function Image(path, title) {
     return /*html*/`
-        <img src="${file.path}" title="${file.metadata.name}" class="post"/>
+        <img src="${path}" title="${title}" class="post"/>
     `;
 }
 

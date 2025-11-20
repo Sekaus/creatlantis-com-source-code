@@ -27,81 +27,68 @@ enum S3BotType : string {
 }
 
 /**
- * S3Wrapper - safe wrapper around Aws\S3\S3Client
+ * S3Wrapper - optimized S3 wrapper
  */
 class S3Wrapper {
     private S3Client $s3;
     private string $bucket;
 
-    public function __construct(
-        array $credentials,
-        string $bucket,
-        string $region,
-        bool $usePathStyle = false
-    ) {
+    public function __construct(array $credentials, string $bucket, string $region, bool $usePathStyle = false) {
         $this->bucket = $bucket;
-
-        $config = [
-            'credentials' => [
-                'key' => $credentials['key'],
-                'secret' => $credentials['secret'],
-            ],
-            'region' => $region,
-            'version' => 'latest',
+        $this->s3 = new S3Client([
+            'credentials' => $credentials,
+            'region'      => $region,
+            'version'     => 'latest',
             'use_path_style_endpoint' => $usePathStyle,
             'http' => [
-                'curl' => [
-                    CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
-                ],
+                'curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4],
                 'connect_timeout' => 2,
                 'timeout' => 5,
             ]
-        ];
-
-        $this->s3 = new S3Client($config);
+        ]);
     }
 
-    public function getObjectBodyAsString(string $key): string {
-        // try get the object if it exist
-        if($this->objectExists($key)) {
-            $file = $this->s3->getObject([
+    public function listObjects(string $prefix): array {
+        try {
+            $prefix = rtrim($prefix, '/') . '/'; // Ensure trailing slash
+            $result = $this->s3->listObjectsV2([
                 'Bucket' => $this->bucket,
-                'Key' => $key,
+                'Prefix' => $prefix,
+                'MaxKeys' => 100 // limit to avoid massive listing
             ]);
-        
-            // return the s3 object JSON data
-            return $file['Body'];
+            return $result['Contents'] ?? [];
+        } catch (AwsException $e) {
+            error_log("S3 listObjects failed for prefix '$prefix': " . $e->getMessage());
+            return [];
         }
-        else
-            return "file at key $key dose not exist or cloude be found...";
     }
 
     public function getObjectUrl(string $key): ?string {
-        if($this->objectExists($key)) {
-            try {
-                // Get the plain URL for the object
-                return $this->s3->getObjectUrl($this->bucket, $key);
-            } catch (AwsException $e) {
-                error_log($e->getMessage());
-                return null;
-            }
-        }
-        else {
-            error_log("Object at key: $key, does not exist...");
+        try {
+            return $this->s3->getObjectUrl($this->bucket, $key);
+        } catch (AwsException $e) {
+            error_log("S3 getObjectUrl failed for key '$key': " . $e->getMessage());
             return null;
         }
     }
 
-    public function objectExists(string $key): bool {
+    public function getObjectBodyAsString(string $key): ?string {
         try {
-            return $this->s3->doesObjectExistV2($this->bucket, $key);
-        } catch (\Throwable $e) {
-            error_log("S3 objectExists failed for key '$key': " . $e->getMessage());
-            return false;
+            $file = $this->s3->getObject([
+                'Bucket' => $this->bucket,
+                'Key' => $key
+            ]);
+            return (string)$file['Body'];
+        } catch (AwsException $e) {
+            error_log("S3 getObjectBody failed for key '$key': " . $e->getMessage());
+            return null;
         }
     }
 }
 
+/**
+ * DataHandle - handles DB + S3 interactions
+ */
 class DataHandle {
     private \mysqli $mysqli;
     private S3Wrapper $s3;
@@ -120,26 +107,20 @@ class DataHandle {
             throw new \RuntimeException("DB connection failed: " . $this->mysqli->connect_error);
         }
 
-        // Load S3 credentials from DB table `s3_bot_keys`
         $stmt = $this->mysqli->prepare("SELECT `key`, `secret_key` FROM s3_bot_keys WHERE type = ? LIMIT 1");
         $typeValue = $botType->value;
         $stmt->bind_param("s", $typeValue);
         $stmt->execute();
-        $res = $stmt->get_result();
-        $row = $res->fetch_assoc();
+        $row = $stmt->get_result()->fetch_assoc();
         $stmt->close();
 
         if (!$row || empty($row['key']) || empty($row['secret_key'])) {
             throw new \RuntimeException("S3 keys not found for bot type: {$typeValue}");
         }
 
-        if (empty($s3Config['bucket_or_arn'])) {
-            throw new \InvalidArgumentException("S3 bucket required in s3Config");
-        }
-
         $this->s3 = new S3Wrapper(
             ['key' => $row['key'], 'secret' => $row['secret_key']],
-            $s3Config['bucket_or_arn'],
+            $s3Config['bucket_or_arn'] ?? throw new \InvalidArgumentException("S3 bucket required"),
             $s3Config['region'] ?? throw new \InvalidArgumentException("S3 region required"),
             $s3Config['use_path_style'] ?? false
         );
@@ -148,30 +129,25 @@ class DataHandle {
     }
 
     public function loginAsUser(string $email, string $password): bool {
-        $sql = "SELECT * FROM user_info WHERE email=? AND password=PASSWORD(?) LIMIT 1";
-        $stmt = $this->mysqli->prepare($sql);
+        $stmt = $this->mysqli->prepare("SELECT * FROM user_info WHERE email=? AND password=PASSWORD(?) LIMIT 1");
         $stmt->bind_param("ss", $email, $password);
         $stmt->execute();
-        $result = $stmt->get_result();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
 
-        if ($row = $result->fetch_assoc()) {
+        if ($row) {
             $_SESSION["login"] = serialize(new Login($email, $password));
             $_SESSION["user_data"] = serialize(new User($row));
-            $stmt->close();
             return true;
         }
-
-        $stmt->close();
         return false;
     }
 
     public function verifyOwnership(string $email, string $password, string $username): bool {
-        $sql = "SELECT uuid FROM user_info WHERE username = ? AND email = ? AND password = PASSWORD(?) LIMIT 1";
-        $stmt = $this->mysqli->prepare($sql);
+        $stmt = $this->mysqli->prepare("SELECT uuid FROM user_info WHERE username = ? AND email = ? AND password = PASSWORD(?) LIMIT 1");
         $stmt->bind_param("sss", $username, $email, $password);
         $stmt->execute();
-        $res = $stmt->get_result();
-        $owned = ($res && $res->num_rows > 0);
+        $owned = ($stmt->get_result()->num_rows > 0);
         $stmt->close();
         return $owned;
     }
@@ -184,6 +160,17 @@ class DataHandle {
         session_destroy();
     }
 
+    private function resolveImageRes(array $objects, bool $wantsHigh): ?string {
+        $low = $high = null;
+
+        foreach ($objects as $key) {
+            if (preg_match('#/low_res\.[a-zA-Z0-9]+$#', $key)) $low = $key;
+            if (preg_match('#/high_res\.[a-zA-Z0-9]+$#', $key)) $high = $key;
+        }
+
+        return $wantsHigh ? ($high ?? $low) : ($low ?? $high);
+    }
+
     public function loadAllFiles(FileType $filter, string $search, FileLoadOrder $order, int $maxKeys = 50, int $offset = 0): string {
         $searchLike = '%' . $this->mysqli->real_escape_string($search) . '%';
         $orderString = $order->value;
@@ -191,53 +178,43 @@ class DataHandle {
         $offset = max(0, $offset);
 
         if ($filter === FileType::all) {
-            $sql = "SELECT * FROM post_list WHERE (tags LIKE ? OR title LIKE ?) ORDER BY date {$orderString} LIMIT ? OFFSET ?";
-            $stmt = $this->mysqli->prepare($sql);
+            $stmt = $this->mysqli->prepare("SELECT * FROM post_list WHERE (tags LIKE ? OR title LIKE ?) ORDER BY date {$orderString} LIMIT ? OFFSET ?");
             $stmt->bind_param("ssii", $searchLike, $searchLike, $limit, $offset);
         } else {
             $typeVal = $filter->value;
-            $sql = "SELECT * FROM post_list WHERE type = ? AND (tags LIKE ? OR title LIKE ?) ORDER BY date {$orderString} LIMIT ? OFFSET ?";
-            $stmt = $this->mysqli->prepare($sql);
+            $stmt = $this->mysqli->prepare("SELECT * FROM post_list WHERE type = ? AND (tags LIKE ? OR title LIKE ?) ORDER BY date {$orderString} LIMIT ? OFFSET ?");
             $stmt->bind_param("sssii", $typeVal, $searchLike, $searchLike, $limit, $offset);
         }
 
         $stmt->execute();
         $result = $stmt->get_result();
-        $items = [];
 
+        $items = [];
         while ($row = $result->fetch_assoc()) {
             $key = $row['key'] ?? '';
-            $owner = $row['owner'] ?? '';
+            $type = $row['type'] ?? '';
 
-            if ($key === null) {
-                error_log("Failed to extract get the key from post: {$key}");
-                continue;
+            if (!$key) continue;
+
+            if ($type === FileType::image->value) {
+                $objects = $this->s3->listObjects($key);
+                $keys = array_column($objects, 'Key');
+                $finalKey = $this->resolveImageRes($keys, false);
+
+                if ($finalKey) {
+                    $src = $this->s3->getObjectUrl($finalKey);
+                    $items[] = ['type' => 'image', 'src' => $src];
+                }
+            } elseif ($type === FileType::journal->value) {
+                $body = $this->s3->getObjectBodyAsString($key);
+                if ($body !== null) {
+                    $items[] = ['type' => 'journal', 'body' => $body];
+                }
             }
-
-            $body = $this->s3->getObjectBodyAsString($key);
-            if ($body === null) {
-                error_log("Skipping object due to missing body: {$key}");
-                continue;
-            }
-
-            $decoded = json_decode($body, true);
-            $items[] = (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) 
-                ? $decoded 
-                : [
-                    'raw'  => $body, 
-                    'meta' => [
-                        'id'    => $row['id'] ?? null,
-                        'title' => $row['title'] ?? null,
-                        'owner' => $owner,
-                        'key'   => $key,
-                        'type'  => $row['type'] ?? null,
-                        'date'  => $row['date'] ?? null,
-                    ]
-                ];
         }
 
         $stmt->close();
-        return json_encode($items, JSON_UNESCAPED_UNICODE);
+        return json_encode($items);
     }
 
     public function __destruct() {

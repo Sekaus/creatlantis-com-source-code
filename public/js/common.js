@@ -36,6 +36,14 @@ export function Image(file) {
     `;
 }
 
+export function Journal(content) {
+    return /*html*/`
+        <div class="journal-content post">
+            ${content}
+        </div>
+    `;
+}
+
 export function Comment(userMetadata, body) {
     return /*html*/ `
         <div class="comment">

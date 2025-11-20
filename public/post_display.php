@@ -21,6 +21,8 @@
                 <div class="vertical-hr"></div>
             </div>
 
+            <p id="post-display-title" class="extra-big-text">Title</p>
+
             <div id="post-feedback">
                 <div class="vertical-hr"></div>
                 <div>

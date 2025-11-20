@@ -49,6 +49,13 @@ class S3Wrapper {
             'region' => $region,
             'version' => 'latest',
             'use_path_style_endpoint' => $usePathStyle,
+            'http' => [
+                'curl' => [
+                    CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
+                ],
+                'connect_timeout' => 2,
+                'timeout' => 5,
+            ]
         ];
 
         $this->s3 = new S3Client($config);
@@ -86,7 +93,12 @@ class S3Wrapper {
     }
 
     public function objectExists(string $key): bool {
-        return $this->s3->doesObjectExist($this->bucket, $key);
+        try {
+            return $this->s3->doesObjectExistV2($this->bucket, $key);
+        } catch (\Throwable $e) {
+            error_log("S3 objectExists failed for key '$key': " . $e->getMessage());
+            return false;
+        }
     }
 }
 
@@ -196,7 +208,6 @@ class DataHandle {
         while ($row = $result->fetch_assoc()) {
             $key = $row['key'] ?? '';
             $owner = $row['owner'] ?? '';
-            $key = $row['key'] ?? '';
 
             if ($key === null) {
                 error_log("Failed to extract get the key from post: {$key}");
@@ -212,14 +223,17 @@ class DataHandle {
             $decoded = json_decode($body, true);
             $items[] = (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) 
                 ? $decoded 
-                : ['raw' => $body, 'meta' => [
-                    'id' => $row['id'] ?? null,
-                    'title' => $row['title'] ?? null,
-                    'owner' => $owner,
-                    'key' => $key,
-                    'type' => $row['type'] ?? null,
-                    'date' => $row['date'] ?? null,
-                ]];
+                : [
+                    'raw'  => $body, 
+                    'meta' => [
+                        'id'    => $row['id'] ?? null,
+                        'title' => $row['title'] ?? null,
+                        'owner' => $owner,
+                        'key'   => $key,
+                        'type'  => $row['type'] ?? null,
+                        'date'  => $row['date'] ?? null,
+                    ]
+                ];
         }
 
         $stmt->close();

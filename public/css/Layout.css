@@ -996,7 +996,8 @@
         display: flex
     }
 
-    #rules-and-privacy-popup-submit-box {
+    #rules-and-privacy-popup-submit-box,
+    #post-display-title {
         justify-content: center;
         display: flex
     }
@@ -1266,14 +1267,16 @@
     body.dark-theme .bio-content,
     body.dark-theme .login-input,
     body.dark-theme #inbox-map,
-    body.dark-theme .note-text {
+    body.dark-theme .note-text,
+    body.dark-theme #post-display-title {
         background-color: var(--color-dark-1)
     }
 
     body.dark-theme .dorp-down-content,
     body.dark-theme #settings,
     body.dark-theme #login-box,
-    body.dark-theme #rules-and-privacy-popup-content {
+    body.dark-theme #rules-and-privacy-popup-content,
+    body.dark-theme .journal-content {
         background-color: var(--color-dark-0)
     }
 
@@ -1333,14 +1336,16 @@
     body.light-theme .bio-content,
     body.light-theme .login-input,
     body.light-theme #inbox-map,
-    body.light-theme .note-text {
+    body.light-theme .note-text,
+    body.light-theme #post-display-title {
         background-color: var(--color-light-1)
     }
 
     body.light-theme .dorp-down-content,
     body.light-theme #settings,
     body.light-theme #login-box,
-    body.light-theme #rules-and-privacy-popup-content {
+    body.light-theme #rules-and-privacy-popup-content,
+    body.light-theme .journal-content {
         background-color: var(--color-light-0)
     }
 
@@ -1400,14 +1405,16 @@
     body.green-theme .bio-content,
     body.green-theme .login-input,
     body.green-theme #inbox-map,
-    body.green-theme .note-text {
+    body.green-theme .note-text,
+    body.green-theme #post-display-title {
         background-color: var(--color-green-1)
     }
 
     body.green-theme .dorp-down-content,
     body.green-theme #settings,
     body.green-theme #login-box,
-    body.green-theme #rules-and-privacy-popup-content {
+    body.green-theme #rules-and-privacy-popup-content,
+    body.green-theme .journal-content {
         background-color: var(--color-green-0)
     }
 
@@ -1522,6 +1529,12 @@
         border-left-style: var(--tw-border-style);
         padding-left: calc(var(--spacing)*10);
         border-left-width: 1px
+    }
+
+    .journal-content {
+        align-self: center;
+        min-width: 60%;
+        min-height: 25vh
     }
 
     @media (min-width:48rem) {

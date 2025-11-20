@@ -1,7 +1,10 @@
 <?php
     static $lastUpdateOnRulesAndPrivacy = "2025-11-16";
     
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    
     include_once("./user_classes.php");
 
     // Setup the user's sessions

@@ -13,24 +13,31 @@
     </ol>
 
     <form id="upload-new-post" enctype="multipart/form-data" method="POST">
+        <br/>
         <div id="upload-top">
             <p>Post type: </p>
             <select id="submit-options" name="post-type" class="upload-input" required>
                 <option value="" disabled selected>Select a post type</option>
                 <option value="image">Image</option>
-                <option value="blog">Blog</option>
+                <option value="journal">Journal</option>
             </select>
         </div>
 
         <br/>
 
         <div id="upload-bottom">
-          <div id="no-type-selected">
-            <p class="extra-big-text">Please select a file type to continue.</p>
+          <p>Title:</p>
+          <input type="text" name="title" placeholder="title..." class="upload-input"/>
+          <div id="no-type-selected" hidden>
+            <p class="extra-big-text" class="upload-input">Please select a file type to continue.</p>
           </div>
           <div id="file-upload-part" hidden>
             <p class="big-text">Drop a image here, or click to upload.</p>
             <input id="file-input-button" type="file" name="image" accept="image/*" class="upload-input" required/>
+          </div>
+          <div id="journal-submit-part">
+            <p>Body:</p>
+            <textarea name="body" class="upload-input post journal-content"></textarea>
           </div>
         </div>
 

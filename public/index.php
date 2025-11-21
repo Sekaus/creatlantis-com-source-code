@@ -23,11 +23,11 @@
     
     <?php include_once("./html_elements/side_render.html"); ?>
     <?php include_once("./html_elements/footer.html"); ?>
-    <script>
-      import {Image, Journal} from "./js/common.js"
+    <script type="module">
+      import {Image, Journal} from "./js/common.js";
 
       // Page data
-      let posts = [];
+      let posts = "";
       <?php
         include_once("./data_handler.php");
 
@@ -51,17 +51,16 @@
 
         echo "posts = '" . $dh->loadAllFiles(FileType::all, "", FileLoadOrder::newest, 10, 0) . "';";
       ?>
-
-      posts.forEach(element => {
-        switch(element.data_type) {
+      var objectArray = JSON.parse(posts);
+      objectArray.forEach(element => {
+        switch(element.type) {
           case "image":
-            Image();
+            $("#content-view").append(Image(element.src, element.title));
             break;
           case "journal":
             break;
         }
       });
-      $("#content-view")
     </script>
   </body>
 </html>

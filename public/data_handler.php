@@ -63,11 +63,18 @@ class S3Wrapper {
         }
     }
 
-    public function getObjectUrl(string $key): ?string {
+    public function getPresignedUrl(string $key, string $expires = '+15 minutes'): ?string {
         try {
-            return $this->s3->getObjectUrl($this->bucket, $key);
+            $cmd = $this->s3->getCommand('GetObject', [
+                'Bucket' => $this->bucket,
+                'Key'    => $key
+            ]);
+
+            $request = $this->s3->createPresignedRequest($cmd, $expires);
+            return (string)$request->getUri();
+
         } catch (AwsException $e) {
-            error_log("S3 getObjectUrl failed for key '$key': " . $e->getMessage());
+            error_log("S3 presigned URL failed for key '$key': " . $e->getMessage());
             return null;
         }
     }
@@ -199,16 +206,17 @@ class DataHandle {
             if ($type === FileType::image->value) {
                 $objects = $this->s3->listObjects($key);
                 $keys = array_column($objects, 'Key');
+                
                 $finalKey = $this->resolveImageRes($keys, false);
 
                 if ($finalKey) {
-                    $src = $this->s3->getObjectUrl($finalKey);
-                    $items[] = ['type' => 'image', 'src' => $src];
+                    $src = $this->s3->getPresignedUrl($finalKey);
+                    $items[] = ['type' => 'image', 'src' => $src, 'title' => $row['title']];
                 }
             } elseif ($type === FileType::journal->value) {
                 $body = $this->s3->getObjectBodyAsString($key);
                 if ($body !== null) {
-                    $items[] = ['type' => 'journal', 'body' => $body];
+                    $items[] = ['type' => 'journal', 'body' => $body, 'title' => $row['title']];
                 }
             }
         }

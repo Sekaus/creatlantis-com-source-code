@@ -888,7 +888,8 @@
     .upload-tap,
     #points-balance,
     #star-rateing,
-    #inbox-box {
+    #inbox-box,
+    #index-box {
         display: flex
     }
 

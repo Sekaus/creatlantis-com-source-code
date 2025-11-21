@@ -26,9 +26,7 @@
 
         <div id="upload-bottom">
           <div id="no-type-selected">
-            <br/>
             <p class="extra-big-text">Please select a file type to continue.</p>
-            <br/>
           </div>
           <div id="file-upload-part" hidden>
             <p class="big-text">Drop a image here, or click to upload.</p>

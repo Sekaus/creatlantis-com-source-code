@@ -1,12 +1,12 @@
 <nav id="navigation-bar">
     <img src="./images/TestIcon.webp" alt="Webside logo icon" class="navigation-icon"/>
     <div id="search-console">
-        <label>Find:</label>
+        <p>Find:</p>
         <input type="search" name="search-text" maxlength="10" size="12" placeholder="Search on..."
             alt="Search text input" class="navigation-bar-input" />
         <img src="./images/icons/searchIcon.webp" alt="Search botton" title="Start your text input search" class="navigation-icon"/>
 
-        <label>Show only:</label>
+        <p>Show only:</p>
 
         <select name="post-type" alt="Type of post" class="navigation-bar-input">
             <option value="all" selected="selected">All</option>
@@ -15,7 +15,7 @@
             <option value="profiles">Profiles</option>
         </select>
 
-        <label>Order by:</label>
+        <p>Order by:</p>
         <select name="order" alt="The order of the loading" class="navigation-bar-input">
             <option value="newest" selected="selected">Newest</option>
             <option value="oldest">Oldest</option>
@@ -23,7 +23,7 @@
     </div>
 
     <div id="qick-submit">
-        <button title="Upload a new post" type="submit" class="submit">Submit</button>
+        <a href="./upload.php" title="Upload a new post" class="submit">Submit</a>
     </div>
 
     <div id="main-user">
@@ -32,7 +32,7 @@
             <img class="user-icon" src="./images/default_pp.webp" />
             <p class="user-name">Name</p>
         </a>
-        <img src="./images/icons/noteIcon.webp" title="Go to your inbox" alt="Inbox icon" class="navigation-icon"/>
+        <a><img src="./images/icons/noteIcon.webp" title="Go to your inbox" alt="Inbox icon" class="navigation-icon"/></a>
         <var id="inbox-count" title="The content count in the inbox that are marked as not readed">-1</var>
         <p>(<var id="note-count">-1 Notes</var>)</p>
     </div>
@@ -40,7 +40,7 @@
     <div id="settings">
         <p>Settings</p>
         <div class="dorp-down-content">
-            <button id="go-to-account" title="Go to account settings">Account</button>
+            <a id="go-to-account" title="Go to account settings">Account</a>
 
             <br/>
 
@@ -49,14 +49,14 @@
             <br/>
 
             <div id="points-balance">
-                <lable>Points balance:</lable>
+                <p>Points balance:</p>
                 <var id="point-count" title="The number of points you have collected">-200</var>
                 <img id="point-icon" src="./images/icons/pointIcon.webp" alt="Point icon"/>
             </div>
 
             <br/>
 
-            <label>Swith threme</label>
+            <p>Swith threme</p>
             <div id="theme-settings">
                 <div id="dark-theme-option" title="Set the website theme to Dark" class="theme-option"></div>
                 <div id="light-theme-option" title="Set the website theme to Light" class="theme-option"></div>

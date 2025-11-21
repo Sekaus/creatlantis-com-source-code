@@ -14,7 +14,7 @@
 
     <form id="upload-new-post" enctype="multipart/form-data" method="POST">
         <div id="upload-top">
-            <label>Post type: </label>
+            <p>Post type: </p>
             <select id="submit-options" name="post-type" class="upload-input" required>
                 <option value="" disabled selected>Select a post type</option>
                 <option value="image">Image</option>
@@ -25,8 +25,15 @@
         <br/>
 
         <div id="upload-bottom">
+          <div id="no-type-selected">
+            <br/>
+            <p class="extra-big-text">Please select a file type to continue.</p>
+            <br/>
+          </div>
+          <div id="file-upload-part" hidden>
             <p class="big-text">Drop a image here, or click to upload.</p>
             <input id="file-input-button" type="file" name="image" accept="image/*" class="upload-input" required/>
+          </div>
         </div>
 
         <br/>
@@ -34,12 +41,11 @@
         <div id="upload-post-icons">
             <div class="vertical-hr"></div>
 
-            <button id="cancel">Cancel</button>
-            <input type="submit" value="Submit" class="submit"/>
+            <button id="cancel" disabled>Cancel</button>
+            <input type="submit" value="Submit" class="submit" disabled/>
 
             <div class="vertical-hr"></div>
         </div>
-
     </form>
 
     <br/>

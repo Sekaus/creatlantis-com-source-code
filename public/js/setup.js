@@ -68,8 +68,3 @@ export function ChangeTheme(theme) {
     
     $("body").addClass(themeClass);
 }
-
-export function Startup() {
-    $("body").get(0).style.setProperty("--star-rate-mask", `url("../images/5-stars.webp")`);
-    $("body").get(0).style.setProperty('--upload-image', `url("../images/icons/uploadIcon.webp")`);
-}

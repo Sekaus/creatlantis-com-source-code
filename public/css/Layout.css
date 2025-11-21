@@ -84,7 +84,9 @@
         --color-green-0: #c8e3d8;
         --color-green-1: #a4bfa780;
         --color-green-2: #59785f;
-        --color-green-3: #d6ffda
+        --color-green-3: #d6ffda;
+        --star-rate-mask: url(../images/5-stars.webp);
+        --upload-image: url(../images/icons/uploadIcon.webp)
     }
 
     @supports (color:lab(0% 0 0)) {
@@ -385,9 +387,7 @@
 @layer components {
     :root {
         --font-scale: .7;
-        --star-rating: 0%;
-        --upload-image: url();
-        --star-rate-mask: url()
+        --star-rating: 0%
     }
 
     html {
@@ -611,7 +611,8 @@
     #star-rateing,
     #inbox-filter-list li,
     #inbox-content-list li,
-    button {
+    button,
+    a {
         cursor: pointer
     }
 
@@ -1085,7 +1086,8 @@
     }
 
     button,
-    input.submit {
+    .submit,
+    #go-to-account {
         padding-inline: calc(var(--spacing)*4);
         padding-block: calc(var(--spacing)*1)
     }
@@ -1098,7 +1100,8 @@
         background-color: var(--color-slate-600)
     }
 
-    .submit:enabled {
+    .submit:enabled,
+    a.submit {
         background-color: #00bd5e
     }
 
@@ -1538,23 +1541,10 @@
         min-height: 25vh
     }
 
-    @media (min-width:48rem) {
-        #file-input-button {
-            background-size: 28px
-        }
-    }
-
-    @media (min-width:96rem) {
-        #file-input-button {
-            background-size: 36px
-        }
-    }
-
     #file-input-button {
-        border-style: var(--tw-border-style);
-        --tw-border-style: dotted;
-        border-style: dotted;
-        border-width: 1px;
+        background-image: var(--upload-image);
+        background-position: 50%;
+        background-repeat: no-repeat;
         width: 60vw;
         height: 20vh
     }
@@ -1603,8 +1593,6 @@
 
     #star-rateing {
         --star-rating-hover: 0%;
-        -webkit-mask-image: var(--star-rate-mask);
-        -webkit-mask-image: var(--star-rate-mask);
         -webkit-mask-image: var(--star-rate-mask);
         mask-image: var(--star-rate-mask);
         mask-type: alpha;

@@ -248,7 +248,7 @@ class S3Wrapper {
             $uploadKey = $uploadFolder . $filename;
 
             // Create a multipart upload and make it
-            $uploader = new MultipartUploader($this->$s3, $filePath, [
+            $uploader = new MultipartUploader($this->s3, $filePath, [
                 'Bucket' => $uploadKey,
                 'Key' => $uploadFolder,
                 'Metadata' => $metadata,

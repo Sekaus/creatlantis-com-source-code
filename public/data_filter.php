@@ -1,7 +1,4 @@
 <?php
-static $acceptableFileTypes = array('gif', 'jpg', 'jpeg', 'pjpeg', 'png', 'svg', 'webp', 'pjpeg');
-static $maxFileSize = 1024 * 1024 * 5;
-
 // remove all none-word chars in a string (PS. includeing dots and there for not good to deal with numbers)
 function removeAllNoneWordChars($string) {
     return preg_replace('/[\W.]/', '-', $string);

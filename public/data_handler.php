@@ -9,11 +9,57 @@ require_once "./data_filter.php";
 
 use Aws\S3\S3Client;
 use Aws\Exception\AwsException;
+use Aws\S3\MultipartUploader;
+use Aws\Exception\MultipartUploadException;
 
 enum FileType : string {
     case all = "all";
     case image = "image";
     case journal = "journal";
+}
+
+class File {
+    public function __construct(FileType $type, $data) {
+        $this->type = $type;
+
+        if(isset($data))
+            $this->data = $data;
+        else
+            null;
+    }
+
+    private FileType $type;
+    public function type() : FileType { 
+        return $this->type;
+    }
+
+    private $data;
+    public function data() {
+        return $this->data;
+    }
+
+    static $acceptableImage = array('gif', 'jpg', 'jpeg', 'pjpeg', 'png', 'svg', 'webp', 'pjpeg');
+    static $maxFileSize = 1024 * 1024 * 5;
+
+    // check if file is a image and in certain file formats
+    public static function isFileAImage($tempFileLocation, $imageFileType) {
+        $notAImageFile = false;
+
+        // check if it is an image
+        $check = getimagesize($tempFileLocation);
+        if($check == false)  {
+            error_log("File is not an image.");
+            $notAImageFile = true;
+        }
+                        
+        // only allow certain file formats
+        if(!in_array($imageFileType, File::$acceptableImage) ) {
+            error_log("Sorry, only " . implode(". ",File::$acceptableImage) . " files are allowed.");
+            $notAImageFile = true;
+        }
+
+         return !$notAImageFile;
+    }
 }
 
 enum FileLoadOrder : string {
@@ -90,6 +136,136 @@ class S3Wrapper {
             error_log("S3 getObjectBody failed for key '$key': " . $e->getMessage());
             return null;
         }
+    }
+    
+    public function putObject(string $key, string $body, $metadata): bool {
+        if(isset($this->s3)) {
+            try {
+                $this->s3->putObject([
+                    "Bucket"  => $this->bucket,
+                    "Key"     => $key,
+                    'Metadata' => $metadata,
+                    'Body' => $body,
+                    'ACL' => 'public-read'
+                ]);
+            } catch (AwsException $e) {
+                error_log("Fail to put object in the bucket: " . $e->getMessage());
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public function uploadFile(File $file, $uuid, $fileName = null) {
+        try {
+            // Metadata
+            // REMINDER the metadata index names ganna only be saved in small letters on AWS S3
+            $metadata = array (
+                'owner'           => $_SESSION['uuid'],
+                'data_type'       => '',
+                'in_two_versions' => 'false',
+            );
+
+            // Random file name
+            if(is_null($fileName)) {
+                $timestamp = date("o-n-d-H-i-s-") . microtime(true);
+                $fileName = $timestamp . uniqid("", true);
+                $fileName = removeAllNoneWordChars($fileName);
+            }
+
+            if($file->data() != null) {
+                switch ($file->type()) {
+                    case FileType::image:
+                        /* Setup image data */
+
+                        $tempFileLocation = $file->data()['tmp_name'];
+                        $imageFileType = strtolower(pathinfo(basename($file->data()["name"]), PATHINFO_EXTENSION));
+                        $imageFolder = "$uuid/images/$fileName/";
+                        $metadata['data_type'] = $imageFileType;
+
+                        // Check if file is a image and in certain file formats
+                        $resault = File::isFileAImage($tempFileLocation, $imageFileType);
+
+                        if ($resault == true) {
+                            /* if everything is ok, try to handel the image file upload and upload the file */
+
+                            // Try upload the original file
+                            if($this->uploadImageFileData($tempFileLocation, $imageFolder, "high_res.$imageFileType", $metadata)) {
+                                // resize the image (bool ref)
+                                $IsImageResized = keepTheFileSizeBelowMax($tempFileLocation);
+
+                                if($IsImageResized == true) {
+                                    $metadata['in_two_versions'] = 'true';
+
+                                    //upload the resized file
+                                    if(!$this->uploadImageFileData($tempFileLocation, $imageFolder, "low_res.$imageFileType", $metadata))
+                                        error_log("Failed to upload the rescaled image file.");
+                                }
+                                
+                                return $imageFolder;
+                            }
+                            else {
+                                error_log("Failed to upload the image file.");
+                                return null;
+                            }
+                        }
+
+                        return null;
+
+                    case FileType::journal:
+                        /* Setup journal data */
+                        
+                        $title = filterUnwantedCode($file->data()["title"]);
+                        $body = filterUnwantedCode($file->data()["body"]);
+                        $journalKey = "$uuid/journals/$fileName.html";
+                        $metadata['data_type'] = 'html';
+
+                        // Journal body
+                        $body = /*html*/`
+                            <div>$title</div>
+                            <div>$body</div>
+                        `;
+
+                        if($this->putObject($journalKey, $body, $metadata))
+                            return $journalKey;
+
+                        return null;
+                }
+            }
+        } catch (AwsException $e) {
+            error_log("Fail to upload file: ". $e->getMessage());
+
+            return null;
+        }
+    }
+
+    // Upload file data to AWS S3
+    private function uploadImageFileData($filePath, $uploadFolder, $filename, $metadata) {
+        if(isset($this->s3)) {
+            $uploadKey = $uploadFolder . $filename;
+
+            // Create a multipart upload and make it
+            $uploader = new MultipartUploader($this->$s3, $filePath, [
+                'Bucket' => $uploadKey,
+                'Key' => $uploadFolder,
+                'Metadata' => $metadata,
+                'ACL' => 'public-read',
+            ]);
+
+            try {
+                $result = $uploader->upload();
+            } catch (MultipartUploadException $e) {
+                error_log("Upload failed: " . $e->getMessage() . PHP_EOL);
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 }
 
@@ -206,7 +382,7 @@ class DataHandle {
             if ($type === FileType::image->value) {
                 $objects = $this->s3->listObjects($key);
                 $keys = array_column($objects, 'Key');
-                
+
                 $finalKey = $this->resolveImageRes($keys, false);
 
                 if ($finalKey) {

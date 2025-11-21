@@ -63,6 +63,7 @@
         --color-slate-500: #62748e;
         --color-slate-600: #45556c;
         --color-gray-400: #99a1af;
+        --color-gray-500: #6a7282;
         --color-gray-700: #364153;
         --color-black: #000;
         --spacing: .25rem;
@@ -100,6 +101,7 @@
             --color-slate-500: lab(48.0876% -2.03595 -16.5814);
             --color-slate-600: lab(35.5623% -1.74978 -15.4316);
             --color-gray-400: lab(65.9269% -.832707 -8.17474);
+            --color-gray-500: lab(47.7841% -.393212 -10.0268);
             --color-gray-700: lab(27.1134% -.956401 -12.3224);
             --color-dark-0: lab(35.6337% -1.58697 -10.8425)
         }
@@ -589,7 +591,7 @@
     }
 
     .submit:enabled,
-    #cancel,
+    #cancel:enabled,
     #edit,
     #delete,
     #watch-user,
@@ -1106,7 +1108,6 @@
     }
 
     .submit:disabled {
-        color: var(--color-gray-400);
         background-color: #317955
     }
 
@@ -1115,10 +1116,15 @@
         background-color: var(--color-red-500)
     }
 
-    #cancel,
-    #edit,
+    #cancel:enabled,
+    #edit:enabled,
     #go-to-account {
         background-color: var(--color-gray-400)
+    }
+
+    #cancel:disabled,
+    #edit:disabled {
+        background-color: var(--color-gray-500)
     }
 
     .vertical-hr {
@@ -1589,6 +1595,10 @@
         #file-input-button {
             --tw-inset-shadow-color: color-mix(in oklab, var(--color-gray-700)var(--tw-inset-shadow-alpha), transparent)
         }
+    }
+
+    #no-type-selected {
+        padding-block: calc(var(--spacing)*50)
     }
 
     #star-rateing {

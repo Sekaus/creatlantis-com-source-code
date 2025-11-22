@@ -40,7 +40,7 @@
             <textarea name="body" class="upload-input post journal-content"></textarea>
           </div>
           <p>Tags:</p>
-          <textarea name="tags" cols="100" class="upload-input" required>
+          <textarea name="tags" cols="50" class="upload-input" required>
 
           </textarea>
         </div>

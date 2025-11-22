@@ -28,21 +28,23 @@
         <div id="upload-bottom">
           <p>Title:</p>
           <input type="text" name="title" placeholder="title..." class="upload-input"/>
-          <div id="no-type-selected" hidden>
+
+          <div id="no-type-selected" class="upload-part">
             <p class="extra-big-text" class="upload-input">Please select a file type to continue.</p>
           </div>
-          <div id="file-upload-part" hidden>
+
+          <div id="file-upload-part" class="upload-part">
             <p class="big-text">Drop a image here, or click to upload.</p>
             <input id="file-input-button" type="file" name="image" accept="image/*" class="upload-input" required/>
           </div>
-          <div id="journal-submit-part">
+
+          <div id="journal-submit-part" class="upload-part">
             <p>Body:</p>
             <textarea name="body" class="upload-input post journal-content"></textarea>
           </div>
-          <p>Tags:</p>
-          <textarea name="tags" cols="50" class="upload-input" required>
 
-          </textarea>
+          <p>Tags:</p>
+          <input name="tags" size="50" placeholder="#tags..." class="upload-input">
         </div>
 
         <br/>
@@ -69,7 +71,27 @@
           `;
 
           $("#upload-nav-taps").append(html);
-      }
+        }
+
+        $(document).ready(function() {
+          // Initialize: Hide the specific parts we don't want visible at first load
+          $(".upload-part").hide();
+
+          // Ensure "no-type-selected" is shown initially
+          $("#no-type-selected").show(); 
+
+          $("#submit-options").on("change", function() {
+            $(".upload-part").hide();
+            switch($(this).val()) {
+              case "image":
+                $("#file-upload-part").show();
+                break;
+            case "journal":
+                $("#journal-submit-part").show();
+                break;
+            }
+          });
+        });
     </script>
 
     <?php include_once("./html_elements/footer.html"); ?>

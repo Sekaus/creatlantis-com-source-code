@@ -403,7 +403,7 @@ class DataHandle {
 
     public function uploadFile(File $file, Login $login, User $user) {
         if($this->verifyOwnership($login->email(), $login->password(), $user->username())) {
-            $this->s3->uploadFile()
+            $this->s3->uploadFile();
         }
         else
             error_log('It appears that this user ' . $user->username() . '/' . $user->uuid() . ' does not have the proper permissions to upload files.');

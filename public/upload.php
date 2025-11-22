@@ -50,7 +50,7 @@
 
           <div id="journal-submit-part" class="upload-part">
             <p>Body:</p>
-            <textarea name="body" class="upload-input post journal-content"></textarea>
+            <textarea name="body" class="upload-input post journal-content" required></textarea>
           </div>
 
           <p>Tags:</p>

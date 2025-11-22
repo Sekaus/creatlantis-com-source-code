@@ -18,59 +18,59 @@
             }
         }
 
-        private $uuid = "";
+        private string $uuid = "";
         public function uuid() { 
             return $this->uuid;
         }
 
-        private $username = "guest";
+        private string $username = "guest";
         public function username() {
             return $this->username;
         }
 
-        private $tagline = "";
+        private string $tagline = "";
         public function tagline() {
             return $this->tagline;
         }
 
-        private $biography = "";
+        private string $biography = "";
         public function bography() {
             return $this->biography;
         }
 
-        private $dateOfBirth = "";
+        private string $dateOfBirth = "";
         public function dateOfBirth() {
             if($this->dateOfBirthVisible)
                 return $this->dateOfBirth;
         }
 
-        private $dateOfBirthVisible = false;
+        private bool $dateOfBirthVisible = false;
         public function dateOfBirthVisible() {
             return $this->dateOfBirthVisible;
         }
 
-        private $gender = "";
+        private string $gender = "";
         public function gender() {
             if($this->genderVisible)
                 return $this->gender;
         }
 
-        private $genderVisible = false;
+        private bool $genderVisible = false;
         public function genderVisible() {
             return $this->genderVisible;
         }
         
-        private $registrationDate = "";
+        private string $registrationDate = "";
         public function registrationDate() {
             return $this->registrationDate;
         }
 
-        private $profileImage = "./images/default_pp.webp";
+        private string $profileImage = "./images/default_pp.webp";
         public function profileImage() { 
             return $this->profileImage;
         }
 
-        private $lastVersionOfReadAndAccept = "";
+        private string $lastVersionOfReadAndAccept = "";
         public function lastVersionOfReadAndAccept() {
             return $this->lastVersionOfReadAndAccept;
         }
@@ -78,35 +78,35 @@
             $this->lastVersionOfReadAndAccept = $v;
         }
 
-        private $colorTheme = "dark";
+        private string $colorTheme = "dark";
         public function colorTheme() { 
             return $this->colorTheme;
         }
 
-        private $land = "";
+        private string $land = "";
         public function functionland() {
             if($this->landVisible)
                 return $this->land;
         }
 
-        private $landVisible = false;
+        private bool $landVisible = false;
         public function landVisible() {
             return $this->landVisible;
         }
     }
 
     class Login {
-        public function __construct($email, $password) { 
+        public function __construct(string $email, string $password) { 
             $this->email = $email;
             $this->password = $password;
         }
 
-        private $email = "";
+        private string $email = "";
         public function email() {
             return $this->email;
         }
 
-        private $password = "";
+        private string $password = "";
         public function password() {
             return $this->password;
         }

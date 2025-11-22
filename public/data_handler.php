@@ -19,18 +19,20 @@ enum FileType : string {
 }
 
 class File {
-    public function __construct(FileType $type, $data) {
+    public function __construct(FileType $type, $metadata, $data) {
         $this->type = $type;
-
-        if(isset($data))
-            $this->data = $data;
-        else
-            null;
+        $this->metadata = $metadata;
+        $this->data = $data;
     }
 
     private FileType $type;
     public function type() : FileType { 
         return $this->type;
+    }
+
+    private $metadata;
+    public function metadata() {
+        return $this->metadata;
     }
 
     private $data;
@@ -403,7 +405,24 @@ class DataHandle {
 
     public function uploadFile(File $file, Login $login, User $user) {
         if($this->verifyOwnership($login->email(), $login->password(), $user->username())) {
-            $this->s3->uploadFile();
+            // Store the file on the file server and return it's key
+            $key = $this->s3->uploadFile($file, $user->username());
+            
+            // Store the key on the post list of userdb
+            if ($key == null) {
+                $sql = 'INSERT INTO post_listb ("key", "tags", "type", "owner", title) VALUES (?, ?, ?, ?, ?)';
+                $stmt = $this->mysqli->prepare( $sql );
+
+                $tags = filterUnwantedCode($file->metadata()['tags']);
+                $type = filterUnwantedCode($file->metadata()['type']);
+                $owner = filterUnwantedCode($user->uuid());
+                $title = filterUnwantedCode($file->metadata()['title']);
+
+                $stmt->bind_param('sssss', $key, $tags, $type, $owner, $title);
+                $stmt->execute();
+            }
+            else
+                error_log("The user has the proper permissions to upload files, but thay somehow can't.")
         }
         else
             error_log('It appears that this user ' . $user->username() . '/' . $user->uuid() . ' does not have the proper permissions to upload files.');

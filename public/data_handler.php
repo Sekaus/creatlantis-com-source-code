@@ -18,6 +18,16 @@ enum FileType : string {
     case journal = "journal";
 }
 
+enum FileLoadOrder : string {
+    case newest = "DESC";
+    case oldest = "ASC";
+}
+
+enum S3BotType : string {
+    case readOnly = "read";
+    case writeOnly = "write";
+}
+
 class File {
     public function __construct(FileType $type, $metadata, $data) {
         $this->type = $type;
@@ -62,16 +72,6 @@ class File {
 
          return !$notAImageFile;
     }
-}
-
-enum FileLoadOrder : string {
-    case newest = "DESC";
-    case oldest = "ASC";
-}
-
-enum S3BotType : string {
-    case readOnly = "read";
-    case writeOnly = "write";
 }
 
 /**
@@ -422,7 +422,7 @@ class DataHandle {
                 $stmt->execute();
             }
             else
-                error_log("The user has the proper permissions to upload files, but thay somehow can't.")
+                error_log("The user has the proper permissions to upload files, but thay somehow can't.");
         }
         else
             error_log('It appears that this user ' . $user->username() . '/' . $user->uuid() . ' does not have the proper permissions to upload files.');

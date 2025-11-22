@@ -1,5 +1,20 @@
 <?php
     static $lastUpdateOnRulesAndPrivacy = "2025-11-16";
+
+    static $dbConfig = [
+            'host'     => 'localhost',
+            'username' => 'root',
+            'password' => 'Test-13579',
+            'database' => 'userdb',
+            'port'     => 3306
+        ];
+
+    static $s3Config = [
+            'bucket_or_arn'   => 'creatlantis-com-s3-private',
+            'region'          => 'eu-north-1',
+            'use_path_style'  => false,
+            'use_arn_region'  => false               // not needed unless using ARNs
+        ];
     
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
@@ -8,9 +23,8 @@
     include_once("./user_classes.php");
 
     // Setup the user's sessions
-    if (!isset($_SESSION["user_data"])) {
+    if (!isset($_SESSION["user_data"]))
         $_SESSION["user_data"] = serialize(new User());
-    }
 
     $user = unserialize($_SESSION["user_data"]);
     

@@ -1,3 +1,13 @@
+<?php
+  global $dbConfig;
+  global $s3Config;
+  global $user;
+
+  include_once("./data_handler.php");
+
+  $dh = new DataHandle($dbConfig, $s3Config, S3BotType::writeOnly);
+?>
+
 <!DOCTYPE html>
 <html>
   <head>
@@ -81,7 +91,10 @@
           $("#no-type-selected").show(); 
 
           $("#submit-options").on("change", function() {
+            // Hide all parts first
             $(".upload-part").hide();
+
+            // Show the correct part based on the selected value
             switch($(this).val()) {
               case "image":
                 $("#file-upload-part").show();

@@ -1547,6 +1547,12 @@
         min-height: 25vh
     }
 
+    #journal-submit-part .journal-content,
+    #post-display .journal-content {
+        min-width: 50vw;
+        min-height: 60vw
+    }
+
     #file-input-button {
         background-image: var(--upload-image);
         background-position: 50%;

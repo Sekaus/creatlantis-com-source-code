@@ -56,13 +56,15 @@
     <br/>
 
     <script>
-        function UploadingFile(selected) {
-        return /*html*/ `
+        function queueUploadingFile(selected) {
+          var html = /*html*/ `
             <li class="${"upload-tap" + (selected ? " selected-upload-tap" : "")}">
               <a>File name</a>
               <p title="Cancel upload of this file" class="cancel-upload"><b>X</b></p>
             </li>
           `;
+
+          $("#upload-nav-taps").append(html);
       }
     </script>
 

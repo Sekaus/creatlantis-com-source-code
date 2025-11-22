@@ -702,7 +702,8 @@
 
     #content-map .user-icon,
     #content-map-right-part,
-    #watch-user {
+    #watch-user,
+    .upload-input {
         margin-bottom: calc(var(--spacing)*2)
     }
 
@@ -1169,7 +1170,8 @@
     }
 
     #upload-new-post,
-    #star-rate-box {
+    #star-rate-box,
+    #upload-bottom {
         flex-direction: column;
         align-items: center;
         display: flex

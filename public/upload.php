@@ -1,13 +1,3 @@
-<?php
-  global $dbConfig;
-  global $s3Config;
-  global $user;
-
-  include_once("./data_handler.php");
-
-  $dh = new DataHandle($dbConfig, $s3Config, S3BotType::writeOnly);
-?>
-
 <!DOCTYPE html>
 <html>
   <head>
@@ -46,6 +36,7 @@
           <div id="file-upload-part" class="upload-part">
             <p class="big-text">Drop a image here, or click to upload.</p>
             <input id="file-input-button" type="file" name="image" accept="image/*" class="upload-input" required/>
+            <div id="file-display"></div>
           </div>
 
           <div id="journal-submit-part" class="upload-part">
@@ -63,7 +54,7 @@
             <div class="vertical-hr"></div>
 
             <button id="cancel" disabled>Cancel</button>
-            <input type="submit" value="Submit" class="submit" disabled/>
+            <button class="submit" disabled>Submit</button>
 
             <div class="vertical-hr"></div>
         </div>
@@ -104,9 +95,22 @@
                 break;
             }
           });
+
+          // Change the file display
+          
         });
     </script>
 
     <?php include_once("./html_elements/footer.html"); ?>
   </body>
 </html>
+
+<?php
+  global $dbConfig;
+  global $s3Config;
+  global $user;
+
+  include_once("./data_handler.php");
+
+  $dh = new DataHandle($dbConfig, $s3Config, S3BotType::writeOnly);
+?>

@@ -33,16 +33,18 @@
             <p class="extra-big-text" class="upload-input">Please select a file type to continue.</p>
           </div>
 
-          <div id="file-upload-part" class="upload-part">
-            <p class="big-text">Drop a image here, or click to upload.</p>
+          <div id="image-file-upload-part" class="upload-part">
+            <p id="file-name" class="big-text">Drop a image here, or click to upload.</p>
             <input id="file-input-button" type="file" name="image" accept="image/*" class="upload-input" required/>
-            <div id="file-display"></div>
+            <img id="image-preview" src="" class="post"/>
           </div>
 
           <div id="journal-submit-part" class="upload-part">
             <p>Body:</p>
             <textarea name="body" class="upload-input post journal-content" required></textarea>
           </div>
+
+          <br/>
 
           <p>Tags:</p>
           <input name="tags" size="50" placeholder="#tags..." class="upload-input">
@@ -88,7 +90,7 @@
             // Show the correct part based on the selected value
             switch($(this).val()) {
               case "image":
-                $("#file-upload-part").show();
+                $("#image-file-upload-part").show();
                 break;
             case "journal":
                 $("#journal-submit-part").show();
@@ -97,8 +99,25 @@
           });
 
           // Change the file display
-          
+          $("#image-file-upload-part #file-input-button").on("change", function() {
+            readURL(this);
+            $(this).hide();
+          });
         });
+
+        function readURL(input) {
+          if (input.files && input.files[0]) {
+              var reader = new FileReader();
+              var file = input.files[0];
+
+              reader.onload = function (e) {
+                  $("#image-preview").attr("src", e.target.result);
+                  $("#file-name").text(file.name);
+              }
+
+              reader.readAsDataURL(input.files[0]);
+          }
+        }
     </script>
 
     <?php include_once("./html_elements/footer.html"); ?>

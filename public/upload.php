@@ -27,21 +27,21 @@
 
         <div id="upload-bottom">
           <p>Title:</p>
-          <input type="text" name="title" placeholder="title..." class="upload-input"/>
+          <input id="file-name" type="text" name="title" placeholder="title..." class="upload-input" required/>
 
           <div id="no-type-selected" class="upload-part">
             <p class="extra-big-text" class="upload-input">Please select a file type to continue.</p>
           </div>
 
           <div id="image-file-upload-part" class="upload-part">
-            <p id="file-name" class="big-text">Drop a image here, or click to upload.</p>
+            <p id="image-file-input-title" class="big-text">Drop a image here, or click to upload.</p>
             <input id="file-input-button" type="file" name="image" accept="image/*" class="upload-input" required/>
             <img id="image-preview" src="" class="post"/>
           </div>
 
           <div id="journal-submit-part" class="upload-part">
             <p>Body:</p>
-            <textarea name="body" class="upload-input post journal-content" required></textarea>
+            <textarea id="journal-body" name="body" class="upload-input post journal-content" required></textarea>
           </div>
 
           <br/>
@@ -55,8 +55,8 @@
         <div id="upload-post-icons">
             <div class="vertical-hr"></div>
 
-            <button id="cancel" disabled>Cancel</button>
-            <button class="submit" disabled>Submit</button>
+            <button id="cancel" type="reset" disabled>Cancel</button>
+            <button type="submit "class="submit" disabled>Submit</button>
 
             <div class="vertical-hr"></div>
         </div>
@@ -91,6 +91,8 @@
             switch($(this).val()) {
               case "image":
                 $("#image-file-upload-part").show();
+                $("#image-file-input-title").show();
+                $("#image-file-upload-part #file-input-button").show();
                 break;
             case "journal":
                 $("#journal-submit-part").show();
@@ -102,7 +104,32 @@
           $("#image-file-upload-part #file-input-button").on("change", function() {
             readURL(this);
             $(this).hide();
+            $("#upload-post-icons button").prop('disabled', false);
           });
+
+          // UnLock post submit and cancel button for journals
+          $("#journal-body").on("input change", function() {
+            if($("#journal-body").val() !== "")
+              $("#upload-post-icons button").prop('disabled', false);
+            else
+              $("#upload-post-icons button").prop('disabled', true);
+          });
+
+          // Cancel or submit the uploading post from user input
+          if ($('#file-button').attr('disabled') !== "disabled") {
+            $("#upload-post-icons #cancel").click(function(event) {
+              event.preventDefault(); 
+
+              $("#upload-new-post")[0].reset(); 
+              $("#image-preview").prop("src", '').hide();
+              $(".upload-part").hide();
+              $("#no-type-selected").show();
+              $("#upload-post-icons button").prop('disabled', true);
+            });
+            $("#upload-post-icons .submit").click(function(event) {
+              
+            });
+          }
         });
 
         function readURL(input) {
@@ -111,8 +138,9 @@
               var file = input.files[0];
 
               reader.onload = function (e) {
-                  $("#image-preview").attr("src", e.target.result);
-                  $("#file-name").text(file.name);
+                  $("#image-preview").attr("src", e.target.result).show();
+                  $("#image-file-input-title").hide();
+                  $("#file-name").val(file.name);
               }
 
               reader.readAsDataURL(input.files[0]);

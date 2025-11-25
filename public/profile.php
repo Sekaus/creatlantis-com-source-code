@@ -5,8 +5,8 @@
         <?php include_once("./html_elements/head.html"); ?>
     </head>
     <body>
-        <?php include_once("./setup.php"); ?>
         <?php include_once("./html_elements/navigation_bar.html"); ?>
+        <?php include_once("./setup.php"); ?>
 
         <div id="profile-container">
             <div id="content-map">

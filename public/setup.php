@@ -39,6 +39,10 @@
 
         exit;
     }
+
+    $login = null;
+    if (isset($_SESSION["user_login"]))
+        $login = unserialize($_SESSION["user_login"]);
 ?>
 
 <script type="module">
@@ -61,5 +65,14 @@
                 location.reload(); // refresh page so PHP sees updated session
             });
         });
+
+        // Show logout if the user is logged in, else show login
+        <?php if (!isset($login)): ?>
+            $("#logout").hide();
+            $("#login").show();
+        <?php else: ?>
+            $("#login").hide();
+            $("#logout").show();
+        <?php endif;?>
     });
 </script>

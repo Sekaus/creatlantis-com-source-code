@@ -5,8 +5,8 @@
     <?php include_once("./html_elements/head.html"); ?>
   </head>
   <body>
-    <?php include_once("./setup.php"); ?>
     <?php include_once("./html_elements/navigation_bar.html"); ?>
+    <?php include_once("./setup.php"); ?>
 
     <ol id="upload-nav-taps" alt="Upload nav taps">
         <!-- Uploading files here -->
@@ -187,11 +187,5 @@
 </html>
 
 <?php
-  global $dbConfig;
-  global $s3Config;
   global $user;
-
-  include_once("./data_handler.php");
-
-  $dh = new DataHandle($dbConfig, $s3Config, S3BotType::writeOnly);
 ?>

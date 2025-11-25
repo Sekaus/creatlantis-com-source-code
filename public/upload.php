@@ -51,12 +51,18 @@
         </div>
 
         <br/>
+        
+        <div id="progress">
+          Uploaded <var class="upload-percent">-1</var>% of the post...
+        </div>
+
+        <br/>
 
         <div id="upload-post-icons">
             <div class="vertical-hr"></div>
 
             <button id="cancel" type="reset" disabled>Cancel</button>
-            <button type="submit "class="submit" disabled>Submit</button>
+            <button type="submit" class="submit" disabled>Submit</button>
 
             <div class="vertical-hr"></div>
         </div>
@@ -65,87 +71,115 @@
     <br/>
 
     <script>
-        function queueUploadingFile(selected) {
-          var html = /*html*/ `
-            <li class="${"upload-tap" + (selected ? " selected-upload-tap" : "")}">
-              <a>File name</a>
-              <p title="Cancel upload of this file" class="cancel-upload"><b>X</b></p>
-            </li>
-          `;
+      $(document).ready(function() {
 
-          $("#upload-nav-taps").append(html);
-        }
+      // Initial UI state
+      $(".upload-part").hide();
+      $("#no-type-selected").show();
+      $("#upload-post-icons button").prop('disabled', true);
+      $("#progress").hide();
 
-        $(document).ready(function() {
-          // Initialize: Hide the specific parts we don't want visible at first load
-          $(".upload-part").hide();
+      // Handle post type selection
+      $("#submit-options").on("change", function() {
+        $(".upload-part").hide();
 
-          // Ensure "no-type-selected" is shown initially
-          $("#no-type-selected").show(); 
+        // Disable requirements first
+        $("#journal-body").prop("required", false);
+        $("#file-input-button").prop("required", false);
 
-          $("#submit-options").on("change", function() {
-            // Hide all parts first
-            $(".upload-part").hide();
-
-            // Show the correct part based on the selected value
-            switch($(this).val()) {
-              case "image":
+        switch ($(this).val()) {
+            case "image":
                 $("#image-file-upload-part").show();
                 $("#image-file-input-title").show();
-                $("#image-file-upload-part #file-input-button").show();
+                $("#file-input-button").show().prop("required", true);
                 break;
+
             case "journal":
                 $("#journal-submit-part").show();
+                $("#journal-body").prop("required", true);
                 break;
-            }
-          });
+        }
+      });
 
-          // Change the file display
-          $("#image-file-upload-part #file-input-button").on("change", function() {
-            readURL(this);
-            $(this).hide();
-            $("#upload-post-icons button").prop('disabled', false);
-          });
+      // Enable buttons when an image is selected
+      $("#file-input-button").on("change", function() {
+          readURL(this);
+          $(this).hide();
+          $("#upload-post-icons button").prop('disabled', false);
+      });
 
-          // UnLock post submit and cancel button for journals
-          $("#journal-body").on("input change", function() {
-            if($("#journal-body").val() !== "")
-              $("#upload-post-icons button").prop('disabled', false);
-            else
-              $("#upload-post-icons button").prop('disabled', true);
-          });
+      // Enable buttons when journal text is typed
+      $("#journal-body").on("input", function() {
+          $("#upload-post-icons button").prop(
+              'disabled',
+              $(this).val().trim() === ""
+          );
+      });
 
-          // Cancel or submit the uploading post from user input
-          if ($('#file-button').attr('disabled') !== "disabled") {
-            $("#upload-post-icons #cancel").click(function(event) {
-              event.preventDefault(); 
+      // Reset form
+      $("#upload-post-icons #cancel").click(function(event) {
+          $("#upload-new-post")[0].reset();
+          $("#image-preview").prop("src", "").hide();
+          $(".upload-part").hide();
+          $("#no-type-selected").show();
+          $("#upload-post-icons button").prop('disabled', true);
+          $("#file-input-button").show();
+      });
 
-              $("#upload-new-post")[0].reset(); 
-              $("#image-preview").prop("src", '').hide();
-              $(".upload-part").hide();
-              $("#no-type-selected").show();
-              $("#upload-post-icons button").prop('disabled', true);
-            });
-            $("#upload-post-icons .submit").click(function(event) {
-              
-            });
+      $("#upload-new-post").on("submit", function(event) {
+        event.preventDefault();
+
+        let formData = new FormData(this);
+
+        // Submit form via AJAX (NO PROGRESS BAR)
+        $.ajax({
+          url: "upload.php",
+          method: "POST",
+          data: formData,
+          contentType: false,
+          processData: false,
+
+          xhr: function() {
+              $("#progress").show();
+              $(".upload-percent").text(0);
+
+              let xhr = new window.XMLHttpRequest();
+
+              xhr.upload.addEventListener("progress", function(e) {
+                  if (e.lengthComputable) {
+                      let percent = Math.round((e.loaded / e.total) * 100);
+                      $(".upload-percent").text(percent);
+                  }
+              });
+
+              return xhr;
+          },
+
+          success: function(response) {
+              alert("Upload Complete!");
+          },
+          error: function(xhr) {
+              alert("Upload failed: " + xhr.responseText);
           }
         });
+      });
+    });
 
-        function readURL(input) {
-          if (input.files && input.files[0]) {
-              var reader = new FileReader();
-              var file = input.files[0];
+    // Preview function
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            var file = input.files[0];
 
-              reader.onload = function (e) {
-                  $("#image-preview").attr("src", e.target.result).show();
-                  $("#image-file-input-title").hide();
-                  $("#file-name").val(file.name);
-              }
+            reader.onload = function(e) {
+                $("#image-preview").attr("src", e.target.result).show();
+                $("#image-file-input-title").hide();
+                $("#file-name").val(file.name);
+            };
 
-              reader.readAsDataURL(input.files[0]);
-          }
+            reader.readAsDataURL(file);
         }
+      }
     </script>
 
     <?php include_once("./html_elements/footer.html"); ?>

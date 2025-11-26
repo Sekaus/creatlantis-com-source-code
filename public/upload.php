@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Main</title>
+    <title>Upload</title>
     <?php include_once("./html_elements/head.html"); ?>
   </head>
   <body>
@@ -71,6 +71,10 @@
     <br/>
 
     <script>
+      // Only show this page if the user had logged in
+      if(<?php echo isset($login) ? "false" : "true"; ?>)
+        window.location.replace("./login.php");
+
       $(document).ready(function() {
 
       // Initial UI state

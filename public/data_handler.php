@@ -166,7 +166,7 @@ class S3Wrapper {
             // Metadata
             // REMINDER the metadata index names ganna only be saved in small letters on AWS S3
             $metadata = array (
-                'owner'           => $_SESSION['uuid'],
+                'owner'           => $uuid,
                 'data_type'       => '',
                 'in_two_versions' => 'false',
             );

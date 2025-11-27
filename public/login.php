@@ -45,5 +45,31 @@
                 </div>
             </form>
         </div>
+        
+        <script>
+          $(document).ready(function(){
+            $("#upload-new-post").on("submit", function(event) {
+              event.preventDefault();
+
+              let formData = new FormData(this);
+
+              // Submit form via AJAX (NO PROGRESS BAR)
+              $.ajax({
+                url: "login_handel.php",
+                method: "POST",
+                data: formData,
+                contentType: false,
+                processData: false,
+
+                success: function(response) {
+                  alert("Login Complete!");
+                },
+                error: function(xhr) {
+                  alert("Login failed: " + xhr.responseText);
+                }
+              });
+            });
+          });
+        </script>
   </body>
 </html>

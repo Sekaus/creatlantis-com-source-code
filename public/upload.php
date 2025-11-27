@@ -137,7 +137,7 @@
 
         // Submit form via AJAX (NO PROGRESS BAR)
         $.ajax({
-          url: "upload.php",
+          url: "./file_upload_handel.php",
           method: "POST",
           data: formData,
           contentType: false,

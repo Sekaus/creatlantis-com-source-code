@@ -279,7 +279,7 @@ class DataHandle {
     private S3Wrapper $s3;
     private S3BotType $s3BotType;
 
-    public function __construct(array $dbConfig, array $s3Config, S3BotType $botType) {
+    public function __construct(array $dbConfig, array $s3Config, ?S3BotType $botType = null) {
         $this->mysqli = new \mysqli(
             $dbConfig['host'] ?? 'localhost',
             $dbConfig['username'] ?? 'root',
@@ -303,14 +303,16 @@ class DataHandle {
             throw new \RuntimeException("S3 keys not found for bot type: {$typeValue}");
         }
 
-        $this->s3 = new S3Wrapper(
-            ['key' => $row['key'], 'secret' => $row['secret_key']],
-            $s3Config['bucket_or_arn'] ?? throw new \InvalidArgumentException("S3 bucket required"),
-            $s3Config['region'] ?? throw new \InvalidArgumentException("S3 region required"),
-            $s3Config['use_path_style'] ?? false
-        );
+        if($botType != null) {
+            $this->s3 = new S3Wrapper(
+                ['key' => $row['key'], 'secret' => $row['secret_key']],
+                $s3Config['bucket_or_arn'] ?? throw new \InvalidArgumentException("S3 bucket required"),
+                $s3Config['region'] ?? throw new \InvalidArgumentException("S3 region required"),
+                $s3Config['use_path_style'] ?? false
+            );
 
-        $this->s3BotType = $botType;
+            $this->s3BotType = $botType;
+        }
     }
 
     public function loginAsUser(string $email, string $password): bool {

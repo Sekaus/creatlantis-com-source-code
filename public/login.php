@@ -8,7 +8,7 @@
     <?php include_once("./setup.php"); ?>
 
     <div id="login-form-box">
-        <form id="login-form" enctype="multipart/form-data" type="POST">
+        <form id="login-form" enctype="multipart/form-data" method="POST">
             <div id="login-box">
                 <h1 class="extra-big-text">Login</h1>
 
@@ -48,24 +48,29 @@
         
         <script>
           $(document).ready(function(){
-            $("#upload-new-post").on("submit", function(event) {
+            $("#login-form").on("submit", function(event) {
               event.preventDefault();
 
               let formData = new FormData(this);
 
               // Submit form via AJAX (NO PROGRESS BAR)
               $.ajax({
-                url: "login_handel.php",
+                url: "./login_handel.php",
                 method: "POST",
                 data: formData,
-                contentType: false,
                 processData: false,
-
+                contentType: false,
+                
                 success: function(response) {
-                  alert("Login Complete!");
+                    if (response.success) {
+                        alert("Login Complete!");
+                        window.location.href = "index.php";
+                    } else {
+                        alert("Login failed: " + response.error);
+                    }
                 },
                 error: function(xhr) {
-                  alert("Login failed: " + xhr.responseText);
+                    alert("Login failed: " + JSON.parse(xhr.responseText).error);
                 }
               });
             });

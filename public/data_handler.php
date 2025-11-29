@@ -292,18 +292,19 @@ class DataHandle {
             throw new \RuntimeException("DB connection failed: " . $this->mysqli->connect_error);
         }
 
-        $stmt = $this->mysqli->prepare("SELECT `key`, `secret_key` FROM s3_bot_keys WHERE type = ? LIMIT 1");
-        $typeValue = $botType->value;
-        $stmt->bind_param("s", $typeValue);
-        $stmt->execute();
-        $row = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
+        if($botType !== null) {
+            // Load S3 credentials only when needed
+            $stmt = $this->mysqli->prepare("SELECT `key`, `secret_key` FROM s3_bot_keys WHERE type = ? LIMIT 1");
+            $typeValue = $botType->value;
+            $stmt->bind_param("s", $typeValue);
+            $stmt->execute();
+            $row = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
 
-        if (!$row || empty($row['key']) || empty($row['secret_key'])) {
-            throw new \RuntimeException("S3 keys not found for bot type: {$typeValue}");
-        }
+            if (!$row || empty($row['key']) || empty($row['secret_key'])) {
+                throw new \RuntimeException("S3 keys not found for bot type: {$typeValue}");
+            }
 
-        if($botType != null) {
             $this->s3 = new S3Wrapper(
                 ['key' => $row['key'], 'secret' => $row['secret_key']],
                 $s3Config['bucket_or_arn'] ?? throw new \InvalidArgumentException("S3 bucket required"),
@@ -323,7 +324,7 @@ class DataHandle {
         $stmt->close();
 
         if ($row) {
-            $_SESSION["login"] = serialize(new Login($email, $password));
+            $_SESSION["user_login"] = serialize(new Login($email, $password));
             $_SESSION["user_data"] = serialize(new User($row));
             return true;
         }

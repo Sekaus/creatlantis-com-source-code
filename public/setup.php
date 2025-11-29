@@ -1,20 +1,7 @@
 <?php
     static $lastUpdateOnRulesAndPrivacy = "2025-11-16";
 
-    static $dbConfig = [
-            'host'     => 'localhost',
-            'username' => 'root',
-            'password' => 'Test-13579',
-            'database' => 'userdb',
-            'port'     => 3306
-        ];
-
-    static $s3Config = [
-            'bucket_or_arn'   => 'creatlantis-com-s3-private',
-            'region'          => 'eu-north-1',
-            'use_path_style'  => false,
-            'use_arn_region'  => false               // not needed unless using ARNs
-        ];
+    include_once("./config.php");
     
     if (session_status() === PHP_SESSION_NONE) {
         session_start();

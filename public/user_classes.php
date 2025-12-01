@@ -23,7 +23,7 @@
             return $this->uuid;
         }
 
-        private string $username = "guest";
+        private string $username = "Guest";
         public function username() {
             return $this->username;
         }
@@ -65,9 +65,12 @@
             return $this->registrationDate;
         }
 
-        private string $profileImage = "./images/default_pp.webp";
-        public function profileImage() { 
-            return $this->profileImage;
+        private ?string $profileImage = null;
+        public function profileImage() {
+            if(isset($this->profileImage))
+                return $this->uuid() . "/" . $this->profileImage;
+            else
+                return null;
         }
 
         private string $lastVersionOfReadAndAccept = "";

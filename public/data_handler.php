@@ -410,6 +410,12 @@ class DataHandle {
         return json_encode($items, );
     }
 
+    public function GetURLOnSingleFile($key): string {
+        if (!$key) return "";
+        
+        return $this->s3->getPresignedUrl($key);;
+    }
+
     public function uploadFile(File $file, Login $login, User $user) {
         // Validate types (login/user may be serialized objects from session)
         if (!($login instanceof Login) || !($user instanceof User)) {

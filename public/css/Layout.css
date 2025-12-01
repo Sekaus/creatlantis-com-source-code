@@ -1545,14 +1545,30 @@
 
     .journal-content {
         align-self: center;
-        min-width: 60%;
-        min-height: 25vh
+        min-width: 50vw;
+        min-height: 75vw;
+        overflow: hidden
+    }
+
+    @media (min-width:64rem) {
+        .journal-content {
+            min-width: 30vw;
+            min-height: 45vw
+        }
+    }
+
+    @media (min-width:96rem) {
+        .journal-content {
+            min-width: 20%;
+            min-height: 25vw
+        }
     }
 
     #journal-submit-part .journal-content,
     #post-display .journal-content {
-        min-width: 50vw;
-        min-height: 60vw
+        max-width: 50vw;
+        min-height: 60vw;
+        overflow: auto
     }
 
     #file-input-button {
@@ -1658,6 +1674,10 @@
 }
 
 @layer utilities {
+    .absolute {
+        position: absolute
+    }
+
     .filter {
         filter: var(--tw-blur, )var(--tw-brightness, )var(--tw-contrast, )var(--tw-grayscale, )var(--tw-hue-rotate, )var(--tw-invert, )var(--tw-saturate, )var(--tw-sepia, )var(--tw-drop-shadow, )
     }

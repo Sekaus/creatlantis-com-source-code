@@ -1,3 +1,7 @@
+<?php
+  session_start();
+?>
+
 <!DOCTYPE html>
 <html>
   <head>
@@ -16,7 +20,7 @@
         <br/>
         <div id="upload-top">
             <p>Post type: </p>
-            <select id="submit-options" name="post-type" class="upload-input" required>
+            <select id="submit-options" name="post_type" class="upload-input" required>
                 <option value="" disabled selected>Select a post type</option>
                 <option value="image">Image</option>
                 <option value="journal">Journal</option>
@@ -156,14 +160,17 @@
                   }
               });
 
+              $("#upload-post-icons button").prop('disabled', true);
+
               return xhr;
           },
 
           success: function(response) {
               alert("Upload Complete!");
+              window.location.href = "index.php";
           },
           error: function(xhr) {
-              alert("Upload failed: " + xhr.responseText);
+              alert("Upload failed: " + JSON.parse(xhr.responseText).error);
           }
         });
       });
@@ -189,7 +196,3 @@
     <?php include_once("./html_elements/footer.html"); ?>
   </body>
 </html>
-
-<?php
-  global $user;
-?>

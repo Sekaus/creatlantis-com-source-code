@@ -1,3 +1,7 @@
+<?php
+  session_start();
+?>
+
 <!DOCTYPE html>
 <html>
   <head>
@@ -37,15 +41,16 @@
         // Now create DataHandle correctly:
         $dh = new DataHandle($dbConfig, $s3Config, S3BotType::readOnly);
 
-        echo "posts = '" . $dh->loadAllFiles(FileType::all, "", FileLoadOrder::newest, 10, 0) . "';";
+        echo "posts = " . $dh->loadAllFiles(FileType::all, "", FileLoadOrder::newest, 10, 0) . ";";
       ?>
-      var objectArray = JSON.parse(posts);
-      objectArray.forEach(element => {
+      
+      posts.forEach(element => {
         switch(element.type) {
           case "image":
             $("#content-view").append(Image(element.src, element.title));
             break;
           case "journal":
+            $("#content-view").append(Journal(element.body));
             break;
         }
       });

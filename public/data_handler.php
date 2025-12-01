@@ -58,7 +58,11 @@ class File {
         $notAImageFile = false;
 
         // check if it is an image
-        $check = getimagesize($tempFileLocation);
+        $check = false;
+
+        if(isset($tempFileLocation))
+            $check = getimagesize($tempFileLocation);
+
         if($check == false)  {
             error_log("File is not an image.");
             $notAImageFile = true;
@@ -147,8 +151,7 @@ class S3Wrapper {
                     "Bucket"  => $this->bucket,
                     "Key"     => $key,
                     'Metadata' => $metadata,
-                    'Body' => $body,
-                    'ACL' => 'public-read'
+                    'Body' => $body
                 ]);
             } catch (AwsException $e) {
                 error_log("Fail to put object in the bucket: " . $e->getMessage());
@@ -220,18 +223,21 @@ class S3Wrapper {
                     case FileType::journal:
                         /* Setup journal data */
                         
-                        $title = filterUnwantedCode($file->data()["title"]);
-                        $body = filterUnwantedCode($file->data()["body"]);
+                        $title = convertQuotesToUnicode(filterUnwantedCode($file->data()["title"]));
+                        $body = convertQuotesToUnicode(filterUnwantedCode($file->data()["body"]));
                         $journalKey = "$uuid/journals/$fileName.html";
                         $metadata['data_type'] = 'html';
 
                         // Journal body
-                        $body = /*html*/`
-                            <div>$title</div>
+                        $body = <<<HTML
+                            <div class='big-text'>$title</div>
                             <div>$body</div>
-                        `;
+                        HTML;
 
-                        if($this->putObject($journalKey, $body, $metadata))
+                        $cleanBody = trim($body);
+                        $cleanBody = mb_convert_encoding($cleanBody, 'UTF-8', 'UTF-8');
+
+                        if ($this->putObject($journalKey, $cleanBody, $metadata))
                             return $journalKey;
 
                         return null;
@@ -247,24 +253,22 @@ class S3Wrapper {
     // Upload file data to AWS S3
     private function uploadImageFileData($filePath, $uploadFolder, $filename, $metadata) {
         if(isset($this->s3)) {
-            $uploadKey = $uploadFolder . $filename;
+            $uploadKey = rtrim($uploadFolder, '/') . '/' . $filename;
 
             // Create a multipart upload and make it
             $uploader = new MultipartUploader($this->s3, $filePath, [
-                'Bucket' => $uploadKey,
-                'Key' => $uploadFolder,
-                'Metadata' => $metadata,
-                'ACL' => 'public-read',
+                'Bucket' => $this->bucket,
+                'Key' => $uploadKey,
+                'Metadata' => $metadata
             ]);
 
             try {
                 $result = $uploader->upload();
+                return true;
             } catch (MultipartUploadException $e) {
                 error_log("Upload failed: " . $e->getMessage() . PHP_EOL);
                 return false;
             }
-
-            return true;
         }
 
         return false;
@@ -397,38 +401,58 @@ class DataHandle {
             } elseif ($type === FileType::journal->value) {
                 $body = $this->s3->getObjectBodyAsString($key);
                 if ($body !== null) {
-                    $items[] = ['type' => 'journal', 'body' => $body, 'title' => $row['title']];
+                    $items[] = ['type' => 'journal', 'body' => preg_replace('/[\\x00-\\x1F\\x7F]/', '', $body), 'title' => $row['title']];
                 }
             }
         }
 
         $stmt->close();
-        return json_encode($items);
+        return json_encode($items, );
     }
 
     public function uploadFile(File $file, Login $login, User $user) {
-        if($this->verifyOwnership($login->email(), $login->password(), $user->username())) {
-            // Store the file on the file server and return it's key
-            $key = $this->s3->uploadFile($file, $user->username());
-            
-            // Store the key on the post list of userdb
-            if ($key == null) {
-                $sql = 'INSERT INTO post_listb ("key", "tags", "type", "owner", title) VALUES (?, ?, ?, ?, ?)';
-                $stmt = $this->mysqli->prepare( $sql );
-
-                $tags = filterUnwantedCode($file->metadata()['tags']);
-                $type = filterUnwantedCode($file->metadata()['type']);
-                $owner = filterUnwantedCode($user->uuid());
-                $title = filterUnwantedCode($file->metadata()['title']);
-
-                $stmt->bind_param('sssss', $key, $tags, $type, $owner, $title);
-                $stmt->execute();
-            }
-            else
-                error_log("The user has the proper permissions to upload files, but thay somehow can't.");
+        // Validate types (login/user may be serialized objects from session)
+        if (!($login instanceof Login) || !($user instanceof User)) {
+            return ['success' => false, 'error' => 'Invalid login/user.'];
         }
-        else
-            error_log('It appears that this user ' . $user->username() . '/' . $user->uuid() . ' does not have the proper permissions to upload files.');
+
+        // Verify ownership
+        if (!$this->verifyOwnership($login->email(), $login->password(), $user->username())) {
+            return ['success' => false, 'error' => 'Not authorized.'];
+        }
+
+        // Upload to S3 (returns key or null)
+        $key = $this->s3->uploadFile($file, $user->uuid());
+        if ($key === null) {
+            error_log("S3 upload failed for user {$user->uuid()}");
+            return ['success' => false, 'error' => 'S3 upload failed.'];
+        }
+
+        // Save DB record (use the same table you read from - I changed post_listb -> post_list)
+        $sql = "INSERT INTO post_list (`key`, `tags`, `type`, `owner`, `title`) VALUES (?, ?, ?, ?, ?)";
+        $stmt = $this->mysqli->prepare($sql);
+        if (!$stmt) {
+            error_log("MySQL prepare failed: " . $this->mysqli->error);
+            return ['success' => false, 'error' => 'DB prepare failed: ' . $this->mysqli->error];
+        }
+
+        $tags  = filterUnwantedCode($file->metadata()['tags'] ?? '');
+        $type  = filterUnwantedCode($file->metadata()['type'] ?? '');
+        $owner = filterUnwantedCode($user->uuid() ?? '');
+        $title = filterUnwantedCode($file->metadata()['title'] ?? '');
+
+        $stmt->bind_param('sssss', $key, $tags, $type, $owner, $title);
+
+        if (!$stmt->execute()) {
+            error_log("DB execute failed: " . $stmt->error);
+            $stmt->close();
+            return ['success' => false, 'error' => 'DB execute failed: ' . $stmt->error];
+        }
+
+        $stmt->close();
+
+        // Return success + key (caller will JSON-encode)
+        return ['success' => true, 'key' => $key];
     }
 
     public function __destruct() {

@@ -29,26 +29,20 @@ function keepTheFileSizeBelowMax($file) {
 
 // resize image
 function resize($imagePath, $percent) {
-    // Create an Imagick object from the image file
     $imagick = new Imagick($imagePath);
 
-    // Calculate the new image dimensions
     $width = $imagick->getImageWidth();
     $height = $imagick->getImageHeight();
-    $newWidth = $width * $percent / 100;
-    $newHeight = $height * $percent / 100;
 
-    // Resize the image
+    $percent = max($percent, 40);
+
+    $newWidth = max(1, (int)($width * $percent / 100));
+    $newHeight = max(1, (int)($height * $percent / 100));
+
     $imagick->resizeImage($newWidth, $newHeight, Imagick::FILTER_LANCZOS, 1);
+    $imagick->setImageCompressionQuality(90);
 
-    // Set the image quality
-    $imagick->setImageCompressionQuality($percent);
-
-    // Return the resized image as a string
-    if (file_put_contents($imagePath, $imagick))
-        return true;
-    else
-        return false;
+    return $imagick->writeImage($imagePath);
 }
 
 // filter JavaScript, PHP, form tags and link tags from text
@@ -145,10 +139,10 @@ function convertQuotesToUnicode($input) {
         $char = $input[$i];
         
         // replace all single quotes and double quotes with html unicode 
-        if ($char == "'") {
+        if ($char == "'" || $char == '"' || $char == "`") {
             // check for =' in $input
             if(substr($output, -1) == "=" || $readingCSS) {
-                $output .= '"';
+                $output .= "'";
                 $readingCSS = !$readingCSS;
             }
             else

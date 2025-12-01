@@ -1,3 +1,7 @@
+<?php
+  session_start();
+?>
+
 <!DOCTYPE html>
 <html>
   <head>
@@ -66,7 +70,7 @@
                         alert("Login Complete!");
                         window.location.href = "index.php";
                     } else {
-                        alert("Login failed: " + response.error);
+                        console.log("Login failed: " + response);
                     }
                 },
                 error: function(xhr) {

@@ -1,5 +1,9 @@
 <?php
   session_start();
+
+  include_once("./user_classes.php");
+
+  $viewedUser = new User();
 ?>
 
 <!DOCTYPE html>
@@ -37,7 +41,7 @@
         </div>
         
         <script type="module">
-            import { UserMetadata } from "./js/common.js";
+            import { UserMetadata, CommentSection } from "./js/common.js";
 
             $("#content-map-left-part").prepend(UserMetadata());
             $("#profile-container").append(CustomProfileView());
@@ -189,7 +193,7 @@
             }
 
             function Favorites() {
-                return = /*html*/ `
+                return /*html*/ `
                     <div id="content-view">
                         <!-- Favorites here -->
                     </div>

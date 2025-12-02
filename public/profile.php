@@ -28,7 +28,7 @@
                 </div>
 
                 <div id="content-map-right-part">
-                    <img src={editProfileIcon} id="start-editing-profile" title="Start editing your profile page" alt="Edit profil icon" class="navigation-icon" hidden />
+                    <img src="./images/icons/editProfileIcon.webp" id="start-editing-profile" title="Start editing your profile page" alt="Edit profil icon" class="navigation-icon" hidden/>
                 </div>
             </div>
 
@@ -38,30 +38,30 @@
         
         <script type="module">
             import { UserMetadata } from "./js/common.js";
-            
+
             $("#content-map-left-part").prepend(UserMetadata());
             $("#profile-container").append(CustomProfileView());
 
             function CustomProfileView() {
                 return /*html*/ `
-                <div id="short-user-description">
-                    <label>Date of birth:</label>
-                    <time id="date-of-birth">0000-01-01</time>
-                    <label>Gender:</label>
-                    <span id="gender">Non-binary</span>
-                    <label>Land:</label>
-                    <span id="land">Denmark</span>
-                </div>
+                    <div id="short-user-description">
+                        <label>Date of birth:</label>
+                        <time id="date-of-birth">0000-01-01</time>
+                        <label>Gender:</label>
+                        <span id="gender">Non-binary</span>
+                        <label>Land:</label>
+                        <span id="land">Denmark</span>
+                    </div>
 
-                <div id="custom-profile-view">
-                    <div id="custom-profile-left">
-                        <!-- Custom profile elements left side here -->
+                    <div id="custom-profile-view">
+                        <div id="custom-profile-left">
+                            <!-- Custom profile elements left side here -->
+                        </div>
+                        <div id="custom-profile-right">
+                            <!-- Custom profile elements right side here -->
+                        </div>
                     </div>
-                    <div id="custom-profile-right">
-                        <!-- Custom profile elements right side here -->
-                    </div>
-                </div>
-                `;
+                    `;
             }
 
             function CustomProfileEdit() {
@@ -89,7 +89,7 @@
                 return /*html*/ `
                     <div class="custom-profile-element profile-element">
                     <div class="profile-element-icon-container">
-                        <img src={editIcon} id="start-editing-profile" title="Start editing this profile element" alt="Edit icon" class="profile-element-icon" />
+                        <img src="./images/icons/editIcon.webp" id="start-editing-profile" title="Start editing this profile element" alt="Edit icon" class="profile-element-icon"/>
                     </div>
                         ${content}
                     </div>
@@ -104,15 +104,15 @@
                 `;
             }
 
-            function PostSpotlightElement(imageFile) {
+            function PostSpotlightElement(imageFile, title) {
                 return /*html*/ `
                     <div class="post-spotlight-element profile-element">
                         <div class="profile-element-icon-container">
-                            <img src={editIcon} id="start-editing-profile" title="Start editing this profile element" alt="Edit icon" class="profile-element-icon" />
+                            <img src="./images/icons/editIcon.webp" id="start-editing-profile" title="Start editing this profile element" alt="Edit icon" class="profile-element-icon" />
                         </div>
-                        <p class="post-spotlight-title big-text">&{imageFile}</p>
+                        <p class="post-spotlight-title big-text">${title}</p>
                         <div class="post-spotlight">
-                            {post}
+                            ${imageFile}
                         </div>
                     </div>
                 `;

@@ -1,2 +1,17 @@
 # Ensure JavaScript files are served with the correct MIME type for modules
-AddType text/javascript .js
+AddType text/javascript .j
+
+# Turn on URL rewriting
+RewriteEngine On
+
+# Do not rewrite if the request is for an actual file
+RewriteCond %{REQUEST_FILENAME} !-f
+
+# Do not rewrite if the request is for an actual directory
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Rewrite the clean URL to the dynamic file path for profiles
+RewriteRule ^([a-zA-Z0-9_-]+)$ profile.php?user=$1 [L]
+
+# Rewrite the clean URL to the dynamic file path for post displays
+RewriteRule ^([a-zA-Z0-9_-]+)$ post_display.php?id=$1 [L]

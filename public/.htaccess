@@ -4,16 +4,23 @@ AddType text/javascript .j
 # Turn on URL rewriting
 RewriteEngine On
 
+# Base directory setting (useful if you are in a subdirectory)
+RewriteBase /
+
+# --- Conditions shared by all rules below ---
 # Do not rewrite if the request is for an actual file
 RewriteCond %{REQUEST_FILENAME} !-f
-
 # Do not rewrite if the request is for an actual directory
 RewriteCond %{REQUEST_FILENAME} !-d
 
-# Rewrite the clean URL to the dynamic file path for profiles
-# Matches URLs like http://example.com/profile/johndoe
-RewriteRule ^profile/([a-zA-Z0-9_-]+)$ profile.php?uuid=$1 [L]
+# Rewrite for Profiles: Matches /profile/username 
+# The URL the user sees will be http://example.com/profile/johndoe
+RewriteRule ^profile/([a-zA-Z0-9_-]+)$ profile.php?uuid=$1 [L,NC]
 
-# Rewrite the clean URL to the dynamic file path for post displays
-# Matches URLs like http://example.com/post/12345
-RewriteRule ^post/([a-zA-Z0-9_-]+)$ post_display.php?id=$1 [L]
+# Rewrite for Posts: Matches /post/12345
+# The URL the user sees will be http://example.com/post/123
+RewriteRule ^post/([0-9]+)$ post_display.php?id=$1 [L,NC]
+
+# Optional: Add a general catch-all for any request that still looks like an old-style user UUID, 
+# assuming UUIDs are distinct from post IDs. This is less robust than using prefixes but resolves the original conflict.
+# RewriteRule ^([a-zA-Z0-9_-]+)$ profile.php?uuid=$1 [L,NC]

@@ -570,8 +570,8 @@
         }
     }
 
-    .selected-nav-tap,
-    .selected-upload-tap {
+    .selected-nav-tab,
+    .selected-upload-tab {
         border-top-left-radius: var(--radius-sm);
         border-top-right-radius: var(--radius-sm)
     }
@@ -595,7 +595,7 @@
     #edit,
     #delete,
     #watch-user,
-    .tap,
+    .tab,
     .navigation-icon,
     :not(input).navigation-bar-input,
     #folder-filter-list li,
@@ -609,7 +609,7 @@
     .upload-input,
     .theme-option,
     .cancel-upload,
-    .upload-tap,
+    .upload-tab,
     #star-rateing,
     #inbox-filter-list li,
     #inbox-content-list li,
@@ -618,8 +618,8 @@
         cursor: pointer
     }
 
-    .tap,
-    .upload-tap,
+    .tab,
+    .upload-tab,
     #post-feedback {
         padding: calc(var(--spacing)*1.5)
     }
@@ -844,8 +844,8 @@
     .profile-link,
     #main-user,
     #qick-submit,
-    #nav-taps,
-    #upload-nav-taps {
+    #nav-tabs,
+    #upload-nav-tabs {
         white-space: nowrap;
         flex-wrap: wrap;
         display: flex
@@ -855,21 +855,21 @@
     .profile-link,
     #main-user,
     #qick-submit,
-    #nav-taps,
+    #nav-tabs,
     #content-map,
     #selected-folder-metadata,
     #post-feedback-top,
     #post-feedback-bottom,
     #post-feedback,
-    #upload-nav-taps,
-    .upload-tap,
+    #upload-nav-tabs,
+    .upload-tab,
     #points-balance,
     #login-submit-box,
     #rules-and-privacy-popup-submit-box {
         gap: calc(var(--spacing)*2)
     }
 
-    #nav-taps,
+    #nav-tabs,
     #watch-user {
         align-self: flex-end
     }
@@ -885,11 +885,11 @@
     #selected-folder-metadata,
     #gallery,
     #content-view,
-    #post-feedback-top,
+    #post-feedback-tob,
     #post-feedback-bottom,
     #profile-layout-icon-container,
     #post-icon-container,
-    .upload-tap,
+    .upload-tab,
     #points-balance,
     #star-rateing,
     #inbox-box,
@@ -1263,7 +1263,7 @@
     }
 
     body.dark-theme .custom-content,
-    body.dark-theme .selected-nav-tap,
+    body.dark-theme .selected-nav-tab,
     body.dark-theme .navigation-bar-input,
     body.dark-theme #profile-element-box,
     body.dark-theme #folder-map,
@@ -1272,7 +1272,7 @@
     body.dark-theme #comment-input,
     body.dark-theme #upload-new-post,
     body.dark-theme .upload-input,
-    body.dark-theme .selected-upload-tap,
+    body.dark-theme .selected-upload-tab,
     body.dark-theme .account-settings-input,
     body.dark-theme #comment-section,
     body.dark-theme #profile-bio,
@@ -1332,7 +1332,7 @@
     }
 
     body.light-theme .custom-content,
-    body.light-theme .selected-nav-tap,
+    body.light-theme .selected-nav-tab,
     body.light-theme .navigation-bar-input,
     body.light-theme #profile-element-box,
     body.light-theme #folder-map,
@@ -1341,7 +1341,7 @@
     body.light-theme #comment-input,
     body.light-theme #upload-new-post,
     body.light-theme .upload-input,
-    body.light-theme .selected-upload-tap,
+    body.light-theme .selected-upload-tab,
     body.light-theme .account-settings-input,
     body.light-theme #comment-section,
     body.light-theme #profile-bio,
@@ -1401,7 +1401,7 @@
     }
 
     body.green-theme .custom-content,
-    body.green-theme .selected-nav-tap,
+    body.green-theme .selected-nav-tab,
     body.green-theme .navigation-bar-input,
     body.green-theme #profile-element-box,
     body.green-theme #folder-map,
@@ -1410,7 +1410,7 @@
     body.green-theme #comment-input,
     body.green-theme #upload-new-post,
     body.green-theme .upload-input,
-    body.green-theme .selected-upload-tap,
+    body.green-theme .selected-upload-tab,
     body.green-theme .account-settings-input,
     body.green-theme #comment-section,
     body.green-theme #profile-bio,

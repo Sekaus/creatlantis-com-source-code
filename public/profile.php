@@ -24,11 +24,11 @@
                 <div id="content-map-left-part">
                     <!-- User metadata here -->
 
-                    <div id="nav-taps" alt="Profile navigation taps">
-                        <a id="show-profile" class="tap">Profile</a>
-                        <a id="show-gallery" class="tap selected-nav-tap">Gallery</a>
-                        <a id="show-faves" class="tap">Favorites</a>
-                        <a id="show-journalss" class="tap">Journals</a>
+                    <div id="nav-tabs" alt="Profile navigation tabs">
+                        <span id="show-profile" href="" class="tab">Profile</span>
+                        <span id="show-gallery" href="" class="tab">Gallery</span>
+                        <span id="show-faves" href="" class="tab">Favorites</span>
+                        <span id="show-journals" href="" class="tab">Journals</span>
                     </div>
 
                     <button id="watch-user" title="Start watching this user" class="">Watch</button>
@@ -46,17 +46,56 @@
         <script type="module">
             import { UserMetadata, CommentSection } from "./js/common.js";
 
-            /* Load in user data */
-
             $("#content-map-left-part").prepend(UserMetadata());
-            $("#profile-container").append(CustomProfileView());
+
+            /* Load in viewed user metadata */
+            
             $("#content-map-left-part .user-name").text("<?php echo $viewedUser->username(); ?>");
             $("#content-map-left-part .user-tagline").text("<?php echo $viewedUser->tagline(); ?>");
             $("#content-map-left-part .user-icon").attr("src", "<?php echo $dh->GetURLOnSingleFile($viewedUser->profileImage()); ?>");
-            $("#date-of-birth").text("<?php echo $viewedUser->dateOfBirth(); ?>");
-            $("#gender").text("<?php echo $viewedUser->gender(); ?>");
-            $("#land").text("<?php echo $viewedUser->land(); ?>");
-            $("#short-user-description ");
+
+            /* Load selected profile tap */
+            switch ("<?php echo $_GET["tab"]; ?>") {
+                case "profile":
+                    $("#profile-container").append(CustomProfileView());
+
+                    $("#date-of-birth").text("<?php echo $viewedUser->dateOfBirth(); ?>");
+                    $("#gender").text("<?php echo $viewedUser->gender(); ?>");
+                    $("#land").text("<?php echo $viewedUser->land(); ?>");
+
+                    $("#show-profile").addClass("selected-nav-tab");
+                    break;
+                case "gallery":
+                    $("#profile-container").append(Gallery());
+
+                    $("#show-gallery").addClass("selected-nav-tab");
+                    break;
+                case "faves":
+                    $("#profile-container").append(Favorites());
+
+                    $("#show-faves").addClass("selected-nav-tab");
+                    break;
+                case "journals":
+                    $("#profile-container").append(Journals());
+
+                    $("#show-journals").addClass("selected-nav-tab");
+                    break;
+            }
+
+            /* Profile nav taps */
+
+            $(".tab").click(function() {
+                if ($(this).is("[id*='show-profile']"))
+                    window.location.href = window.location.origin + "/profile/<?php echo $viewedUser->username(); ?>";
+                else if ($(this).is("[id*='show-gallery']"))
+                    window.location.href = window.location.origin + "/profile/<?php echo $viewedUser->username(); ?>/gallery";
+                else if ($(this).is("[id*='show-faves']"))
+                    window.location.href = window.location.origin + "/profile/<?php echo $viewedUser->username(); ?>/faves";
+                else if ($(this).is("[id*='show-journals']"))
+                    window.location.href = window.location.origin + "/profile/<?php echo $viewedUser->username(); ?>/journals";
+            });
+
+            /* Other functions */
 
             function CustomProfileView() {
                 return /*html*/ `
@@ -208,6 +247,14 @@
                 return /*html*/ `
                     <div id="content-view">
                         <!-- Favorites here -->
+                    </div>
+                    `;
+            }
+
+            function Journals() {
+                return /*html*/ `
+                    <div id="content-view">
+                        <!-- Journals here -->
                     </div>
                     `;
             }

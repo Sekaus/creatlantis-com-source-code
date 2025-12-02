@@ -1,5 +1,8 @@
+# enable required options
+Options +FollowSymLinks -MultiViews
+
 # Ensure JavaScript files are served with the correct MIME type for modules
-AddType text/javascript .j
+AddType text/javascript .js
 
 # Turn on URL rewriting
 RewriteEngine On

@@ -15,7 +15,7 @@
         <div id="profile-container">
             <div id="content-map">
                 <div id="content-map-left-part">
-                    {UserMetadata()}
+                    <!-- User metadata here -->
 
                     <div id="nav-taps" alt="Profile navigation taps">
                         <a id="show-profile" class="tap">Profile</a>
@@ -28,19 +28,20 @@
                 </div>
 
                 <div id="content-map-right-part">
-                    <img src={editProfileIcon} id="start-editing-profile" title="Start editing your profile page"
-                        alt="Edit profil icon" class="navigation-icon" hidden />
+                    <img src={editProfileIcon} id="start-editing-profile" title="Start editing your profile page" alt="Edit profil icon" class="navigation-icon" hidden />
                 </div>
             </div>
 
-            <script>
-                CustomProfileView();
-            </script>
+            <!-- Custom profile view here -->
 
         </div>
         
-        <script src="./js/common.js"></script>
-        <script>
+        <script type="module">
+            import { UserMetadata } from "./js/common.js";
+            
+            $("#content-map-left-part").prepend(UserMetadata());
+            $("#profile-container").append(CustomProfileView());
+
             function CustomProfileView() {
                 return /*html*/ `
                 <div id="short-user-description">
@@ -100,7 +101,7 @@
                     <div id="comment-section-element" class="profile-element">
                         ${CommentSection()}
                     </div>
-                `
+                `;
             }
 
             function PostSpotlightElement(imageFile) {
@@ -192,7 +193,7 @@
                     <div id="content-view">
                         <!-- Favorites here -->
                     </div>
-                    `
+                    `;
             }
         </script>
 

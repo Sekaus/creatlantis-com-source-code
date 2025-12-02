@@ -58,7 +58,7 @@
         <?php else: ?>
             $("#login").hide();
             $("#logout").show();
-        <?php endif;?>
+        <?php endif; ?>
 
         // Change login info in the nav bar
         $("#main-user .user-name").text("<?php echo $user->username(); ?>");
@@ -71,5 +71,9 @@
         ?>
         
         $("#main-user .user-icon").attr("src", profileImage);
+
+        <?php if ($user->uuid() != ""): ?>
+            $("#main-user .profile-link").attr("href", window.location.origin + "/profile/<?php echo $user->username(); ?>");
+        <?php endif; ?>
     });
 </script>

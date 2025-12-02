@@ -42,6 +42,8 @@
         public function dateOfBirth() {
             if($this->dateOfBirthVisible)
                 return $this->dateOfBirth;
+            else
+                return "Not public";
         }
 
         private bool $dateOfBirthVisible = false;
@@ -53,6 +55,8 @@
         public function gender() {
             if($this->genderVisible)
                 return $this->gender;
+            else
+                return "Not public";
         }
 
         private bool $genderVisible = false;
@@ -87,9 +91,11 @@
         }
 
         private string $land = "";
-        public function functionland() {
+        public function land() {
             if($this->landVisible)
                 return $this->land;
+            else
+                return "Not public";
         }
 
         private bool $landVisible = false;

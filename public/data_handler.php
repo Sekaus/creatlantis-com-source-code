@@ -363,6 +363,15 @@ class DataHandle {
         return $wantsHigh ? ($high ?? $low) : ($low ?? $high);
     }
 
+    public function getUserInfo($username) : User {
+        $stmt = $this->mysqli->prepare("SELECT * FROM user_info WHERE username=?");
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $stmt->close();
+        return new User($result->fetch_assoc());
+    }
+
     public function loadAllFiles(FileType $filter, string $search, FileLoadOrder $order, int $maxKeys = 50, int $offset = 0): string {
         $searchLike = '%' . $this->mysqli->real_escape_string($search) . '%';
         $orderString = $order->value;

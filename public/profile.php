@@ -2,8 +2,11 @@
   session_start();
 
   include_once("./user_classes.php");
+  include_once("./config.php");
+  include_once("./data_handler.php");
 
-  $viewedUser = new User();
+  $dh = new DataHandle($dbConfig, $s3Config, S3BotType::readOnly);
+  $viewedUser = $dh->getUserInfo($_GET["username"]);
 ?>
 
 <!DOCTYPE html>
@@ -43,8 +46,17 @@
         <script type="module">
             import { UserMetadata, CommentSection } from "./js/common.js";
 
+            /* Load in user data */
+
             $("#content-map-left-part").prepend(UserMetadata());
             $("#profile-container").append(CustomProfileView());
+            $("#content-map-left-part .user-name").text("<?php echo $viewedUser->username(); ?>");
+            $("#content-map-left-part .user-tagline").text("<?php echo $viewedUser->tagline(); ?>");
+            $("#content-map-left-part .user-icon").attr("src", "<?php echo $dh->GetURLOnSingleFile($viewedUser->profileImage()); ?>");
+            $("#date-of-birth").text("<?php echo $viewedUser->dateOfBirth(); ?>");
+            $("#gender").text("<?php echo $viewedUser->gender(); ?>");
+            $("#land").text("<?php echo $viewedUser->land(); ?>");
+            $("#short-user-description ");
 
             function CustomProfileView() {
                 return /*html*/ `

@@ -42,11 +42,11 @@ export function CommentSection() {
 
             <form id="add-new-comment">
                 ${UserMetadata()}
-                <textarea id="comment-input" cols="100" name="comment" rows="5" placeholder="Add a new comment..."/>
+                <textarea id="comment-input" cols="100" name="comment" rows="5">Add a new comment...</textarea>
 
                 <br/>
 
-                <input type="submit" value="Submit" class="submit" disabled/>
+                <input type="submit" value="Submit" class="submit" />
             </form>
 
             <div id="comment-container">

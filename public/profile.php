@@ -53,18 +53,30 @@
         </div>
         
         <script type="module">
-            import { UserMetadata, CommentSection } from "./js/common.js";
-            import { StartEditingProfile, EndEditingProfile, CustomProfileView, CustomProfileEdit, CustomProfileElement, PostSpotlightElement, ProfileBIOElement } from "./js/profile.js";
+            import { UserMetadata } from "./js/common.js";
+            import { LoadProfileElements, StartEditingProfile, EndEditingProfile, CustomProfileView, CustomProfileEdit, CustomProfileElement, CommentSectionElement, PostSpotlightElement, ProfileBIOElement } from "./js/profile.js";
             
+            /* Load in profile elements */
+
             let profileDesignJSON = { 
                 background: { 
                     image: "", 
                     styling: "" 
                 }, 
-                elements: [
-
-                ] 
+                elements: { 
+                    left: [
+                        new CustomProfileElement().JSON()
+                    ],
+                    right: [
+                        new ProfileBIOElement().JSON(),
+                        new CommentSectionElement().JSON()
+                    ]
+                }
             };
+
+            $(document).ready(function() {
+                LoadProfileElements(profileDesignJSON);
+            })
 
             $("#profile-container").append(CustomProfileView());
             $("#profile-container").append(CustomProfileEdit());

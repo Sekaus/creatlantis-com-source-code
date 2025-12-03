@@ -675,6 +675,10 @@
         min-height: 55vw
     }
 
+    .custom-content img {
+        display: inline
+    }
+
     #custom-profile-edit .custom-content,
     #profile-element-box .custom-content {
         padding: 11vw

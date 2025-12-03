@@ -1,3 +1,19 @@
+import { BBCodeRender } from "./text_formatter.js";
+import { CommentSection } from "./common.js";
+
+export function LoadProfileElements(profileDesignJSON) {
+    profileDesignJSON.elements.left.forEach(element => {
+        $("#custom-profile-left").append(JSON.parse(element));
+    });
+    profileDesignJSON.elements.right.forEach(element => {
+        $("#custom-profile-right").append(JSON.parse(element));
+    });
+
+    $(".profile-element").each(function() {
+        $(this).html(BBCodeRender($(this).html()));
+    });
+}
+
 export function StartEditingProfile() {
     $("#custom-profile-view").hide();
     $(".custom-profile-editor").show();
@@ -66,73 +82,113 @@ export function CustomProfileEdit() {
 
 /* Profile elements */
 
-export function CustomProfileElement(content = /*html*/`<div class="custom-content">test</div>`) {
-    return /*html*/ `
-        <div class="custom-profile-element profile-element">
-            <div class="profile-element-icon-container">
-                <img src="./images/icons/editIcon.webp" id="start-editing-profile" title="Start editing this profile element" alt="Edit icon" class="profile-element-icon"/>
-            </div>
-            ${content}
-        </div>
-    `;
+class ProfileElement {
+    body = "";
+
+    JSON() {
+        return JSON.stringify(this.body);
+    }
 }
 
-export function CommentSectionElement() {
-    return /*html*/ `
-        <div id="comment-section-element" class="profile-element">
-            ${CommentSection()}
-        </div>
-    `;
-}
-
-export function PostSpotlightElement(imageFile, title) {
-    return /*html*/ `
-        <div class="post-spotlight-element profile-element">
-            <div class="profile-element-icon-container">
-                <img src="./images/icons/editIcon.webp" id="start-editing-profile" title="Start editing this profile element" alt="Edit icon" class="profile-element-icon" />
-            </div>
-            <p class="post-spotlight-title big-text">${title}</p>
-            <div class="post-spotlight">
-                ${imageFile}
-            </div>
-        </div>
-    `;
-}
-
-export function ProfileBIOElement() {
-    return /*html*/ `
-        <div id="profile-bio-element" class="profile-element">
-            <div id="profile-bio">
-                <h1 class="big-text">About me</h1>
-
-                <div class="bio-content-box">
-                    <img class="user-icon" src="./images/default_pp.webp" />
+export class CustomProfileElement extends ProfileElement {
+    constructor(
+        content = /*html*/`
+            <div class="custom-content">
+                <div style="display: flex; justify-content: center; background-color: white">
+                    [url=https://glitter-graphics.com/myspace/text_generator.php]
+                        [img]https://text.glitter-graphics.net/cbl/w.gif[/img]
+                        [img]https://text.glitter-graphics.net/cbl/e.gif[/img]
+                        [img]https://text.glitter-graphics.net/cbl/l.gif[/img]
+                        [img]https://text.glitter-graphics.net/cbl/c.gif[/img]
+                        [img]https://text.glitter-graphics.net/cbl/o.gif[/img]
+                        [img]https://text.glitter-graphics.net/cbl/m.gif[/img]
+                        [img]https://text.glitter-graphics.net/cbl/e.gif[/img]
+                        [img]https://dl3.glitter-graphics.net/empty.gif[/img]
+                    [/url]
                 </div>
+            </div>
+        `) {
+        super();
 
-                <div class="bio-content-box">
-                    <div>
-                        <p class="extra-big-text">Name</p>
+        this.body = /*html*/ `
+            <div class="custom-profile-element profile-element">
+                <div class="profile-element-icon-container">
+                    <img src="./images/icons/editIcon.webp" id="start-editing-profile" title="Start editing this profile element" alt="Edit icon" class="profile-element-icon"/>
+                </div>
+                ${content}
+            </div>
+        `;
+    }
+}
+
+export class CommentSectionElement extends ProfileElement {
+    constructor() {
+        super();
+
+        this.body = /*html*/ `
+            <div id="comment-section-element" class="profile-element">
+                ${CommentSection()}
+            </div>
+        `;
+    }
+}
+
+export class PostSpotlightElement extends ProfileElement {
+    constructor(imageFile = "./images/default_img.webp", title = "title") {
+        super();
+
+        this.body = /*html*/ `
+            <div class="post-spotlight-element profile-element">
+                <div class="profile-element-icon-container">
+                    <img src="./images/icons/editIcon.webp" id="start-editing-profile" title="Start editing this profile element" alt="Edit icon" class="profile-element-icon" />
+                </div>
+                <p class="post-spotlight-title big-text">${title}</p>
+                <div class="post-spotlight">
+                    <img src="${imageFile}"/>
+                </div>
+            </div>
+        `;
+    }
+}
+
+export class ProfileBIOElement extends ProfileElement {
+    constructor() {
+        super();
+
+        this.body = /*html*/ `
+            <div id="profile-bio-element" class="profile-element">
+                <div id="profile-bio">
+                    <h1 class="big-text">About me</h1>
+
+                    <div class="bio-content-box">
+                        <img class="user-icon" src="./images/default_pp.webp" />
                     </div>
-                </div>
 
-                <hr/>
-
-                <div class="bio-content-box">
-                    <label class="big-text">Hobbies</label>
-                    <p id="hobbies" class="bio-content">Gameing / Singing / Talking</p>
-                </div>
-
-                <hr/>
-
-                <div class="bio-content-box">
-                    <label class="big-text">BIO</label>
-                    <div id="user-bio" class="bio-content">
-                        <!-- BIO content here -->
+                    <div class="bio-content-box">
+                        <div>
+                            <p class="extra-big-text">Name</p>
+                        </div>
                     </div>
-                </div>
 
-                <hr/>
+                    <hr/>
+
+                    <div class="bio-content-box">
+                        <label class="big-text">Hobbies</label>
+                        <p id="hobbies" class="bio-content">Gameing / Singing / Talking</p>
+                    </div>
+
+                    <hr/>
+
+                    <div class="bio-content-box">
+                        <label class="big-text">BIO</label>
+                        <div id="user-bio" class="bio-content">
+                            <!-- BIO content here -->
+                        </div>
+                    </div>
+
+                    <hr/>
+                </div>
             </div>
-        </div>
-    `;
+        `;
+    }
 }

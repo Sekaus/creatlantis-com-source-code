@@ -144,15 +144,24 @@ class S3Wrapper {
         }
     }
     
-    public function putObject(string $key, string $body, $metadata): bool {
+    public function putObject(string $key, string $body, $metadata = null): bool {
         if(isset($this->s3)) {
             try {
-                $this->s3->putObject([
-                    "Bucket"  => $this->bucket,
-                    "Key"     => $key,
-                    'Metadata' => $metadata,
-                    'Body' => $body
-                ]);
+                if($metadata !== null) {
+                    $this->s3->putObject([
+                        "Bucket"  => $this->bucket,
+                        "Key"     => $key,
+                        'Metadata' => $metadata,
+                        'Body' => filterUnwantedCode($body)
+                    ]);
+                }
+                else {
+                    $this->s3->putObject([
+                        "Bucket"  => $this->bucket,
+                        "Key"     => $key,
+                        'Body' => filterUnwantedCode($body)
+                    ]);
+                }
             } catch (AwsException $e) {
                 error_log("Fail to put object in the bucket: " . $e->getMessage());
                 return false;
@@ -342,6 +351,19 @@ class DataHandle {
         $owned = ($stmt->get_result()->num_rows > 0);
         $stmt->close();
         return $owned;
+    }
+
+    public function updateProfileDesign(User $user, Login $login, string $json) {
+        if ($this->verifyOwnership($login->email(), $login->password(), $user->username())) {
+            $key = $user->uuid() ."/profile_design.json";
+            
+            if ($this->s3->putObject($key, $json))
+                return ['success' => true];    
+            else
+                return ['success' => false, 'error' => 'Failed update profile.'];
+        }
+        else
+            return ['success' => false, 'error' => 'Not authorized.'];
     }
 
     public static function logout(): void {

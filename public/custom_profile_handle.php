@@ -36,45 +36,14 @@
             exit;
         }
 
-        // Gather metadata safely
-        $metadata = [
-            'title' => $_POST['title'] ?? '',
-            'type'  => $_POST['post_type'] ?? '',
-            'tags'  => $_POST['tags'] ?? ''
-        ];
-
-        // Create File object depending on post type
-        $postType = $_POST['post_type'] ?? '';
-
-        switch ($postType) {
-            case 'image':
-                $fileArray = $_FILES['image'] ?? null;
-                if (!$fileArray || $fileArray['error'] !== UPLOAD_ERR_OK) {
-                    ob_end_clean();
-                    header('Content-Type: application/json');
-                    http_response_code(400);
-                    echo json_encode(['success' => false, 'error' => 'Image not uploaded or upload error.']);
-                    exit;
-                }
-                $file = new File(FileType::image, $metadata, $fileArray);
-                break;
-
-            case 'journal':
-                $journalData = ['title' => $_POST['title'] ?? '', 'body' => $_POST['body'] ?? ''];
-                $file = new File(FileType::journal, $metadata, $journalData);
-                break;
-
-            default:
-                ob_end_clean();
-                header('Content-Type: application/json');
-                http_response_code(400);
-                echo json_encode(['success' => false, 'error' => 'Invalid post type.']);
-                exit;
-        }
-
         // Now call upload and capture result. Wrap with try/catch.
         try {
-            $result = $dh->uploadFile($file, $login, $user);
+            if(isset($_POST['profile_design']))
+                $result = $dh->updateProfileDesign($user, $login, $_POST['profile_design']);
+            else {
+                echo json_encode(['success' => false, 'error' => 'Profile data has no body.']);
+                exit;
+            }
 
             // Remove any accidental buffered output (HTML/JS) before sending JSON
             ob_end_clean();

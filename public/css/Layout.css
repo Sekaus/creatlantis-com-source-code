@@ -647,6 +647,11 @@
         }
     }
 
+    #custom-profile-view,
+    #custom-profile-edit {
+        min-height: 35vh
+    }
+
     #profile-element-box {
         border-radius: var(--radius-sm);
         place-items: center;

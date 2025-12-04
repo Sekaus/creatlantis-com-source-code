@@ -725,10 +725,13 @@
         scale: 75%
     }
 
-    #custom-profile-left-edit div,
-    #custom-profile-right-edit div,
-    #profile-element-box div {
+    #custom-profile-left-edit div {
         padding: calc(var(--spacing)*0)
+    }
+
+    #custom-profile-left-edit>div,
+    #custom-profile-right-edit>div {
+        padding: calc(var(--spacing)*5)
     }
 
     #content-map .user-icon,

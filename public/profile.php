@@ -74,15 +74,17 @@
                 }
             };
 
+            $("#profile-container").append(CustomProfileView());
+            $("#profile-container").append(CustomProfileEdit());
+
             $(document).ready(function() {
                 LoadProfileElements(profileDesignJSON);
             })
-
-            $("#profile-container").append(CustomProfileView());
-            $("#profile-container").append(CustomProfileEdit());
             
             // Start editing profile
-            $("#start-editing-profile").click(StartEditingProfile);
+            $("#start-editing-profile").click(function() {
+                StartEditingProfile(profileDesignJSON);
+            });
 
             // End editing profile
             $("#profile-layout-icon-container button").click(function() {

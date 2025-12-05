@@ -728,6 +728,7 @@
     #custom-profile-edit .profile-element *,
     #profile-element-box .profile-element * {
         pointer-events: none;
+        touch-action: none;
         -webkit-user-select: none;
         user-select: none
     }

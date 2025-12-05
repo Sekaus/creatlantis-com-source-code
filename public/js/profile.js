@@ -1,23 +1,6 @@
 import { BBCodeRender } from "./text_formatter.js";
 import { CommentSection } from "./common.js";
 
-function getDropPositionElement(container, mouseY) {
-    const children = [...container.querySelectorAll('.profile-element')];
-
-    for (const child of children) {
-        const rect = child.getBoundingClientRect();
-        const midpoint = rect.top + rect.height / 2;
-
-        // If cursor is above the midpoint, drop before this child
-        if (mouseY < midpoint) {
-            return child;
-        }
-    }
-
-    // If cursor is below all midpoints → insert at end
-    return null;
-}
-
 /* ------------------------
    Views
    ------------------------ */
@@ -295,20 +278,35 @@ export function LoadProfileElements(profileDesignJSON) {
 /* ------------------------
    Drag/drop setup (re-usable)
    ------------------------ */
+
+// Helper: find the child element to insert before based on vertical cursor position
+function getDropPositionElement(container, clientY) {
+    const children = Array.from(container.querySelectorAll('.profile-element'));
+    for (const child of children) {
+        const rect = child.getBoundingClientRect();
+        const midpoint = rect.top + rect.height / 2;
+        if (clientY < midpoint) return child;
+    }
+    return null;
+}
+
 function setupDragDrop() {
     // ensure each top-level .profile-element has an id
     $(".profile-element").each(function () {
         if (!this.id) this.id = generateId();
     });
 
-    // make draggable
+    // make draggable for pointer-based devices (desktop)
     $(".profile-element").attr("draggable", true);
 
-    // dragstart
     $(".profile-element").off("dragstart").on("dragstart", function (event) {
         event.originalEvent.dataTransfer.setData("id", this.id);
-        // allow move
         event.originalEvent.dataTransfer.effectAllowed = 'move';
+        $(this).addClass('dragging');
+    });
+
+    $(".profile-element").off("dragend").on("dragend", function (event) {
+        $(this).removeClass('dragging');
     });
 
     // containers
@@ -325,10 +323,8 @@ function setupDragDrop() {
         const elem = document.getElementById(id);
         if (!elem) return;
 
-        // Determine correct insertion position
         const container = this;
         const mouseY = event.originalEvent.clientY;
-
         const beforeElement = getDropPositionElement(container, mouseY);
 
         if (beforeElement && beforeElement !== elem) {
@@ -336,6 +332,149 @@ function setupDragDrop() {
         } else {
             container.appendChild(elem);
         }
+    });
+
+    // ------------------------
+    // Touch support (mobile / touchscreens)
+    // Approach:
+    //  - on touchstart: create a placeholder and a floating ghost clone
+    //  - on touchmove: move the ghost, determine drop container & insertion index, move placeholder
+    //  - on touchend/cancel: replace placeholder with original element and clean up
+    // ------------------------
+
+    // State for an active touch drag
+    let touchState = {
+        active: false,
+        identifier: null,
+        sourceElem: null,
+        ghost: null,
+        placeholder: null
+    };
+
+    // Namespaced handlers so they can be removed cleanly
+    $(document).off('.profileTouch');
+
+    // Start touch drag on the element itself
+    $(".profile-element").off('touchstart.profileTouch').on('touchstart.profileTouch', function (e) {
+        // Only handle single-finger drags
+        if (touchState.active) return;
+
+        const touch = e.originalEvent.touches[0];
+        if (!touch) return;
+
+        touchState.active = true;
+        touchState.identifier = touch.identifier;
+        touchState.sourceElem = this;
+
+        // Create a placeholder with same dimensions to reserve space
+        const $src = $(this);
+        const placeholder = document.createElement('div');
+        placeholder.className = 'profile-element placeholder';
+        $(placeholder).css({
+            height: $src.outerHeight() + 'px',
+            margin: $src.css('margin'),
+            'box-sizing': 'border-box',
+            'border': '2px dashed rgba(0,0,0,0.15)',
+            'background': 'rgba(0,0,0,0.02)'
+        });
+
+        // Insert placeholder in place of source
+        $src.after(placeholder);
+        touchState.placeholder = placeholder;
+
+        // Create ghost clone
+        const $ghost = $src.clone();
+        $ghost.addClass('drag-ghost');
+        $ghost.css({
+            position: 'fixed',
+            left: (touch.clientX - $src.outerWidth() / 2) + 'px',
+            top: (touch.clientY - $src.outerHeight() / 2) + 'px',
+            width: $src.outerWidth() + 'px',
+            'pointer-events': 'none',
+            opacity: 0.95,
+            'z-index': 99999
+        });
+
+        $('body').append($ghost);
+        touchState.ghost = $ghost;
+
+        $src.addClass('dragging');
+
+        // Prevent page scroll while dragging
+        e.preventDefault();
+    });
+
+    // Move ghost and reposition placeholder
+    $(document).on('touchmove.profileTouch', function (e) {
+        if (!touchState.active) return;
+
+        // Find the touch corresponding to our drag
+        let touch = null;
+        for (let i = 0; i < e.originalEvent.touches.length; i++) {
+            if (e.originalEvent.touches[i].identifier === touchState.identifier) {
+                touch = e.originalEvent.touches[i];
+                break;
+            }
+        }
+        if (!touch) return;
+
+        // Prevent page scrolling
+        e.preventDefault();
+
+        // Move ghost
+        touchState.ghost.css({
+            left: (touch.clientX - touchState.ghost.outerWidth() / 2) + 'px',
+            top: (touch.clientY - touchState.ghost.outerHeight() / 2) + 'px'
+        });
+
+        // Determine container under the touch point
+        const elUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+        const $container = $(elUnder).closest('#custom-profile-left-edit, #custom-profile-right-edit, #profile-element-box');
+
+        if ($container.length) {
+            const before = getDropPositionElement($container[0], touch.clientY);
+            if (before && before !== touchState.sourceElem) {
+                $container[0].insertBefore(touchState.placeholder, before);
+            } else {
+                $container[0].appendChild(touchState.placeholder);
+            }
+        }
+    });
+
+    // End touch drag
+    $(document).on('touchend.profileTouch touchcancel.profileTouch', function (e) {
+        if (!touchState.active) return;
+
+        // If our touch is in the changedTouches, finalize
+        let ended = false;
+        for (let i = 0; i < e.originalEvent.changedTouches.length; i++) {
+            if (e.originalEvent.changedTouches[i].identifier === touchState.identifier) {
+                ended = true;
+                break;
+            }
+        }
+        if (!ended) return;
+
+        // Replace placeholder with source element
+        if (touchState.placeholder && touchState.placeholder.parentNode) {
+            touchState.placeholder.parentNode.replaceChild(touchState.sourceElem, touchState.placeholder);
+        } else if (touchState.sourceElem) {
+            // fallback to append to pool
+            document.getElementById('profile-element-box').appendChild(touchState.sourceElem);
+        }
+
+        // Clean up ghost
+        if (touchState.ghost) touchState.ghost.remove();
+        $(touchState.sourceElem).removeClass('dragging');
+
+        // Reset state
+        touchState = {
+            active: false,
+            identifier: null,
+            sourceElem: null,
+            ghost: null,
+            placeholder: null
+        };
     });
 }
 

@@ -1,6 +1,23 @@
 import { BBCodeRender } from "./text_formatter.js";
 import { CommentSection } from "./common.js";
 
+function getDropPositionElement(container, mouseY) {
+    const children = [...container.querySelectorAll('.profile-element')];
+
+    for (const child of children) {
+        const rect = child.getBoundingClientRect();
+        const midpoint = rect.top + rect.height / 2;
+
+        // If cursor is above the midpoint, drop before this child
+        if (mouseY < midpoint) {
+            return child;
+        }
+    }
+
+    // If cursor is below all midpoints → insert at end
+    return null;
+}
+
 /* ------------------------
    Views
    ------------------------ */
@@ -308,8 +325,17 @@ function setupDragDrop() {
         const elem = document.getElementById(id);
         if (!elem) return;
 
-        // append to the container (this) rather than event.target
-        this.appendChild(elem);
+        // Determine correct insertion position
+        const container = this;
+        const mouseY = event.originalEvent.clientY;
+
+        const beforeElement = getDropPositionElement(container, mouseY);
+
+        if (beforeElement && beforeElement !== elem) {
+            container.insertBefore(elem, beforeElement);
+        } else {
+            container.appendChild(elem);
+        }
     });
 }
 

@@ -1,6 +1,9 @@
 import { BBCodeRender } from "./text_formatter.js";
 import { CommentSection } from "./common.js";
 
+/* ------------------------
+   Views
+   ------------------------ */
 export function CustomProfileView() {
     return /*html*/ `
         <div id="custom-profile-view">
@@ -18,7 +21,7 @@ export function CustomProfileEdit() {
     return /*html*/`
         <div id="custom-profile-edit" class="custom-profile-editor">
             <!-- In use profile elements here -->
-            
+
             <div id="custom-profile-left-edit">
                 <!-- Profile elements left side here -->
             </div>
@@ -37,86 +40,100 @@ export function CustomProfileEdit() {
         </div>
 
         <div id="profile-element-box" class="custom-profile-editor">
-            <!-- Unusd profile elements here -->
+            <!-- Unused profile elements here -->
         </div>
     `;
 }
 
-/* Profile elements */
-
-const ElementType = {
+/* ------------------------
+   Element types & base class
+   ------------------------ */
+export const ElementType = {
     CUSTOM:             0,
     COMMENT_SECTION:    1,
     SPOTLIGHT:          2,
     BIO:                3,
     COLLECTION:         4
-}
+};
 
 class ProfileElement {
-    type = null;
-    body = "";
-    inEdit = "";
+    constructor(type = null, body = "", inEdit = "") {
+        this.type = type;
+        this.body = body;
+        this.inEdit = inEdit;
+    }
 
-    // include inEdit in the serialized JSON so editing can access it
+    // JSON serializable representation
     JSON() {
         return JSON.stringify({
+            type: this.type,
             body: this.body,
-            inEdit: this.inEdit,
-            type: this.type
+            inEdit: this.inEdit
         });
     }
 }
 
+/* ------------------------
+   Concrete elements
+   Important: each element's HTML uses a single outer wrapper with class `profile-element`
+   and an inner `.element-body` that is safe to rewrite by BBCodeRender. Avoid nested `.profile-element`.
+   ------------------------ */
 export class CustomProfileElement extends ProfileElement {
-    type = ElementType.CUSTOM;
-
-    constructor(
-        content = /*html*/`
-            <div class="custom-content">
-                <div style="display: flex; justify-content: center; background-color: white">
-                    [url=https://glitter-graphics.com/myspace/text_generator.php]
-                        [img]https://text.glitter-graphics.net/cbl/w.gif[/img]
-                        [img]https://text.glitter-graphics.net/cbl/e.gif[/img]
-                        [img]https://text.glitter-graphics.net/cbl/l.gif[/img]
-                        [img]https://text.glitter-graphics.net/cbl/c.gif[/img]
-                        [img]https://text.glitter-graphics.net/cbl/o.gif[/img]
-                        [img]https://text.glitter-graphics.net/cbl/m.gif[/img]
-                        [img]https://text.glitter-graphics.net/cbl/e.gif[/img]
-                        [img]https://dl3.glitter-graphics.net/empty.gif[/img]
-                    [/url]
-                </div>
+    constructor(content = /*html*/`
+        <div class="custom-content">
+            <div style="display: flex; justify-content: center; background-color: white">
+                [url=https://glitter-graphics.com/myspace/text_generator.php]
+                    [img]https://text.glitter-graphics.net/cbl/w.gif[/img]
+                    [img]https://text.glitter-graphics.net/cbl/e.gif[/img]
+                    [img]https://text.glitter-graphics.net/cbl/l.gif[/img]
+                    [img]https://text.glitter-graphics.net/cbl/c.gif[/img]
+                    [img]https://text.glitter-graphics.net/cbl/o.gif[/img]
+                    [img]https://text.glitter-graphics.net/cbl/m.gif[/img]
+                    [img]https://text.glitter-graphics.net/cbl/e.gif[/img]
+                    [img]https://dl3.glitter-graphics.net/empty.gif[/img]
+                [/url]
             </div>
-        `) {
-        super();
+        </div>
+    `) {
+        super(ElementType.CUSTOM);
 
         this.body = /*html*/ `
-            <div class="custom-profile-element profile-element">
-                <div class="profile-element-icon-container">
-                    <!-- changed to class to avoid ID collisions -->
-                    <img src="./images/icons/editIcon.webp" class="start-editing-profile-icon profile-element-icon" title="Start editing this profile element" alt="Edit icon" />
+            <div class="profile-element" data-type="${ElementType.CUSTOM}">
+                <div class="element-body">
+                    <div class="custom-profile-element">
+                        <div class="profile-element-icon-container">
+                            <img src="./images/icons/editIcon.webp" class="start-editing-profile-icon profile-element-icon" title="Start editing this profile element" alt="Edit icon" />
+                        </div>
+                        ${content}
+                    </div>
                 </div>
-                ${content}
             </div>
         `;
 
         this.inEdit = /*html*/ `
-            <div class="custom-profile-element profile-element">
-                <p class="post-spotlight-title big-text">Custom Element</p>
-                ${content}
+            <div class="profile-element" data-type="${ElementType.CUSTOM}">
+                <div class="element-body">
+                    <div class="custom-profile-element">
+                        <p class="post-spotlight-title big-text">Custom Element</p>
+                        ${content}
+                    </div>
+                </div>
             </div>
         `;
     }
 }
 
 export class CommentSectionElement extends ProfileElement {
-    type = ElementType.COMMENT_SECTION;
-
     constructor() {
-        super();
+        super(ElementType.COMMENT_SECTION);
 
         this.body = /*html*/ `
-            <div id="comment-section-element" class="profile-element">
-                ${CommentSection()}
+            <div class="profile-element" data-type="${ElementType.COMMENT_SECTION}">
+                <div class="element-body">
+                    <div id="comment-section-element" class="comment-section-element">
+                        ${CommentSection()}
+                    </div>
+                </div>
             </div>
         `;
 
@@ -125,29 +142,34 @@ export class CommentSectionElement extends ProfileElement {
 }
 
 export class PostSpotlightElement extends ProfileElement {
-    type = ElementType.SPOTLIGHT;
-
     constructor(imageFile = "./images/default_img.webp", title = "Title") {
-        super();
+        super(ElementType.SPOTLIGHT);
 
         this.body = /*html*/ `
-            <div class="post-spotlight-element profile-element">
-                <div class="profile-element-icon-container">
-                    <!-- changed to class to avoid ID collisions -->
-                    <img src="./images/icons/editIcon.webp" class="start-editing-profile-icon profile-element-icon" title="Start editing this profile element" alt="Edit icon" />
-                </div>
-                <p class="post-spotlight-title big-text">${title}</p>
-                <div class="post-spotlight">
-                    <img src="${imageFile}"/>
+            <div class="profile-element" data-type="${ElementType.SPOTLIGHT}">
+                <div class="element-body">
+                    <div class="post-spotlight-element">
+                        <div class="profile-element-icon-container">
+                            <img src="./images/icons/editIcon.webp" class="start-editing-profile-icon profile-element-icon" title="Start editing this profile element" alt="Edit icon" />
+                        </div>
+                        <p class="post-spotlight-title big-text">${title}</p>
+                        <div class="post-spotlight">
+                            <img src="${imageFile}"/>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
 
         this.inEdit = /*html*/ `
-            <div class="post-spotlight-element profile-element">
-                <p class="post-spotlight-title big-text">Spotlight</p>
-                <div class="post-spotlight">
-                    <img src="./images/default_img.webp"/>
+            <div class="profile-element" data-type="${ElementType.SPOTLIGHT}">
+                <div class="element-body">
+                    <div class="post-spotlight-element">
+                        <p class="post-spotlight-title big-text">Spotlight</p>
+                        <div class="post-spotlight">
+                            <img src="./images/default_img.webp"/>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
@@ -155,51 +177,56 @@ export class PostSpotlightElement extends ProfileElement {
 }
 
 export class ProfileBIOElement extends ProfileElement {
-    type = ElementType.BIO;
-
     constructor() {
-        super();
+        super(ElementType.BIO);
 
         this.body = /*html*/ `
-            <div id="profile-bio-element" class="profile-element">
-                <div id="profile-bio">
-                    <h1 class="big-text">About me</h1>
+            <div class="profile-element" data-type="${ElementType.BIO}">
+                <div class="element-body">
+                    <div id="profile-bio-element" class="bio-wrapper">
+                        <div id="profile-bio">
+                            <h1 class="big-text">About me</h1>
 
-                    <div class="bio-content-box">
-                        <img class="user-icon" src="./images/default_pp.webp" />
-                    </div>
+                            <div class="bio-content-box">
+                                <img class="user-icon" src="./images/default_pp.webp" />
+                            </div>
 
-                    <div class="bio-content-box">
-                        <div>
-                            <p class="extra-big-text">Name</p>
+                            <div class="bio-content-box">
+                                <div>
+                                    <p class="extra-big-text">Name</p>
+                                </div>
+                            </div>
+
+                            <hr/>
+
+                            <div class="bio-content-box">
+                                <label class="big-text">Hobbies</label>
+                                <p id="hobbies" class="bio-content">Gameing / Singing / Talking</p>
+                            </div>
+
+                            <hr/>
+
+                            <div class="bio-content-box">
+                                <label class="big-text">BIO</label>
+                                <div id="user-bio" class="bio-content">
+                                    <!-- BIO content here -->
+                                </div>
+                            </div>
+
+                            <hr/>
                         </div>
                     </div>
-
-                    <hr/>
-
-                    <div class="bio-content-box">
-                        <label class="big-text">Hobbies</label>
-                        <p id="hobbies" class="bio-content">Gameing / Singing / Talking</p>
-                    </div>
-
-                    <hr/>
-
-                    <div class="bio-content-box">
-                        <label class="big-text">BIO</label>
-                        <div id="user-bio" class="bio-content">
-                            <!-- BIO content here -->
-                        </div>
-                    </div>
-
-                    <hr/>
                 </div>
             </div>
         `;
 
-         this.inEdit = this.body;
+        this.inEdit = this.body;
     }
 }
 
+/* ------------------------
+   Counts and helpers
+   ------------------------ */
 const CountOnElements = {
     [ElementType.CUSTOM]:          4,
     [ElementType.COMMENT_SECTION]: 1,
@@ -207,31 +234,91 @@ const CountOnElements = {
     [ElementType.BIO]:             1,
 };
 
+function generateId() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    // fallback
+    return 'pe-' + Math.random().toString(36).slice(2, 9);
+}
+
+/* Render BBCode only inside .element-body to avoid touching the outer wrapper */
 function RenderBBCode() {
-    $(".profile-element").each(function() {
-        $(this).html(BBCodeRender($(this).html()));
+    $(".profile-element .element-body").each(function () {
+        const raw = $(this).html();
+        $(this).html(BBCodeRender(raw));
     });
 }
 
+/* ------------------------
+   Load view mode elements
+   ------------------------ */
 export function LoadProfileElements(profileDesignJSON) {
     // view containers (unchanged)
     $("#custom-profile-left").empty();
     $("#custom-profile-right").empty();
 
     profileDesignJSON.elements.left.forEach(element => {
-        $("#custom-profile-left").append(JSON.parse(element).body);
+        const parsed = JSON.parse(element);
+        // parsed.body is already a full .profile-element wrapper
+        const $el = $(parsed.body);
+        // keep the serialized representation for roundtrip
+        $el.attr('data-element-json', element);
+        $("#custom-profile-left").append($el);
     });
+
     profileDesignJSON.elements.right.forEach(element => {
-        $("#custom-profile-right").append(JSON.parse(element).body);
+        const parsed = JSON.parse(element);
+        const $el = $(parsed.body);
+        $el.attr('data-element-json', element);
+        $("#custom-profile-right").append($el);
     });
 
     RenderBBCode();
 }
 
+/* ------------------------
+   Drag/drop setup (re-usable)
+   ------------------------ */
+function setupDragDrop() {
+    // ensure each top-level .profile-element has an id
+    $(".profile-element").each(function () {
+        if (!this.id) this.id = generateId();
+    });
+
+    // make draggable
+    $(".profile-element").attr("draggable", true);
+
+    // dragstart
+    $(".profile-element").off("dragstart").on("dragstart", function (event) {
+        event.originalEvent.dataTransfer.setData("id", this.id);
+        // allow move
+        event.originalEvent.dataTransfer.effectAllowed = 'move';
+    });
+
+    // containers
+    const containers = "#custom-profile-left-edit, #custom-profile-right-edit, #profile-element-box";
+
+    $(containers).off("dragover").on("dragover", function (event) {
+        event.preventDefault();
+        event.originalEvent.dataTransfer.dropEffect = 'move';
+    });
+
+    $(containers).off("drop").on("drop", function (event) {
+        event.preventDefault();
+        const id = event.originalEvent.dataTransfer.getData("id");
+        const elem = document.getElementById(id);
+        if (!elem) return;
+
+        // append to the container (this) rather than event.target
+        this.appendChild(elem);
+    });
+}
+
+/* ------------------------
+   Start editing (edit-mode)
+   ------------------------ */
 export function StartEditingProfile(profileDesignJSON) {
     $("#custom-profile-view").hide();
     $(".custom-profile-editor").show();
-    // hide only the page-level editor button
     $("#start-editing-profile").hide();
 
     // Clone the count object properly
@@ -244,16 +331,23 @@ export function StartEditingProfile(profileDesignJSON) {
     profileDesignJSON.elements.left.forEach(e => {
         const parsed = JSON.parse(e);
         countOnUnusedElements[parsed.type]--;
-        // parsed.inEdit is now present because JSON() serializes it
-        $("#custom-profile-left-edit").append(parsed.inEdit);
+
+        const $node = $(parsed.inEdit);
+        // attach the original serialized data so we can rebuild profileDesignJSON later
+        $node.attr('data-element-json', e);
+        $("#custom-profile-left-edit").append($node);
     });
+
     profileDesignJSON.elements.right.forEach(e => {
         const parsed = JSON.parse(e);
         countOnUnusedElements[parsed.type]--;
-        $("#custom-profile-right-edit").append(parsed.inEdit);
+
+        const $node = $(parsed.inEdit);
+        $node.attr('data-element-json', e);
+        $("#custom-profile-right-edit").append($node);
     });
 
-    // Loop through element types and populate the unused pool
+    // populate unused pool
     $("#profile-element-box").empty();
     for (let type in countOnUnusedElements) {
         let count = countOnUnusedElements[type];
@@ -278,38 +372,80 @@ export function StartEditingProfile(profileDesignJSON) {
             }
 
             if (newElement) {
-                $("#profile-element-box").append(newElement.inEdit);
+                // create a jQuery node and store the serialized JSON on it for later
+                const serialized = newElement.JSON();
+                const $node = $(newElement.inEdit);
+                $node.attr('data-element-json', serialized);
+                $("#profile-element-box").append($node);
             }
 
             count--;
         }
-
-        RenderBBCode();
     }
+
+    // Render BBCode inside element bodies (do this BEFORE assigning IDs so BBCode doesn't clobber ids)
+    RenderBBCode();
+
+    // Remove accidental nested profile-element classes if any (defensive)
+    $(".profile-element .profile-element").removeClass("profile-element");
+
+    // setup drag/drop
+    setupDragDrop();
 }
 
-export function EndEditingProfile(button, isAUser, profileJSON) {
+/* Build a profileDesignJSON from the current editor DOM */
+export function CollectProfileDesignJSON() {
+    const left = [];
+    const right = [];
+
+    $("#custom-profile-left-edit > .profile-element").each(function () {
+        const serialized = $(this).attr('data-element-json');
+        if (serialized) left.push(serialized);
+    });
+
+    $("#custom-profile-right-edit > .profile-element").each(function () {
+        const serialized = $(this).attr('data-element-json');
+        if (serialized) right.push(serialized);
+    });
+
+    return {
+        background: { image: "", styling: "" },
+        elements: {
+            left,
+            right
+        }
+    };
+}
+
+/* ------------------------
+   End editing and submit
+   ------------------------ */
+export function EndEditingProfile(button, isAUser, originalProfileJSON) {
     if ($(button).hasClass("submit")) {
-        if(isAUser) {
+        if (isAUser) {
+            // collect the updated layout
+            const profileJSON = CollectProfileDesignJSON();
+
+            // send to server (serialize as form data just like original code)
             $.ajax({
                 url: "./custom_profile_handle.php?isAUser=false",
                 method: "POST",
                 data: {
-                    profile_design: profileJSON
+                    profile_design: JSON.stringify(profileJSON)
                 },
-                contentType: false,
-                processData: false,
-
-                success: function(response) {
+                success: function (response) {
                     alert("Profile update Complete!");
                     location.reload();
                 },
-                error: function(xhr) {
-                    alert("Profile update failed: " + JSON.parse(xhr.responseText).error);
+                error: function (xhr) {
+                    let msg = 'Unknown error';
+                    try { msg = JSON.parse(xhr.responseText).error; } catch (e) {}
+                    alert("Profile update failed: " + msg);
                 }
             });
         }
     }
-    else
+    else {
         location.reload();
+    }
 }

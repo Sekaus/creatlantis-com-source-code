@@ -725,6 +725,13 @@
         scale: 75%
     }
 
+    #custom-profile-edit .profile-element *,
+    #profile-element-box .profile-element * {
+        pointer-events: none;
+        -webkit-user-select: none;
+        user-select: none
+    }
+
     #custom-profile-left-edit div {
         padding: calc(var(--spacing)*0)
     }

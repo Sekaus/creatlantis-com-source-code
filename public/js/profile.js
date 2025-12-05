@@ -154,7 +154,7 @@ export class PostSpotlightElement extends ProfileElement {
                         </div>
                         <p class="post-spotlight-title big-text">${title}</p>
                         <div class="post-spotlight">
-                            <img src="${imageFile}"/>
+                            <img class="post-spotlight-content" src="${imageFile}"/>
                         </div>
                     </div>
                 </div>
@@ -479,9 +479,83 @@ function setupDragDrop() {
 }
 
 /* ------------------------
-   Start editing (edit-mode)
+    Before starting editing element
+    ----------------------- */
+export function BeforeStartEditingProfileElement() {
+  $(".start-editing-profile-icon").on('click', function() {
+    const $elementContainer = $(this).closest("[data-element-json]");
+    
+    switch ($elementContainer.data("type")) {
+        case ElementType.CUSTOM:
+            try {
+                // Robustly read the data
+                let elementData = $elementContainer.data('element-json');
+
+                if (elementData === undefined) {
+                    const raw = $elementContainer.attr('data-element-json');
+                    if (raw) {
+                        try {
+                        elementData = JSON.parse(raw);
+                        } catch (e) {
+                        elementData = raw;
+                        }
+                    }
+                }
+
+                // If somehow it is the string "[object Object]", warn and fall back
+                if (elementData === "[object Object]") {
+                    console.warn("data-element-json contains '[object Object]'. The source code likely used .attr(..., object) instead of JSON.stringify.");
+                    // Option: attempt to read a common property, e.g. elementData.html, or show an empty editor
+                    elementData = "";
+                }
+
+                // Convert to a safe string for editing
+                const textForTextarea = (typeof elementData === 'object') ? elementData.body : String(elementData);
+
+                const $textarea = $('<textarea/>').text(textForTextarea).css({"width": "100%", "padding-bottom": "100%"});
+
+                $elementContainer.find(".custom-content").empty().append($textarea);
+
+                $(".start-editing-profile-icon").remove();
+            } catch (e) {
+                console.error("Error parsing JSON data or replacing HTML:", e);
+            }
+            
+            break;
+        case ElementType.SPOTLIGHT:
+            var title = $elementContainer.find(".post-spotlight-title").text();
+            
+            var $spotlightContainer = $elementContainer.find(".post-spotlight-content");
+            
+            var $post = $spotlightContainer.first();
+            
+            var postURL;
+
+            if($post.is("img"))
+                postURL = $post.attr("src");
+            else if($post.is("a"))
+                postURL = $post.attr("href");
+
+            $elementContainer.find(".post-spotlight-element").html(/*html*/ `
+                    <label>Title: </label><input type="text" value="${title}" class="upload-input"/>
+
+                    <br/>
+
+                    <label>Post URL: </label><input type="text" value="${postURL}" class="upload-input"/>   
+                `).addClass("post-spotlight-title").css("display", "block");
+
+            $(".start-editing-profile-icon").remove();
+
+            break;
+    }
+  });
+}
+
+
+/* ------------------------
+   Start editing layout
    ------------------------ */
-export function StartEditingProfile(profileDesignJSON) {
+export function StartEditingProfileLayout(profileDesignJSON) {
     $("#custom-profile-view").hide();
     $(".custom-profile-editor").show();
     $("#start-editing-profile").hide();

@@ -35,7 +35,7 @@
                 </div>
 
                 <div id="content-map-right-part">
-                    <img src="./images/icons/editProfileIcon.webp" id="start-editing-profile" title="Start editing your profile page" alt="Edit profil icon" class="navigation-icon"/>
+                    <img src="./images/icons/editProfileIcon.webp" id="start-editing-profile" title="Start editing your profile page layout" alt="Edit profil icon" class="navigation-icon"/>
                 </div>
             </div>
 
@@ -54,7 +54,7 @@
         
         <script type="module">
             import { UserMetadata } from "./js/common.js";
-            import { LoadProfileElements, StartEditingProfile, EndEditingProfile, CustomProfileView, CustomProfileEdit, CustomProfileElement, CommentSectionElement, PostSpotlightElement, ProfileBIOElement } from "./js/profile.js";
+            import { LoadProfileElements, BeforeStartEditingProfileElement, StartEditingProfileLayout, ElementType, EndEditingProfile, CustomProfileView, CustomProfileEdit, CustomProfileElement, CommentSectionElement, PostSpotlightElement, ProfileBIOElement } from "./js/profile.js";
             
             /* Load in profile elements */
 
@@ -68,6 +68,7 @@
                         new CustomProfileElement().JSON()
                     ],
                     right: [
+                        new PostSpotlightElement().JSON(),
                         new ProfileBIOElement().JSON(),
                         new CommentSectionElement().JSON()
                     ]
@@ -79,14 +80,15 @@
 
             $(document).ready(function() {
                 LoadProfileElements(profileDesignJSON);
+                BeforeStartEditingProfileElement();
             })
             
-            // Start editing profile
+            // Start editing profile layout
             $("#start-editing-profile").click(function() {
-                StartEditingProfile(profileDesignJSON);
+                StartEditingProfileLayout(profileDesignJSON);
             });
 
-            // End editing profile
+            // End editing profile layout
             $("#profile-layout-icon-container button").click(function() {
                 EndEditingProfile(this, true, profileDesignJSON);
             });

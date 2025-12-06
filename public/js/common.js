@@ -1,3 +1,8 @@
+export const PostType = {
+    IMAGE: "image",
+    JOURNAL: "journal"
+}
+
 export function UserMetadata() {
     return /*html*/`
         <a href="#" title="Go to the user's profile" class="profile-link">

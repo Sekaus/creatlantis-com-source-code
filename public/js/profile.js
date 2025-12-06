@@ -1,5 +1,5 @@
 import { BBCodeRender } from "./text_formatter.js";
-import { CommentSection } from "./common.js";
+import { CommentSection, PostType } from "./common.js";
 
 /* ------------------------
    Views
@@ -57,20 +57,13 @@ export const ElementType = {
 };
 
 class ProfileElement {
-    constructor(type = null, body = "", inEdit = "") {
+    constructor(type) {
         this.type = type;
-        this.body = body;
-        this.inEdit = inEdit;
+        this.inEdit = ""
     }
 
     // JSON serializable representation
-    JSON() {
-        return JSON.stringify({
-            type: this.type,
-            body: this.body,
-            inEdit: this.inEdit
-        });
-    }
+    JSON() {}
 }
 
 /* ------------------------
@@ -121,6 +114,14 @@ export class CustomProfileElement extends ProfileElement {
             </div>
         `;
     }
+
+    JSON() {
+        return JSON.stringify({
+            type: this.type,
+            body: this.body,
+            inEdit: this.inEdit
+        });
+    }
 }
 
 export class CommentSectionElement extends ProfileElement {
@@ -139,11 +140,21 @@ export class CommentSectionElement extends ProfileElement {
 
         this.inEdit = this.body;
     }
+
+    JSON() {
+        return JSON.stringify({
+            type: this.type
+        });
+    }
 }
 
 export class PostSpotlightElement extends ProfileElement {
-    constructor(imageFile = "./images/default_img.webp", title = "Title") {
+    constructor(fileKey = "./images/default_img.webp", postType = PostType.IMAGE, title = "Title", postSpotlightContent = "<img src='./images/default_img.webp'/>") {
         super(ElementType.SPOTLIGHT);
+
+        this.fileKey = fileKey;
+
+        this.title = title;
 
         this.body = /*html*/ `
             <div class="profile-element" data-type="${ElementType.SPOTLIGHT}">
@@ -154,7 +165,7 @@ export class PostSpotlightElement extends ProfileElement {
                         </div>
                         <p class="post-spotlight-title big-text">${title}</p>
                         <div class="post-spotlight">
-                            <img class="post-spotlight-content" src="${imageFile}"/>
+                            ${postSpotlightContent}
                         </div>
                     </div>
                 </div>
@@ -167,12 +178,20 @@ export class PostSpotlightElement extends ProfileElement {
                     <div class="post-spotlight-element">
                         <p class="post-spotlight-title big-text">Spotlight</p>
                         <div class="post-spotlight">
-                            <img src="./images/default_img.webp"/>
+                            ${postSpotlightContent}
                         </div>
                     </div>
                 </div>
             </div>
         `;
+    }
+
+    JSON() {
+        return JSON.stringify({
+            fileKey: this.fileKey,
+            postType: this.postType,
+            title: this.title
+        });
     }
 }
 
@@ -222,6 +241,12 @@ export class ProfileBIOElement extends ProfileElement {
 
         this.inEdit = this.body;
     }
+
+    JSON() {
+        return JSON.stringify({
+            type: this.type
+        });
+    }
 }
 
 /* ------------------------
@@ -257,18 +282,16 @@ export function LoadProfileElements(profileDesignJSON) {
     $("#custom-profile-right").empty();
 
     profileDesignJSON.elements.left.forEach(element => {
-        const parsed = JSON.parse(element);
-        // parsed.body is already a full .profile-element wrapper
+        const parsed = typeof element === 'string' ? JSON.parse(element) : element;
         const $el = $(parsed.body);
-        // keep the serialized representation for roundtrip
-        $el.attr('data-element-json', element);
+        $el.attr('data-element-json', JSON.stringify(parsed));
         $("#custom-profile-left").append($el);
     });
 
     profileDesignJSON.elements.right.forEach(element => {
-        const parsed = JSON.parse(element);
+        const parsed = typeof element === 'string' ? JSON.parse(element) : element;
         const $el = $(parsed.body);
-        $el.attr('data-element-json', element);
+        $el.attr('data-element-json', JSON.stringify(parsed));
         $("#custom-profile-right").append($el);
     });
 
@@ -481,74 +504,89 @@ function setupDragDrop() {
 /* ------------------------
     Before starting editing element
     ----------------------- */
-export function BeforeStartEditingProfileElement() {
+export function BeforeStartEditingProfileElement(isAUser) {
   $(".start-editing-profile-icon").on('click', function() {
     const $elementContainer = $(this).closest("[data-element-json]");
+
+    // Robustly read the data
+    let elementData = $elementContainer.data('element-json');
+
+    if (elementData === undefined) {
+        const raw = $elementContainer.attr('data-element-json');
+
+        if (raw) {
+            try {
+                elementData = JSON.parse(raw);
+            } catch (e) {
+                elementData = raw;
+            }
+        }
+    }
+
+    const $save = $('<button class="submit">Save</button>');
     
     switch ($elementContainer.data("type")) {
         case ElementType.CUSTOM:
-            try {
-                // Robustly read the data
-                let elementData = $elementContainer.data('element-json');
+            // Convert to a safe string for editing
+            const textForTextarea = (typeof elementData === 'object') ? elementData.body : String(elementData);
 
-                if (elementData === undefined) {
-                    const raw = $elementContainer.attr('data-element-json');
-                    if (raw) {
-                        try {
-                        elementData = JSON.parse(raw);
-                        } catch (e) {
-                        elementData = raw;
-                        }
-                    }
-                }
+            const $textarea = $('<textarea/>').text(textForTextarea).css({"width": "100%", "padding-bottom": "100%"});
 
-                // If somehow it is the string "[object Object]", warn and fall back
-                if (elementData === "[object Object]") {
-                    console.warn("data-element-json contains '[object Object]'. The source code likely used .attr(..., object) instead of JSON.stringify.");
-                    // Option: attempt to read a common property, e.g. elementData.html, or show an empty editor
-                    elementData = "";
-                }
+            $elementContainer.find(".custom-content").empty().append($textarea);
 
-                // Convert to a safe string for editing
-                const textForTextarea = (typeof elementData === 'object') ? elementData.body : String(elementData);
+            $save.on("click", () => {
+                SaveSingleElement(
+                    $elementContainer,
+                    {
+                        type: ElementType.CUSTOM,
+                        body: $textarea.val()
+                    },
+                    isAUser
+                );
+            });
 
-                const $textarea = $('<textarea/>').text(textForTextarea).css({"width": "100%", "padding-bottom": "100%"});
+            $elementContainer.find(".custom-content").append($save);
 
-                $elementContainer.find(".custom-content").empty().append($textarea);
-
-                $(".start-editing-profile-icon").remove();
-            } catch (e) {
-                console.error("Error parsing JSON data or replacing HTML:", e);
-            }
+            $(".start-editing-profile-icon").remove();
             
             break;
         case ElementType.SPOTLIGHT:
-            var title = $elementContainer.find(".post-spotlight-title").text();
-            
-            var $spotlightContainer = $elementContainer.find(".post-spotlight-content");
-            
-            var $post = $spotlightContainer.first();
-            
-            var postURL;
-
-            if($post.is("img"))
-                postURL = $post.attr("src");
-            else if($post.is("a"))
-                postURL = $post.attr("href");
-
             $elementContainer.find(".post-spotlight-element").html(/*html*/ `
-                    <label>Title: </label><input type="text" value="${title}" class="upload-input"/>
+                <label>Title: </label><input name="title" type="text" value="${elementData.title}" class="upload-input"/>
 
-                    <br/>
+                <br/>
 
-                    <label>Post URL: </label><input type="text" value="${postURL}" class="upload-input"/>   
-                `).addClass("post-spotlight-title").css("display", "block");
+                <label>Post URL: </label><input name="file_key" type="text" value="${elementData.fileKey}" class="upload-input"/>   
+            `).addClass("post-spotlight-title").css("display", "block");
 
             $(".start-editing-profile-icon").remove();
+
+            $save.on("click", () => {
+                SaveSingleElement(
+                    $elementContainer,
+                    { 
+                        type: ElementType.SPOTLIGHT,
+                        fileKey: $elementContainer.find("input[name='file_key']").val(), 
+                        title: $elementContainer.find("input[name='title']").val()
+                    },
+                    isAUser
+                );
+            });
+
+            $elementContainer.find(".post-spotlight-element").append($save);
 
             break;
     }
   });
+}
+
+export function SaveSingleElement($element, newJSONContent, isAUser) {
+    // store updated JSON
+    const updated = JSON.stringify(newJSONContent);
+    
+    $element.attr("data-element-json", updated);
+
+    SaveProfile(isAUser)()
 }
 
 
@@ -568,21 +606,21 @@ export function StartEditingProfileLayout(profileDesignJSON) {
     $("#custom-profile-right-edit").empty();
 
     profileDesignJSON.elements.left.forEach(e => {
-        const parsed = JSON.parse(e);
+        // e could now be an object
+        const parsed = typeof e === 'string' ? JSON.parse(e) : e;
         countOnUnusedElements[parsed.type]--;
 
         const $node = $(parsed.inEdit);
-        // attach the original serialized data so we can rebuild profileDesignJSON later
-        $node.attr('data-element-json', e);
+        $node.attr('data-element-json', JSON.stringify(parsed));
         $("#custom-profile-left-edit").append($node);
     });
 
     profileDesignJSON.elements.right.forEach(e => {
-        const parsed = JSON.parse(e);
+        const parsed = typeof e === 'string' ? JSON.parse(e) : e;
         countOnUnusedElements[parsed.type]--;
 
         const $node = $(parsed.inEdit);
-        $node.attr('data-element-json', e);
+        $node.attr('data-element-json', JSON.stringify(parsed));
         $("#custom-profile-right-edit").append($node);
     });
 
@@ -611,7 +649,6 @@ export function StartEditingProfileLayout(profileDesignJSON) {
             }
 
             if (newElement) {
-                // create a jQuery node and store the serialized JSON on it for later
                 const serialized = newElement.JSON();
                 const $node = $(newElement.inEdit);
                 $node.attr('data-element-json', serialized);
@@ -656,33 +693,37 @@ export function CollectProfileDesignJSON() {
     };
 }
 
+function SaveProfile(isAUser) {
+    if (isAUser) {
+        // collect the updated layout
+        const profileJSON = CollectProfileDesignJSON();
+
+        // send to server (serialize as form data just like original code)
+        $.ajax({
+            url: "./custom_profile_handle.php?isAUser=false",
+            method: "POST",
+            data: {
+                profile_design: JSON.stringify(profileJSON)
+            },
+            success: function (response) {
+                alert("Profile update Complete!");
+                location.reload();
+            },
+            error: function (xhr) {
+                let msg = 'Unknown error';
+                try { msg = JSON.parse(xhr.responseText).error; } catch (e) {}
+                alert("Profile update failed: " + msg);
+            }
+        });
+    }
+}
+
 /* ------------------------
    End editing and submit
    ------------------------ */
-export function EndEditingProfile(button, isAUser, originalProfileJSON) {
+export function EndEditingProfileLayout(button, isAUser) {
     if ($(button).hasClass("submit")) {
-        if (isAUser) {
-            // collect the updated layout
-            const profileJSON = CollectProfileDesignJSON();
-
-            // send to server (serialize as form data just like original code)
-            $.ajax({
-                url: "./custom_profile_handle.php?isAUser=false",
-                method: "POST",
-                data: {
-                    profile_design: JSON.stringify(profileJSON)
-                },
-                success: function (response) {
-                    alert("Profile update Complete!");
-                    location.reload();
-                },
-                error: function (xhr) {
-                    let msg = 'Unknown error';
-                    try { msg = JSON.parse(xhr.responseText).error; } catch (e) {}
-                    alert("Profile update failed: " + msg);
-                }
-            });
-        }
+        SaveProfile(isAUser);
     }
     else {
         location.reload();

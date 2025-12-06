@@ -36,6 +36,14 @@
             exit;
         }
 
+        if(!(isset($_GET["username"]) && $_GET["username"] == $user->username())) {
+            ob_end_clean();
+            header('Content-Type: application/json');
+            http_response_code(401);
+            echo json_encode(['success' => false, 'error' => 'The account is not yours.']);
+            exit;
+        }
+
         // Now call upload and capture result. Wrap with try/catch.
         try {
             if(isset($_POST['profile_design']))

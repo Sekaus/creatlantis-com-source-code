@@ -14,6 +14,7 @@
     <head>
         <title>Main</title>
         <?php include_once("./html_elements/head.html"); ?>
+        <script type="module" src="./js/profile.js"></script>
     </head>
     <body>
         <?php include_once("./html_elements/navigation_bar.html"); ?>
@@ -54,23 +55,18 @@
         
         <script type="module">
             import { UserMetadata } from "./js/common.js";
-            import { LoadProfileElements, BeforeStartEditingProfileElement, StartEditingProfileLayout, ElementType, EndEditingProfile, CustomProfileView, CustomProfileEdit, CustomProfileElement, CommentSectionElement, PostSpotlightElement, ProfileBIOElement } from "./js/profile.js";
+            import { LoadProfileElements, BeforeStartEditingProfileElement, SaveSingleElement, StartEditingProfileLayout, ElementType, EndEditingProfileLayout, CustomProfileView, CustomProfileEdit, CustomProfileElement, CommentSectionElement, PostSpotlightElement, ProfileBIOElement } from "./js/profile.js";
             
             /* Load in profile elements */
 
             let profileDesignJSON = { 
-                background: { 
-                    image: "", 
-                    styling: "" 
-                }, 
+                background: { image: "", styling: "" }, 
                 elements: { 
-                    left: [
-                        new CustomProfileElement().JSON()
-                    ],
+                    left: [ new CustomProfileElement() ],
                     right: [
-                        new PostSpotlightElement().JSON(),
-                        new ProfileBIOElement().JSON(),
-                        new CommentSectionElement().JSON()
+                        new PostSpotlightElement(),
+                        new ProfileBIOElement(),
+                        new CommentSectionElement()
                     ]
                 }
             };
@@ -80,7 +76,7 @@
 
             $(document).ready(function() {
                 LoadProfileElements(profileDesignJSON);
-                BeforeStartEditingProfileElement();
+                BeforeStartEditingProfileElement(true);
             })
             
             // Start editing profile layout
@@ -90,7 +86,7 @@
 
             // End editing profile layout
             $("#profile-layout-icon-container button").click(function() {
-                EndEditingProfile(this, true, profileDesignJSON);
+                EndEditingProfileLayout(this, true, profileDesignJSON);
             });
 
             $(".custom-profile-editor").hide();

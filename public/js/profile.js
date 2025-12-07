@@ -149,12 +149,16 @@ export class CommentSectionElement extends ProfileElement {
 }
 
 export class PostSpotlightElement extends ProfileElement {
-    constructor(fileKey = "./images/default_img.webp", postType = PostType.IMAGE, title = "Title", postSpotlightContent = "<img src='./images/default_img.webp'/>") {
+    constructor(fileKey = "", postType = PostType.IMAGE, title = "Title", postSpotlightContent = "<img src='./images/default_img.webp'/>") {
         super(ElementType.SPOTLIGHT);
 
         this.fileKey = fileKey;
 
+        this.postType = postType;
+
         this.title = title;
+        
+        this.postSpotlightContent = postSpotlightContent;
 
         this.body = /*html*/ `
             <div class="profile-element" data-type="${ElementType.SPOTLIGHT}">
@@ -188,9 +192,13 @@ export class PostSpotlightElement extends ProfileElement {
 
     JSON() {
         return JSON.stringify({
+            type: this.type,
+            body: this.body,
+            inEdit: this.inEdit,
             fileKey: this.fileKey,
             postType: this.postType,
-            title: this.title
+            title: this.title,
+            postSpotlightContent: this.postSpotlightContent
         });
     }
 }
@@ -273,6 +281,36 @@ function RenderBBCode() {
     });
 }
 
+function ParseElementJSON(element) {
+    const parsed = typeof element === 'string' ? JSON.parse(element) : element;
+            
+    var $el = null;
+
+    switch (parsed.type) {
+        case ElementType.CUSTOM:
+            $el = $(parsed.body);
+            break;
+        case ElementType.COMMENT_SECTION:
+            $el = $(new CommentSectionElement().body);
+            break;
+        case ElementType.SPOTLIGHT:
+            var fileKey = parsed.fileKey;
+            var postType = parsed.postType; 
+            var title = parsed.title; 
+            var postSpotlightContent = parsed.postSpotlightContent;
+
+            $el = $(new PostSpotlightElement(fileKey, postType, title, postSpotlightContent).body);
+            break;
+        case ElementType.BIO:
+            $el = $(new ProfileBIOElement().body);
+            break;
+    }
+
+    $el.attr('data-element-json', JSON.stringify(parsed));
+
+    return $el;
+}
+
 /* ------------------------
    Load view mode elements
    ------------------------ */
@@ -281,19 +319,23 @@ export function LoadProfileElements(profileDesignJSON) {
     $("#custom-profile-left").empty();
     $("#custom-profile-right").empty();
 
-    profileDesignJSON.elements.left.forEach(element => {
-        const parsed = typeof element === 'string' ? JSON.parse(element) : element;
-        const $el = $(parsed.body);
-        $el.attr('data-element-json', JSON.stringify(parsed));
-        $("#custom-profile-left").append($el);
-    });
+    if(profileDesignJSON.elements?.left) {
+        profileDesignJSON.elements.left.forEach(element => {
+            var $el = ParseElementJSON(element);
 
-    profileDesignJSON.elements.right.forEach(element => {
-        const parsed = typeof element === 'string' ? JSON.parse(element) : element;
-        const $el = $(parsed.body);
-        $el.attr('data-element-json', JSON.stringify(parsed));
-        $("#custom-profile-right").append($el);
-    });
+            if($el)
+                $("#custom-profile-left").append($el);
+        });
+    }
+
+    if(profileDesignJSON.elements?.right) {
+        profileDesignJSON.elements.right.forEach(element => {
+            var $el = ParseElementJSON(element);
+
+            if($el)
+                $("#custom-profile-right").append($el);
+        });
+    }
 
     RenderBBCode();
 }
@@ -586,7 +628,32 @@ export function SaveSingleElement($element, newJSONContent, isAUser) {
     
     $element.attr("data-element-json", updated);
 
-    SaveProfile(isAUser)()
+    SaveProfile(isAUser);
+}
+
+function convertTypeToElement(type) {
+    type = Number(type);
+    
+    var newElement = null;
+
+    switch (type) {
+        case ElementType.CUSTOM:
+            newElement = new CustomProfileElement();
+            break;
+        case ElementType.COMMENT_SECTION:
+            newElement = new CommentSectionElement();
+            break;
+        case ElementType.SPOTLIGHT:
+            newElement = new PostSpotlightElement();
+            break;
+        case ElementType.BIO:
+            newElement = new ProfileBIOElement();
+            break;
+        default:
+            console.error(`Error: element type (${type}) not found.`);
+    }
+
+    return newElement;
 }
 
 
@@ -605,48 +672,37 @@ export function StartEditingProfileLayout(profileDesignJSON) {
     $("#custom-profile-left-edit").empty();
     $("#custom-profile-right-edit").empty();
 
-    profileDesignJSON.elements.left.forEach(e => {
-        // e could now be an object
-        const parsed = typeof e === 'string' ? JSON.parse(e) : e;
-        countOnUnusedElements[parsed.type]--;
+    if(profileDesignJSON.elements?.left) {
+        profileDesignJSON.elements.left.forEach(element => {
+            var newElement = convertTypeToElement(JSON.parse(element).type);
 
-        const $node = $(parsed.inEdit);
-        $node.attr('data-element-json', JSON.stringify(parsed));
-        $("#custom-profile-left-edit").append($node);
-    });
+            if(newElement) {
+                const $parsed = ParseElementJSON(element);
+                countOnUnusedElements[element.type]--;
+                $("#custom-profile-left-edit").append(newElement.inEdit);
+            }
+        });
+    }
 
-    profileDesignJSON.elements.right.forEach(e => {
-        const parsed = typeof e === 'string' ? JSON.parse(e) : e;
-        countOnUnusedElements[parsed.type]--;
+    if(profileDesignJSON.elements?.right) {
+        profileDesignJSON.elements.right.forEach(element => {
+            var newElement = convertTypeToElement(JSON.parse(element).type);
 
-        const $node = $(parsed.inEdit);
-        $node.attr('data-element-json', JSON.stringify(parsed));
-        $("#custom-profile-right-edit").append($node);
-    });
+            if(newElement) {
+                const $parsed = ParseElementJSON(element);
+                countOnUnusedElements[element.type]--;
+                $("#custom-profile-right-edit").append(newElement.inEdit);
+            }
+        });
+    }
 
     // populate unused pool
     $("#profile-element-box").empty();
     for (let type in countOnUnusedElements) {
         let count = countOnUnusedElements[type];
-        type = Number(type);
 
         while (count > 0) {
-            let newElement = null;
-
-            switch (type) {
-                case ElementType.CUSTOM:
-                    newElement = new CustomProfileElement();
-                    break;
-                case ElementType.COMMENT_SECTION:
-                    newElement = new CommentSectionElement();
-                    break;
-                case ElementType.SPOTLIGHT:
-                    newElement = new PostSpotlightElement();
-                    break;
-                case ElementType.BIO:
-                    newElement = new ProfileBIOElement();
-                    break;
-            }
+            var newElement = convertTypeToElement(type);
 
             if (newElement) {
                 const serialized = newElement.JSON();

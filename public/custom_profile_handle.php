@@ -36,7 +36,7 @@
             exit;
         }
 
-        if(!(isset($_GET["username"]) && $_GET["username"] == $user->username())) {
+        if(!(isset($_SESSION["viewed_user"]) && $_SESSION["viewed_user"] == $user->uuid())) {
             ob_end_clean();
             header('Content-Type: application/json');
             http_response_code(401);

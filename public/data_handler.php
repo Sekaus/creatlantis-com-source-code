@@ -447,6 +447,12 @@ class DataHandle {
         return $this->s3->getPresignedUrl($key);;
     }
 
+    public function GetBodyAsStringOnSingleFile($key): ?string {
+        if (!$key) return "";
+
+        return $this->s3->getObjectBodyAsString($key);
+    }
+
     public function uploadFile(File $file, Login $login, User $user) {
         // Validate types (login/user may be serialized objects from session)
         if (!($login instanceof Login) || !($user instanceof User)) {

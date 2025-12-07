@@ -23,7 +23,6 @@
     if ($login) {
         echo json_encode(["success" => true]);
         exit;
-
     } 
     else {
         http_response_code(401);

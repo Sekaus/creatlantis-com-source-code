@@ -6,7 +6,12 @@
   include_once("./data_handler.php");
 
   $dh = new DataHandle($dbConfig, $s3Config, S3BotType::readOnly);
+  
   $viewedUser = $dh->getUserInfo($_GET["username"]);
+  
+  $_SESSION["viewed_user"] = $viewedUser->uuid();
+  
+  $profileDesign = $dh->GetBodyAsStringOnSingleFile($viewedUser->uuid() . "/profile_design.json");
 ?>
 
 <!DOCTYPE html>
@@ -59,17 +64,37 @@
             
             /* Load in profile elements */
 
+            // Default profile design
             let profileDesignJSON = { 
                 background: { image: "", styling: "" }, 
                 elements: { 
                     left: [ new CustomProfileElement() ],
                     right: [
-                        new PostSpotlightElement(),
                         new ProfileBIOElement(),
                         new CommentSectionElement()
                     ]
                 }
             };
+
+            <?php 
+                if(isset($profileDesign)) {
+                    $decodedJSON = json_decode($profileDesign);
+                    
+                    $backgroundImage = $decodedJSON->background->image;
+                    $backgroundStyle = $decodedJSON->background->styling;
+
+                    $left = json_encode($decodedJSON->elements->left);
+                    $right = json_encode($decodedJSON->elements->right);
+
+                    echo "profileDesignJSON = { 
+                        background: { image: '$backgroundImage', styling: '$backgroundStyle' }, 
+                        elements: { 
+                            left: $left,
+                            right: $right
+                        }
+                    }";
+                }
+            ?>
 
             $("#profile-container").append(CustomProfileView());
             $("#profile-container").append(CustomProfileEdit());

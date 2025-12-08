@@ -672,26 +672,44 @@ export function StartEditingProfileLayout(profileDesignJSON) {
     $("#custom-profile-left-edit").empty();
     $("#custom-profile-right-edit").empty();
 
-    if(profileDesignJSON.elements?.left) {
+    if (profileDesignJSON.elements?.left) {
         profileDesignJSON.elements.left.forEach(element => {
-            var newElement = convertTypeToElement(JSON.parse(element).type);
+            // `element` is a serialized JSON string stored in profileDesignJSON
+            const parsed = typeof element === 'string' ? JSON.parse(element) : element;
 
-            if(newElement) {
-                const $parsed = ParseElementJSON(element);
-                countOnUnusedElements[element.type]--;
-                $("#custom-profile-left-edit").append(newElement.inEdit);
+            var newElement = convertTypeToElement(parsed.type);
+
+            if (newElement) {
+                // create a jQuery node from the inEdit HTML and attach the original serialized JSON
+                const $node = $(newElement.inEdit);
+                $node.attr('data-element-json', JSON.stringify(parsed));
+
+                // decrement the unused count using parsed.type
+                if (typeof countOnUnusedElements[parsed.type] === 'number') {
+                    countOnUnusedElements[parsed.type]--;
+                }
+
+                // append the inEdit node
+                $("#custom-profile-left-edit").append($node);
             }
         });
     }
 
-    if(profileDesignJSON.elements?.right) {
+    if (profileDesignJSON.elements?.right) {
         profileDesignJSON.elements.right.forEach(element => {
-            var newElement = convertTypeToElement(JSON.parse(element).type);
+            const parsed = typeof element === 'string' ? JSON.parse(element) : element;
 
-            if(newElement) {
-                const $parsed = ParseElementJSON(element);
-                countOnUnusedElements[element.type]--;
-                $("#custom-profile-right-edit").append(newElement.inEdit);
+            var newElement = convertTypeToElement(parsed.type);
+
+            if (newElement) {
+                const $node = $(newElement.inEdit);
+                $node.attr('data-element-json', JSON.stringify(parsed));
+
+                if (typeof countOnUnusedElements[parsed.type] === 'number') {
+                    countOnUnusedElements[parsed.type]--;
+                }
+
+                $("#custom-profile-right-edit").append($node);
             }
         });
     }
@@ -721,7 +739,7 @@ export function StartEditingProfileLayout(profileDesignJSON) {
     // Remove accidental nested profile-element classes if any (defensive)
     $(".profile-element .profile-element").removeClass("profile-element");
 
-    // setup drag/drop
+    // setup drag/drop (this assigns IDs to .profile-element as needed)
     setupDragDrop();
 }
 
@@ -730,12 +748,22 @@ export function CollectProfileDesignJSON() {
     const left = [];
     const right = [];
 
-    $("#custom-profile-left-edit > .profile-element").each(function () {
+    // If the edit containers are visible or populated, prefer them.
+    // Otherwise fall back to the view containers.
+    const leftContainerSelector = ($("#custom-profile-left-edit").is(":visible") && $("#custom-profile-left-edit > .profile-element").length)
+        ? "#custom-profile-left-edit > .profile-element"
+        : "#custom-profile-left > .profile-element";
+
+    const rightContainerSelector = ($("#custom-profile-right-edit").is(":visible") && $("#custom-profile-right-edit > .profile-element").length)
+        ? "#custom-profile-right-edit > .profile-element"
+        : "#custom-profile-right > .profile-element";
+
+    $(leftContainerSelector).each(function () {
         const serialized = $(this).attr('data-element-json');
         if (serialized) left.push(serialized);
     });
 
-    $("#custom-profile-right-edit > .profile-element").each(function () {
+    $(rightContainerSelector).each(function () {
         const serialized = $(this).attr('data-element-json');
         if (serialized) right.push(serialized);
     });
@@ -756,7 +784,7 @@ function SaveProfile(isAUser) {
 
         // send to server (serialize as form data just like original code)
         $.ajax({
-            url: "./custom_profile_handle.php?isAUser=false",
+            url: `./custom_profile_handle.php?isAUser=${isAUser ? 'true' : 'false'}`,
             method: "POST",
             data: {
                 profile_design: JSON.stringify(profileJSON)

@@ -623,7 +623,7 @@ export function BeforeStartEditingProfileElement(isAUser) {
             case ElementType.SPOTLIGHT: {
                 // existing spotlight editing code
                 const $spotlight = $elementContainer.find(".post-spotlight-element");
-                $spotlight.html(`
+                $spotlight.html(/*html*/`
                     <label>Title: </label><input name="title" type="text" value="${elementData.title}" class="upload-input"/><br/>
                     <label>Post URL: </label><input name="file_key" type="text" value="${elementData.fileKey}" class="upload-input"/>
                 `).addClass("post-spotlight-title").css("display", "block");

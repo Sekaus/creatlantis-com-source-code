@@ -1183,7 +1183,8 @@
     #post-icon-container,
     .post-spotlight-title,
     #upload-post-icons,
-    #update-profile-icons {
+    #update-profile-icons,
+    .post-spotlight {
         justify-content: center;
         gap: calc(var(--spacing)*10);
         flex-wrap: wrap;

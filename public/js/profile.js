@@ -66,30 +66,28 @@ class ProfileElement {
     JSON() {}
 }
 
-/* ------------------------
-   Concrete elements
-   Important: each element's HTML uses a single outer wrapper with class `profile-element`
-   and an inner `.element-body` that is safe to rewrite by BBCodeRender. Avoid nested `.profile-element`.
-   ------------------------ */
 export class CustomProfileElement extends ProfileElement {
-    constructor(content = /*html*/`
-        <div class="custom-content">
-            <div style="display: flex; justify-content: center; background-color: white">
-                [url=https://glitter-graphics.com/myspace/text_generator.php]
-                    [img]https://text.glitter-graphics.net/cbl/w.gif[/img]
-                    [img]https://text.glitter-graphics.net/cbl/e.gif[/img]
-                    [img]https://text.glitter-graphics.net/cbl/l.gif[/img]
-                    [img]https://text.glitter-graphics.net/cbl/c.gif[/img]
-                    [img]https://text.glitter-graphics.net/cbl/o.gif[/img]
-                    [img]https://text.glitter-graphics.net/cbl/m.gif[/img]
-                    [img]https://text.glitter-graphics.net/cbl/e.gif[/img]
-                    [img]https://dl3.glitter-graphics.net/empty.gif[/img]
-                [/url]
-            </div>
+    // innerContent should be the HTML/BBCode you want *inside* the .custom-content div
+    constructor(innerContent = /*html*/`
+        <div style="display: flex; justify-content: center; background-color: white">
+            [url=https://glitter-graphics.com/myspace/text_generator.php]
+                [img]https://text.glitter-graphics.net/cbl/w.gif[/img]
+                [img]https://text.glitter-graphics.net/cbl/e.gif[/img]
+                [img]https://text.glitter-graphics.net/cbl/l.gif[/img]
+                [img]https://text.glitter-graphics.net/cbl/c.gif[/img]
+                [img]https://text.glitter-graphics.net/cbl/o.gif[/img]
+                [img]https://text.glitter-graphics.net/cbl/m.gif[/img]
+                [img]https://text.glitter-graphics.net/cbl/e.gif[/img]
+                [img]https://dl3.glitter-graphics.net/empty.gif[/img]
+            [/url]
         </div>
     `) {
         super(ElementType.CUSTOM);
 
+        // store only the inner content (no outer .custom-content wrapper)
+        this.content = innerContent;
+
+        // build the DOM wrapper around the inner content
         this.body = /*html*/ `
             <div class="profile-element" data-type="${ElementType.CUSTOM}">
                 <div class="element-body">
@@ -97,7 +95,9 @@ export class CustomProfileElement extends ProfileElement {
                         <div class="profile-element-icon-container">
                             <img src="./images/icons/editIcon.webp" class="start-editing-profile-icon profile-element-icon" title="Start editing this profile element" alt="Edit icon" />
                         </div>
-                        ${content}
+                        <div class="custom-content">
+                            ${innerContent}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -108,7 +108,9 @@ export class CustomProfileElement extends ProfileElement {
                 <div class="element-body">
                     <div class="custom-profile-element">
                         <p class="post-spotlight-title big-text">Custom Element</p>
-                        ${content}
+                        <div class="custom-content">
+                            ${innerContent}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -116,10 +118,10 @@ export class CustomProfileElement extends ProfileElement {
     }
 
     JSON() {
+        // store only the inner content (so editing only affects the content, not wrapper)
         return JSON.stringify({
             type: this.type,
-            body: this.body,
-            inEdit: this.inEdit
+            content: this.content
         });
     }
 }
@@ -283,23 +285,33 @@ function RenderBBCode() {
 
 function ParseElementJSON(element) {
     const parsed = typeof element === 'string' ? JSON.parse(element) : element;
-            
-    var $el = null;
+    let $el = null;
 
     switch (parsed.type) {
         case ElementType.CUSTOM:
-            $el = $(parsed.body);
+            // parsed.content is the inner content (raw BBCode / HTML)
+            $el = $(new CustomProfileElement(parsed.content).body);
+
+            // Set the attribute and store the raw inner content on the wrapper for later editing
+            $el.find('.custom-content').data('raw-content', parsed.content);
+
+            // Render displayed HTML from BBCode (use only inside the element-body)
+            $el.find('.element-body').each(function () {
+                const rawInner = $(this).find('.custom-content').data('raw-content') || '';
+                $(this).find('.custom-content').html(BBCodeRender(rawInner));
+            });
             break;
+
         case ElementType.COMMENT_SECTION:
             $el = $(new CommentSectionElement().body);
             break;
         case ElementType.SPOTLIGHT:
-            var fileKey = parsed.fileKey;
-            var postType = parsed.postType; 
-            var title = parsed.title; 
-            var postSpotlightContent = parsed.postSpotlightContent;
-
-            $el = $(new PostSpotlightElement(fileKey, postType, title, postSpotlightContent).body);
+            $el = $(new PostSpotlightElement(
+                parsed.fileKey,
+                parsed.postType,
+                parsed.title,
+                parsed.postSpotlightContent
+            ).body);
             break;
         case ElementType.BIO:
             $el = $(new ProfileBIOElement().body);
@@ -307,7 +319,6 @@ function ParseElementJSON(element) {
     }
 
     $el.attr('data-element-json', JSON.stringify(parsed));
-
     return $el;
 }
 
@@ -547,79 +558,96 @@ function setupDragDrop() {
     Before starting editing element
     ----------------------- */
 export function BeforeStartEditingProfileElement(isAUser) {
-  $(".start-editing-profile-icon").on('click', function() {
-    const $elementContainer = $(this).closest("[data-element-json]");
+    $(".start-editing-profile-icon").on('click', function() {
+        const $elementContainer = $(this).closest("[data-element-json]");
+        let elementData = $elementContainer.data('element-json');
 
-    // Robustly read the data
-    let elementData = $elementContainer.data('element-json');
-
-    if (elementData === undefined) {
-        const raw = $elementContainer.attr('data-element-json');
-
-        if (raw) {
-            try {
-                elementData = JSON.parse(raw);
-            } catch (e) {
-                elementData = raw;
+        if (!elementData) {
+            const raw = $elementContainer.attr('data-element-json');
+            if (raw) {
+                try { elementData = JSON.parse(raw); } 
+                catch (e) { elementData = raw; }
             }
         }
-    }
 
-    const $save = $('<button class="submit">Save</button>');
-    
-    switch ($elementContainer.data("type")) {
-        case ElementType.CUSTOM:
-            // Convert to a safe string for editing
-            const textForTextarea = (typeof elementData === 'object') ? elementData.body : String(elementData);
+        const $save = $('<button class="submit">Save</button>');
+        const $cancel = $('<button id="cancel">Cancel</button>')
+        $cancel.on("click", () => location.reload());
 
-            const $textarea = $('<textarea/>').text(textForTextarea).css({"width": "100%", "padding-bottom": "100%"});
+        switch ($elementContainer.data("type")) {
+            case ElementType.CUSTOM: {
+                const $customContent = $elementContainer.find(".custom-content");
 
-            $elementContainer.find(".custom-content").empty().append($textarea);
+                // Prefer the parsed elementData content, otherwise fallback to stored data attribute
+                const initialRaw = (elementData && elementData.content) 
+                    ? elementData.content 
+                    : ($customContent.data('raw-content') || '');
 
-            $save.on("click", () => {
-                SaveSingleElement(
-                    $elementContainer,
-                    {
-                        type: ElementType.CUSTOM,
-                        body: $textarea.val()
-                    },
-                    isAUser
-                );
-            });
+                // Create textarea for raw editing of inner content only
+                const $textarea = $('<textarea/>')
+                    .val(initialRaw)
+                    .css({"width": "100%", "height": "700px", "box-sizing": "border-box"});
 
-            $elementContainer.find(".custom-content").append($save);
+                // Place textarea *inside* the wrapper, leaving wrapper element intact
+                $customContent.empty().append($textarea);
 
-            $(".start-editing-profile-icon").remove();
-            
-            break;
-        case ElementType.SPOTLIGHT:
-            $elementContainer.find(".post-spotlight-element").html(/*html*/ `
-                <label>Title: </label><input name="title" type="text" value="${elementData.title}" class="upload-input"/>
+                // Ensure Save/Cancel buttons are outside the .custom-content wrapper so they don't get saved
+                $cancel.insertAfter($customContent);
+                $save.insertAfter($customContent);
 
-                <br/>
+                $save.on("click", () => {
+                    const newContent = $textarea.val();
 
-                <label>Post URL: </label><input name="file_key" type="text" value="${elementData.fileKey}" class="upload-input"/>   
-            `).addClass("post-spotlight-title").css("display", "block");
+                    // Update the data attribute used for future edits (keeps raw)
+                    $customContent.data('raw-content', newContent);
 
-            $(".start-editing-profile-icon").remove();
+                    // Update data-element-json (store only inner content)
+                    SaveSingleElement(
+                        $elementContainer,
+                        {
+                            type: ElementType.CUSTOM,
+                            content: newContent
+                        },
+                        isAUser
+                    );
 
-            $save.on("click", () => {
-                SaveSingleElement(
-                    $elementContainer,
-                    { 
-                        type: ElementType.SPOTLIGHT,
-                        fileKey: $elementContainer.find("input[name='file_key']").val(), 
-                        title: $elementContainer.find("input[name='title']").val()
-                    },
-                    isAUser
-                );
-            });
+                    // Re-render the display immediately (optional), using BBCodeRender on inner content
+                    $customContent.html(BBCodeRender(newContent));
+                });
 
-            $elementContainer.find(".post-spotlight-element").append($save);
+                // remove other edit icons while editing
+                $(".start-editing-profile-icon").remove();
+                break;
+            }
 
-            break;
-    }
-  });
+            case ElementType.SPOTLIGHT: {
+                // existing spotlight editing code
+                const $spotlight = $elementContainer.find(".post-spotlight-element");
+                $spotlight.html(`
+                    <label>Title: </label><input name="title" type="text" value="${elementData.title}" class="upload-input"/><br/>
+                    <label>Post URL: </label><input name="file_key" type="text" value="${elementData.fileKey}" class="upload-input"/>
+                `).addClass("post-spotlight-title").css("display", "block");
+
+                $(".start-editing-profile-icon").remove();
+
+                $save.on("click", () => {
+                    SaveSingleElement(
+                        $elementContainer,
+                        { 
+                            type: ElementType.SPOTLIGHT,
+                            fileKey: $elementContainer.find("input[name='file_key']").val(), 
+                            title: $elementContainer.find("input[name='title']").val()
+                        },
+                        isAUser
+                    );
+                });
+
+                $spotlight.append($save);
+                $spotlight.append($cancel);
+                break;
+            }
+        }
+    });
 }
 
 export function SaveSingleElement($element, newJSONContent, isAUser) {

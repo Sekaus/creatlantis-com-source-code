@@ -21,8 +21,6 @@
     $shouldShowPopup = $user->lastVersionOfReadAndAccept() !== $lastUpdateOnRulesAndPrivacy;
     $isNotANewUser = $user->lastVersionOfReadAndAccept() !== "";
 
-    var_dump(unserialize($_SESSION['user_data'])->lastVersionOfReadAndAccept());
-
     if (isset($_POST["agreed"]) && $_POST["agreed"] === "yes") {
 
         $user->setLastVersionOfReadAndAccept($lastUpdateOnRulesAndPrivacy);

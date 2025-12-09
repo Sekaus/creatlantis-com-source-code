@@ -765,14 +765,23 @@
     }
 
     .user-icon {
+        image-rendering: high-quality;
+        image-rendering: crisp-edges;
+        aspect-ratio: 1;
+        object-fit: cover;
+        width: auto;
         height: clamp(16px, 5vw, 48px)
     }
 
     #content-map .user-icon {
+        aspect-ratio: 1;
+        width: auto;
         height: clamp(32px, 8vw, 64px)
     }
 
     #profile-bio .user-icon {
+        aspect-ratio: 1;
+        width: auto;
         height: clamp(96px, 11vw, 160px)
     }
 

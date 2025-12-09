@@ -15,6 +15,12 @@
   $_SESSION["viewed_user"] = $viewedUser->uuid();
   
   $profileDesign = $dh->GetBodyAsStringOnSingleFile($viewedUser->uuid() . "/profile_design.json");
+
+  $areYouTheViewedUser = false;
+  
+  if(isset($_SESSION["user_data"]))
+    $areYouTheViewedUser = ($viewedUser->uuid() == unserialize($_SESSION["user_data"])->uuid())
+
 ?>
 
 <!DOCTYPE html>
@@ -174,6 +180,11 @@
 
             /* Load user date in profile elements */
             $(document).ready(function() {
+                <?php if(!$areYouTheViewedUser): ?>
+                    $("#start-editing-profile").remove();
+                    $(".profile-element-icon-container").remove();
+                <?php endif; ?>
+
                 $(".bio-content-box .extra-big-text").text("<?php echo $viewedUserUsername; ?>");
                 $(".bio-content-box .user-icon").attr("src", "<?php echo $viewedUserProfileImage; ?>");
                 $("#hobbies").text("<?php echo $viewedUser->hobbies(); ?>");

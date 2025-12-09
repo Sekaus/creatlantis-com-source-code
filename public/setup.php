@@ -43,7 +43,8 @@
         // Show popup for the new user
         <?php if ($shouldShowPopup): ?>
             $(document).ready(() => {
-                $("body").prepend(RulesAndPrivacyPopup(<?php echo ($isNotANewUser ? "true" : "false") ?>));
+                if(!location.pathname.includes("login"))
+                    $("body").prepend(RulesAndPrivacyPopup(<?php echo ($isNotANewUser ? "true" : "false") ?>));
             });
         <?php endif; ?>
 

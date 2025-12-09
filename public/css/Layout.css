@@ -800,7 +800,7 @@
 
     #navigation-bar {
         top: calc(var(--spacing)*0);
-        z-index: 1;
+        z-index: 40;
         padding-inline: calc(var(--spacing)*3);
         padding-block: calc(var(--spacing)*1);
         flex-wrap: wrap;
@@ -814,6 +814,10 @@
         #navigation-bar {
             padding-block: calc(var(--spacing)*0)
         }
+    }
+
+    #settings {
+        z-index: 40
     }
 
     #settings:not(:hover) .dorp-down-content {

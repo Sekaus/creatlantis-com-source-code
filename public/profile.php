@@ -8,6 +8,9 @@
   $dh = new DataHandle($dbConfig, $s3Config, S3BotType::readOnly);
   
   $viewedUser = $dh->getUserInfo($_GET["username"]);
+
+  $viewedUserProfileImage = $dh->GetURLOnSingleFile($viewedUser->profileImage());
+  $viewedUserUsername = $viewedUser->username();
   
   $_SESSION["viewed_user"] = $viewedUser->uuid();
   
@@ -120,9 +123,9 @@
 
             $("#content-map-left-part").prepend(UserMetadata());
             
-            $("#content-map-left-part .user-name").text("<?php echo $viewedUser->username(); ?>");
+            $("#content-map-left-part .user-name").text("<?php echo $viewedUserUsername; ?>");
             $("#content-map-left-part .user-tagline").text("<?php echo $viewedUser->tagline(); ?>");
-            $("#content-map-left-part .user-icon").attr("src", "<?php echo $dh->GetURLOnSingleFile($viewedUser->profileImage()); ?>");
+            $("#content-map-left-part .user-icon").attr("src", "<?php echo $viewedUserProfileImage; ?>");
 
             /* Load selected profile tap */
             switch ("<?php echo $_GET["tab"]; ?>") {
@@ -160,13 +163,21 @@
 
             $(".tab").click(function() {
                 if ($(this).is("[id*='show-profile']"))
-                    window.location.href = window.location.origin + "/profile/<?php echo $viewedUser->username(); ?>";
+                    window.location.href = window.location.origin + "/profile/<?php echo $viewedUserUsername; ?>";
                 else if ($(this).is("[id*='show-gallery']"))
-                    window.location.href = window.location.origin + "/profile/<?php echo $viewedUser->username(); ?>/gallery";
+                    window.location.href = window.location.origin + "/profile/<?php echo $viewedUserUsername; ?>/gallery";
                 else if ($(this).is("[id*='show-faves']"))
-                    window.location.href = window.location.origin + "/profile/<?php echo $viewedUser->username(); ?>/faves";
+                    window.location.href = window.location.origin + "/profile/<?php echo $viewedUserUsername; ?>/faves";
                 else if ($(this).is("[id*='show-journals']"))
-                    window.location.href = window.location.origin + "/profile/<?php echo $viewedUser->username(); ?>/journals";
+                    window.location.href = window.location.origin + "/profile/<?php echo $viewedUserUsername; ?>/journals";
+            });
+
+            /* Load user date in profile elements */
+            $(document).ready(function() {
+                $(".bio-content-box .extra-big-text").text("<?php echo $viewedUserUsername; ?>");
+                $(".bio-content-box .user-icon").attr("src", "<?php echo $viewedUserProfileImage; ?>");
+                $("#hobbies").text("<?php echo $viewedUser->hobbies(); ?>");
+                $('#user-bio').html("<?php echo convertQuotesToUnicode($viewedUser->biography()); ?>");
             });
 
             /* Other functions */

@@ -7,27 +7,33 @@
 
     $dh = new DataHandle($dbConfig, $s3Config, S3BotType::readOnly);
 
+    // Load login FIRST
+    $login = null;
+    if (isset($_SESSION["user_login"]))
+        $login = unserialize($_SESSION["user_login"]);
+
     // Setup the user's sessions
     if (!isset($_SESSION["user_data"]))
         $_SESSION["user_data"] = serialize(new User());
 
     $user = unserialize($_SESSION["user_data"]);
-    
+
     $shouldShowPopup = $user->lastVersionOfReadAndAccept() !== $lastUpdateOnRulesAndPrivacy;
     $isNotANewUser = $user->lastVersionOfReadAndAccept() !== "";
 
+    var_dump(unserialize($_SESSION['user_data'])->lastVersionOfReadAndAccept());
+
     if (isset($_POST["agreed"]) && $_POST["agreed"] === "yes") {
-        global $lastUpdateOnRulesAndPrivacy;
 
         $user->setLastVersionOfReadAndAccept($lastUpdateOnRulesAndPrivacy);
-        $_SESSION["user_data"] = serialize($user);
 
+        // NOW $login is properly set
+        if ($login)
+            $dh->updateUserInfo($user, $login);
+
+        $_SESSION["user_data"] = serialize($user);
         exit;
     }
-
-    $login = null;
-    if (isset($_SESSION["user_login"]))
-        $login = unserialize($_SESSION["user_login"]);
 ?>
 
 <script type="module">

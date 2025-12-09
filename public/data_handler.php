@@ -455,14 +455,12 @@ class DataHandle {
 
     public function uploadFile(File $file, Login $login, User $user) {
         // Validate types (login/user may be serialized objects from session)
-        if (!($login instanceof Login) || !($user instanceof User)) {
+        if (!($login instanceof Login) || !($user instanceof User))
             return ['success' => false, 'error' => 'Invalid login/user.'];
-        }
 
         // Verify ownership
-        if (!$this->verifyOwnership($login->email(), $login->password(), $user->username())) {
+        if (!$this->verifyOwnership($login->email(), $login->password(), $user->username()))
             return ['success' => false, 'error' => 'Not authorized.'];
-        }
 
         // Upload to S3 (returns key or null)
         $key = $this->s3->uploadFile($file, $user->uuid());
@@ -496,6 +494,110 @@ class DataHandle {
 
         // Return success + key (caller will JSON-encode)
         return ['success' => true, 'key' => $key];
+    }
+
+    public function updateUserInfo(User $user, Login $login) {
+        // Validate types (login/user may be serialized objects from session)
+        if (!($login instanceof Login) || !($user instanceof User)) {
+            return ['success' => false, 'error' => 'Invalid login/user.'];
+        }
+
+        // Verify ownership (this will prevent unauthorized updates)
+        if (!$this->verifyOwnership($login->email(), $login->password(), $user->username())) {
+            return ['success' => false, 'error' => 'Not authorized.'];
+        }
+
+        // Collect sanitized values
+        $username = filterUnwantedCode($user->username());
+        $tagline = filterUnwantedCode($user->tagline());
+        $biography = filterUnwantedCode($user->biography());
+        
+        $unfilteredData = $user->unfilteredData($login);
+        if ($unfilteredData === null) {
+            return ['success' => false, 'error' => 'Failed to get unfiltered data and had to exit.'];
+        }
+
+        $dateOfBirth = filterUnwantedCode($unfilteredData['dateOfBirth'] ?? '');
+        // Convert visibility flags to integer 0/1
+        $dateOfBirthVisible = $user->dateOfBirthVisible() ? 1 : 0;
+        $gender = filterUnwantedCode($unfilteredData['gender'] ?? '');
+        $genderVisible = $user->genderVisible() ? 1 : 0;
+        $profileImage = filterUnwantedCode($user->profileImage(false) ?? '');
+        $lastVersionOfReadAndAccept = filterUnwantedCode($user->lastVersionOfReadAndAccept() ?? '');
+        $colorTheme = filterUnwantedCode($user->colorTheme() ?? '');
+        $land = filterUnwantedCode($unfilteredData['land'] ?? '');
+        $landVisible = $user->landVisible() ? 1 : 0;
+        $hobbies = filterUnwantedCode($user->hobbies() ?? '');
+
+        // Use uuid in WHERE (safer and simpler than matching password in WHERE)
+        $whereUuid = filterUnwantedCode($user->uuid());
+
+        $sql = "
+            UPDATE user_info SET 
+                username = ?, 
+                tagline = ?, 
+                bio = ?, 
+                date_of_birth = ?, 
+                date_of_birth_visible = ?, 
+                gender = ?, 
+                gender_visible = ?, 
+                profile_image = ?, 
+                last_version_of_read_and_accept = ?, 
+                color_theme = ?,
+                land = ?,
+                land_visible = ?,
+                hobbies = ?
+            WHERE uuid = ?
+            LIMIT 1
+        ";
+
+        $stmt = $this->mysqli->prepare($sql);
+        if (!$stmt) {
+            error_log("MySQL prepare failed in updateUserInfo: " . $this->mysqli->error);
+            return ['success' => false, 'error' => 'DB prepare failed.'];
+        }
+
+        // Bind everything as strings for simplicity (booleans were converted to 0/1 already)
+        $types = str_repeat('s', 14); // 13 SET fields + 1 WHERE uuid
+        $bindResult = $stmt->bind_param(
+            $types,
+            $username,
+            $tagline,
+            $biography,
+            $dateOfBirth,
+            $dateOfBirthVisible,
+            $gender,
+            $genderVisible,
+            $profileImage,
+            $lastVersionOfReadAndAccept,
+            $colorTheme,
+            $land,
+            $landVisible,
+            $hobbies,
+            $whereUuid
+        );
+
+        if (!$bindResult) {
+            error_log("MySQL bind_param failed in updateUserInfo: " . $stmt->error);
+            $stmt->close();
+            return ['success' => false, 'error' => 'DB bind failed.'];
+        }
+
+        if (!$stmt->execute()) {
+            error_log("MySQL execute failed in updateUserInfo: " . $stmt->error);
+            $stmt->close();
+            return ['success' => false, 'error' => 'DB execute failed.'];
+        }
+
+        $affected = $stmt->affected_rows;
+        $stmt->close();
+
+        if ($affected === 0) {
+            // Not necessarily an error (maybe nothing changed), but report it
+            return ['success' => true, 'updated' => false, 'message' => 'No rows changed.'];
+        }
+
+        return ['success' => true, 'updated' => true, 'rows' => $affected];
     }
 
     public function __destruct() {

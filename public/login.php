@@ -74,7 +74,18 @@
                     }
                 },
                 error: function(xhr) {
-                    alert("Login failed: " + JSON.parse(xhr.responseText).error);
+                    let msg = "Login failed";
+
+                    try {
+                        let json = JSON.parse(xhr.responseText);
+                        if (json.error) msg = json.error;
+                    } catch (e) {
+                        // Not JSON → show raw response for debugging
+                        console.error("Non-JSON error response:", xhr.responseText);
+                        msg = "Server error. Check console.";
+                    }
+
+                    alert(msg);
                 }
               });
             });

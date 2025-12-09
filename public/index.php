@@ -25,7 +25,6 @@
       </div>
     </div>
     
-    <?php include_once("./html_elements/side_render.html"); ?>
     <?php include_once("./html_elements/footer.html"); ?>
     <script type="module">
       import {Image, Journal} from "./js/common.js";

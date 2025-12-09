@@ -1,4 +1,10 @@
 <?php
+    ob_clean(); // clear any accidental whitespace or BOM
+    header("Content-Type: application/json; charset=utf-8");
+    ini_set('display_errors', 0);
+    ini_set('log_errors', 1);   // Write to PHP error log instead
+    error_reporting(E_ALL);
+
     session_start();
 
     ini_set('display_errors', 1);

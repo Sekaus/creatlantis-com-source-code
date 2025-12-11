@@ -27,7 +27,7 @@
     
     <?php include_once("./html_elements/footer.html"); ?>
     <script type="module">
-      import {Image, Journal} from "./js/common.js";
+      import {Image, Journal, DisplayLoadedPost, OnPostThumbClick} from "./js/common.js";
 
       // Page data
       let posts = "";
@@ -42,16 +42,13 @@
 
         echo "posts = " . $dh->loadAllFiles(FileType::all, "", FileLoadOrder::newest, 10, 0) . ";";
       ?>
-      
-      posts.forEach(element => {
-        switch(element.type) {
-          case "image":
-            $("#content-view").append(Image(element.src, element.title));
-            break;
-          case "journal":
-            $("#content-view").append(Journal(element.body));
-            break;
-        }
+
+      DisplayLoadedPost(posts, "#content-view");
+
+      $(document).ready(function() {
+        $(".post").click(function() {
+          OnPostThumbClick(this);
+        });
       });
     </script>
   </body>

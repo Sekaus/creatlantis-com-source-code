@@ -1619,7 +1619,7 @@
 
     #journal-submit-part .journal-content,
     #post-display .journal-content {
-        max-width: 50vw;
+        width: 50vw;
         min-height: 60vw;
         overflow: auto
     }

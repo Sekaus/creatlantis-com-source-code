@@ -15,18 +15,36 @@ export function UserMetadata() {
     `;
 }
 
-export function Image(path, title) {
+export function Image(path, title = "", key = "") {
     return /*html*/`
-        <img src="${path}" title="${title}" class="post"/>
+        <img src="${path}" ` + (title != "" ? `title="${title}"` : ``) + ` class="post" data-key="${key}"/>
     `;
 }
 
-export function Journal(content) {
+export function Journal(content, key = "") {
     return /*html*/`
-        <div class="journal-content post">
+        <div class="journal-content post" data-key="${key}">
             ${content}
         </div>
     `;
+}
+
+export function DisplayLoadedPost(posts, traget) {
+    posts.forEach(element => {
+        switch(element.type) {
+        case "image":
+            $(traget).append(Image(element.src, element.title, element.key));
+            break;
+        case "journal":
+            $(traget).append(Journal(element.body, element.key));
+            break;
+        }
+    });
+}
+
+export function OnPostThumbClick(post) {
+    var key = $(post).attr("data-key");
+    window.location.href = `post/${key}`;
 }
 
 export function Comment(userMetadata, body) {

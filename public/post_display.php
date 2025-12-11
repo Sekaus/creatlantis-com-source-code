@@ -1,5 +1,18 @@
 <?php
   session_start();
+
+  include_once("./config.php");
+  include_once("./data_handler.php");
+  include_once("./data_filter.php");
+
+  $dh_read = new DataHandle($dbConfig, $s3Config, S3BotType::readOnly);
+  $viewedPost = null;
+
+  if(isset($_GET['key'])) {
+    $key = $dh_read->getKeyFromShortUUID($_GET['key']);
+    if($key)
+        $viewedPost = $dh_read->loadSingleFile($key);
+  }
 ?>
 
 <!DOCTYPE html>
@@ -13,7 +26,7 @@
         <?php include_once("./html_elements/navigation_bar.html"); ?>
         
         <div id="post-display">
-            {Image(testImg0)}
+            <!-- Display the post here -->
 
             <div id="post-icon-container" hidden>
                 <div class="vertical-hr"></div>
@@ -45,20 +58,17 @@
                         </div>
 
                         <var id="fave-count" title="The count of users adding this post to there favorites">-100</var>
-                        <img id="add-to-favorites" title="Add the post to your favorites" src={faveIcon}
-                            class="feedback-icon" />
+                        <img id="add-to-favorites" title="Add the post to your favorites" src="./images/icons/faveIcon.webp" class="feedback-icon"/>
 
                         <var id="view-count" title="The count of unique views">-100</var>
-                        <img src={viewIcon} class="feedback-icon" />
+                        <img src="./images/icons/viewIcon.webp" class="feedback-icon"/>
 
                         <var id="comment-count" title="The count of comments on this post">-100</var>
-                        <img src={commentIcon} class="feedback-icon" />
+                        <img src="./images/icons/commentIcon.webp" class="feedback-icon"/>
                     </div>
 
                     <div id="post-feedback-bottom">
-                        {PostReaction('🤣')}
-                        {PostReaction('💯')}
-                        {PostReaction('🤘')}
+                        <!-- Post reactions here -->
                     </div>
                 </div>
 
@@ -70,8 +80,39 @@
         
         <?php include_once("./html_elements/footer.html"); ?>
 
-        <script>
-            $(document).prop('title', 'test')
+        <script type="module">
+            import {Image, Journal, PostType} from "./js/common.js";
+
+            /* Load post data */
+            <?php if($viewedPost != null): ?>
+                let postData = JSON.parse(<?php echo json_encode($viewedPost); ?>);
+                 
+                $(document).prop('title', postData.metadata.title);
+                $("#post-display-title").html(postData.metadata.title);
+
+                let $postContainer = $("#post-display");
+
+                switch(postData.type) {
+                    case PostType.IMAGE:
+                        $postContainer.prepend(Image(postData.src));
+                        break;
+                    case PostType.JOURNAL:
+                        $("#post-display-title").remove();
+                        $postContainer.prepend(Journal(postData.body));
+                        break;
+                }
+
+            <?php else: ?>
+                $("#post-display").html(/*html*/`
+                    <div id="post-feedback">
+                        <div>
+                            <h1 class="extra-big-text">ERROR 404</h1>
+                            <br/>
+                            <p>Post could not be found... :/</p>
+                        </div>
+                    </div>
+                `);
+            <?php endif; ?>
 
             function PostReaction(emoji) {
                 return /*html*/ `

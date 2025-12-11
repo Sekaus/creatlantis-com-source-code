@@ -394,6 +394,85 @@ class DataHandle {
         return new User($result->fetch_assoc());
     }
 
+    public function getUserInfoByUUID($uuid) : User {
+        $stmt = $this->mysqli->prepare("SELECT * FROM user_info WHERE uuid=?");
+        $stmt->bind_param("s", $uuid);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $stmt->close();
+        return new User($result->fetch_assoc());
+    }
+
+    public function loadSingleFile(string $key) {
+        // sanitize/normalize just a bit
+        $stmt = $this->mysqli->prepare("SELECT * FROM post_list WHERE `key`=? LIMIT 1");
+        $stmt->bind_param("s", $key);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        if (!$row) return null; // prevent null errors
+
+        /* Get owner metadata */
+        $owner = $this->getUserInfoByUUID($row['owner']);
+
+        $metadata = [
+            'title' => $row['title'],
+            'date'  => $row['date'],
+            'tags'  => $row['tags'],
+            'owner' => [
+                'profile_image' => $owner->profileImage(),
+                'username'      => $owner->username(),
+                'tagline'       => $owner->tagline()
+            ]
+        ];
+
+        /* Get post */
+        if ($row['type'] === FileType::image->value) {
+
+            $objects = $this->s3->listObjects($key);
+            $keys = array_column($objects, 'Key');
+            $finalKey = $this->resolveImageRes($keys, true);
+
+            if ($finalKey) {
+                return json_encode([
+                    'type' => $row['type'],
+                    'src'  => $this->s3->getPresignedUrl($finalKey),
+                    'metadata' => $metadata,
+                    'key'  => $key
+                ]);
+            }
+
+        } 
+        elseif ($row['type'] === FileType::journal->value) {
+
+            $body = $this->s3->getObjectBodyAsString($key);
+            if ($body !== null) {
+                return json_encode([
+                    'type' => $row['type'],
+                    'body' => $body,
+                    'metadata' => $metadata,
+                    'key' => $key
+                ]);
+            }
+        }
+
+        return null;
+    }
+
+    public function getKeyFromShortUUID($shortUUID) {
+        $stmt = $this->mysqli->prepare("SELECT `key` FROM post_list WHERE short_uuid=? LIMIT 1");
+        $stmt->bind_param("s", $shortUUID);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        if(isset($row['key']))
+            return $row['key'];
+        
+        return null;
+    }
+
     public function loadAllFiles(FileType $filter, string $search, FileLoadOrder $order, int $maxKeys = 50, int $offset = 0): string {
         $searchLike = '%' . $this->mysqli->real_escape_string($search) . '%';
         $orderString = $order->value;
@@ -417,7 +496,7 @@ class DataHandle {
             $key = $row['key'] ?? '';
             $type = $row['type'] ?? '';
 
-            if (!$key) continue;
+            if (!$key || !$type) continue;
 
             if ($type === FileType::image->value) {
                 $objects = $this->s3->listObjects($key);
@@ -427,18 +506,19 @@ class DataHandle {
 
                 if ($finalKey) {
                     $src = $this->s3->getPresignedUrl($finalKey);
-                    $items[] = ['type' => 'image', 'src' => $src, 'title' => $row['title']];
+                    $items[] = ['type' => 'image', 'src' => $src, 'title' => $row['title'], 'key' => $row['short_uuid']];
                 }
-            } elseif ($type === FileType::journal->value) {
+            } 
+            elseif ($type === FileType::journal->value) {
                 $body = $this->s3->getObjectBodyAsString($key);
                 if ($body !== null) {
-                    $items[] = ['type' => 'journal', 'body' => preg_replace('/[\\x00-\\x1F\\x7F]/', '', $body), 'title' => $row['title']];
+                    $items[] = ['type' => 'journal', 'body' => preg_replace('/[\\x00-\\x1F\\x7F]/', '', $body), 'title' => $row['title'], 'key' => $row['short_uuid']];
                 }
             }
         }
 
         $stmt->close();
-        return json_encode($items, );
+        return json_encode($items);
     }
 
     public function GetURLOnSingleFile($key): string {

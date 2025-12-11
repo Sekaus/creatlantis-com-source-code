@@ -13,6 +13,8 @@
     if($key)
         $viewedPost = $dh_read->loadSingleFile($key);
   }
+
+  $commentStack = $dh_read->loadCommentStack($_GET['key'], null);
 ?>
 
 <!DOCTYPE html>
@@ -74,14 +76,16 @@
 
                 <div class="vertical-hr"></div>
             </div>
+            
+            <hr/>
 
-            {CommentSection()}
+            <div id="description">Description...</div>
         </div>
         
         <?php include_once("./html_elements/footer.html"); ?>
 
         <script type="module">
-            import {Image, Journal, PostType} from "./js/common.js";
+            import {Image, Journal, PostType, CommentSection, Comment} from "./js/common.js";
 
             /* Load post data */
             <?php if($viewedPost != null): ?>
@@ -95,13 +99,30 @@
                 switch(postData.type) {
                     case PostType.IMAGE:
                         $postContainer.prepend(Image(postData.src));
+                        $('#description').html(postData.metadata.description);
                         break;
                     case PostType.JOURNAL:
                         $("#post-display-title").remove();
+                        $('#description').remove();
                         $postContainer.prepend(Journal(postData.body));
                         break;
                 }
 
+                $postContainer.append(CommentSection());
+                
+                // Load comments (no repies)
+                <?php if($commentStack != null): ?>
+                    $(document).ready(function() {
+                        let comments = JSON.parse(`<?php echo $commentStack ?>`);
+                        
+                        comments.forEach(comment => {
+                            if (comment.reply_uuid !== null) {
+                                var commentBody = Comment(comment.stack_uuid, comment.comment);
+                                $("#comment-container").append(commentBody);
+                            }
+                        });
+                    });
+                <?php endif; ?>
             <?php else: ?>
                 $("#post-display").html(/*html*/`
                     <div id="post-feedback">

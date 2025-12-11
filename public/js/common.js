@@ -3,9 +3,9 @@ export const PostType = {
     JOURNAL: "journal"
 }
 
-export function UserMetadata() {
+export function UserMetadata(main = false) {
     return /*html*/`
-        <a href="#" title="Go to the user's profile" class="profile-link">
+        <a id="${main ? 'main-user' : ""}" href="#" title="Go to the user's profile" class="profile-link">
           <img class="user-icon" src="../images/default_pp.webp"/>
           <div class="user-metadata">
             <p class="user-name big-text">Name</p>
@@ -47,10 +47,10 @@ export function OnPostThumbClick(post) {
     window.location.href = `post/${key}`;
 }
 
-export function Comment(userMetadata, body) {
+export function Comment(stackUUID, body) {
     return /*html*/ `
-        <div class="comment">
-          ${userMetadata}
+        <div class="comment" data-stack-uuid="${stackUUID}">
+          ${UserMetadata()}
           <div class="comment-body">${body}</div>
         </div>
     `;
@@ -64,7 +64,7 @@ export function CommentSection() {
             <hr/>
 
             <form id="add-new-comment">
-                ${UserMetadata()}
+                ${UserMetadata(true)}
                 <textarea id="comment-input" cols="100" name="comment" rows="5">Add a new comment...</textarea>
 
                 <br/>

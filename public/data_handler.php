@@ -1,4 +1,6 @@
 <?php
+
+use Dom\Comment;
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -403,6 +405,60 @@ class DataHandle {
         return new User($result->fetch_assoc());
     }
 
+    function shortUUIDToPostID($shortUUID) {
+        $stmt = $this->mysqli->prepare("SELECT `id` FROM post_list WHERE short_uuid=? LIMIT 1");
+        $stmt->bind_param("s", $shortUUID);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        if(isset($row['id']))
+            return $row['id'];
+        
+        return null;
+    }
+
+    public function loadCommentStack($shortUUID, $profileUUID, int $maxKeys = 5, int $offset = 0) {
+        if(isset($shortUUID)) {
+            $postID = $this->shortUUIDToPostID($shortUUID);
+            if($postID != null) {
+                $stmt = $this->mysqli->prepare("SELECT * FROM comment_stack WHERE post_id=? LIMIT ? OFFSET ?");
+                $stmt->bind_param("sii", $postID, $maxKeys, $offset);
+            }
+        }
+        else if(isset($profileUUID)) {
+            $stmt = $this->mysqli->prepare("SELECT * FROM comment_stack WHERE profile_uuid=?, LIMIT ? OFFSET ?");
+            $stmt->bind_param("sii", $profileUUID, $maxKeys, $offset);
+        }
+        else
+            return null;
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $stmt->close();
+
+        /* Wrap the comment stacks into an array */
+
+        $comments = [];
+         
+        $i = 0;
+        while($row = $result->fetch_assoc()) {
+            $userData = $this->getUserInfoByUUID($row['uuid']);
+            $comment = [
+                'profile_image' => $userData->profileImage(), 
+                'username' => $userData->username(),
+                'comment' => filterUnwantedCode(convertQuotesToUnicode($row['comment'])), 
+                'date' => $row['date'], 
+                'stack_uuid' => $row['stack_uuid'], 
+                'reply_uuid' => $row['reply_uuid']
+            ];
+
+            $comments[$i++] = $comment;
+        }
+
+        return json_encode($comments);
+    }
+
     public function loadSingleFile(string $key) {
         // sanitize/normalize just a bit
         $stmt = $this->mysqli->prepare("SELECT * FROM post_list WHERE `key`=? LIMIT 1");
@@ -420,11 +476,12 @@ class DataHandle {
             'title' => $row['title'],
             'date'  => $row['date'],
             'tags'  => $row['tags'],
+            'description' => $row['description'] ?? '',
             'owner' => [
                 'profile_image' => $owner->profileImage(),
                 'username'      => $owner->username(),
                 'tagline'       => $owner->tagline()
-            ]
+            ],
         ];
 
         /* Get post */
@@ -438,8 +495,7 @@ class DataHandle {
                 return json_encode([
                     'type' => $row['type'],
                     'src'  => $this->s3->getPresignedUrl($finalKey),
-                    'metadata' => $metadata,
-                    'key'  => $key
+                    'metadata' => $metadata
                 ]);
             }
 
@@ -451,8 +507,7 @@ class DataHandle {
                 return json_encode([
                     'type' => $row['type'],
                     'body' => $body,
-                    'metadata' => $metadata,
-                    'key' => $key
+                    'metadata' => $metadata
                 ]);
             }
         }
@@ -473,7 +528,7 @@ class DataHandle {
         return null;
     }
 
-    public function loadAllFiles(FileType $filter, string $search, FileLoadOrder $order, int $maxKeys = 50, int $offset = 0): string {
+    public function loadAllFiles(FileType $filter, string $search, FileLoadOrder $order, int $maxKeys = 10, int $offset = 0): string {
         $searchLike = '%' . $this->mysqli->real_escape_string($search) . '%';
         $orderString = $order->value;
         $limit = max(1, $maxKeys);

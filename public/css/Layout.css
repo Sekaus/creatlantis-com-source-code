@@ -63,12 +63,15 @@
         --color-slate-500: #62748e;
         --color-slate-600: #45556c;
         --color-gray-400: #99a1af;
-        --color-gray-500: #6a7282;
         --color-gray-700: #364153;
+        --color-neutral-50: #fafafa;
+        --color-neutral-400: #a1a1a1;
+        --color-neutral-500: #737373;
         --color-black: #000;
         --spacing: .25rem;
         --container-lg: 32rem;
         --container-2xl: 42rem;
+        --text-base: 1rem;
         --leading-tight: 1.25;
         --radius-sm: .25rem;
         --drop-shadow-xl: 0 9px 7px #0000001a;
@@ -78,14 +81,17 @@
         --color-dark-1: #72727280;
         --color-dark-2: #363636;
         --color-dark-3: #1a2421;
+        --color-dark-4: #272f45;
         --color-light-0: #e3e3fa;
         --color-light-1: #c3c3c380;
         --color-light-2: #aec5d9;
         --color-light-3: white;
+        --color-light-4: #a9accc;
         --color-green-0: #c8e3d8;
         --color-green-1: #a4bfa780;
         --color-green-2: #59785f;
         --color-green-3: #d6ffda;
+        --color-green-4: #92a69e;
         --star-rate-mask: url(../images/5-stars.webp);
         --upload-image: url(../images/icons/uploadIcon.webp)
     }
@@ -101,8 +107,10 @@
             --color-slate-500: lab(48.0876% -2.03595 -16.5814);
             --color-slate-600: lab(35.5623% -1.74978 -15.4316);
             --color-gray-400: lab(65.9269% -.832707 -8.17474);
-            --color-gray-500: lab(47.7841% -.393212 -10.0268);
             --color-gray-700: lab(27.1134% -.956401 -12.3224);
+            --color-neutral-50: lab(98.26% 0 0);
+            --color-neutral-400: lab(66.128% -.0000298023 .0000119209);
+            --color-neutral-500: lab(48.496% 0 0);
             --color-dark-0: lab(35.6337% -1.58697 -10.8425)
         }
     }
@@ -798,54 +806,103 @@
         }
     }
 
-    #navigation-bar {
+    #desktop-navigation-bar,
+    #mobile-navigation-bar {
         top: calc(var(--spacing)*0);
         z-index: 40;
         padding-inline: calc(var(--spacing)*3);
-        padding-block: calc(var(--spacing)*1);
-        flex-wrap: wrap;
-        justify-content: space-between;
-        align-items: center;
-        display: flex;
         position: sticky
     }
 
+    #desktop-navigation-bar,
+    #nav-bar-top {
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        display: flex
+    }
+
+    #mobile-menu {
+        flex-wrap: nowrap
+    }
+
     @media not all and (min-width:64rem) {
-        #navigation-bar {
-            padding-block: calc(var(--spacing)*0)
+        #desktop-navigation-bar {
+            display: none
         }
     }
 
-    #settings {
-        z-index: 40
+    #mobile-navigation-bar {
+        padding-block: calc(var(--spacing)*3)
     }
 
-    #settings:not(:hover) .dorp-down-content {
+    @media (min-width:64rem) {
+        #mobile-navigation-bar {
+            display: none
+        }
+    }
+
+    #mobile-menu {
         display: none
     }
 
-    #settings:hover .dorp-down-content {
+    #mobile-menu-toggle {
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border-width: 0;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        position: absolute;
+        overflow: hidden
+    }
+
+    #mobile-menu-toggle:checked~#mobile-menu {
+        display: block
+    }
+
+    #qick-submit {
+        padding: calc(var(--spacing)*4)
+    }
+
+    #main-user-tab,
+    #qick-submit {
+        z-index: 40;
+        position: relative
+    }
+
+    #qick-submit:not(:hover) .dorp-down-content:not(:hover) {
+        display: none
+    }
+
+    #main-user-tab:has(#main-user-tap-metadata:not(:hover)) .dorp-down-content:not(:hover) {
+        display: none
+    }
+
+    :is(#main-user-tab:has(#main-user-tap-metadata:hover) .dorp-down-content, #qick-submit:has(.submit:hover) .dorp-down-content) {
         visibility: visible
     }
 
-    #settings,
+    #main-user-tap-metadata,
+    #qick-submit .submit,
     .dorp-down-content {
         padding-block: .5vw;
         padding-inline: 1vw
     }
 
     .dorp-down-content {
-        right: calc(var(--spacing)*0);
-        flex-direction: column;
-        align-items: center;
-        width: 20vw;
-        display: flex;
+        left: calc(var(--spacing)*0);
+        font-size: var(--text-base);
+        line-height: calc(var(--spacing)*10);
         position: absolute
     }
 
     #search-console,
     #main-user,
-    #main-user .profile-link {
+    #main-user .profile-link,
+    #main-user-tap-metadata,
+    #points-balance {
         align-items: center
     }
 
@@ -867,8 +924,8 @@
         margin: calc(var(--spacing)*1);
         --tw-drop-shadow-size: drop-shadow(0 9px 7px var(--tw-drop-shadow-color, #0000001a));
         --tw-drop-shadow: drop-shadow(var(--drop-shadow-xl));
-        width: 3vw;
-        height: 3vw;
+        width: clamp(32px, 3vw, 48px);
+        height: clamp(32px, 3vw, 48px);
         filter: var(--tw-blur, )var(--tw-brightness, )var(--tw-contrast, )var(--tw-grayscale, )var(--tw-hue-rotate, )var(--tw-invert, )var(--tw-saturate, )var(--tw-sepia, )var(--tw-drop-shadow, );
         border-radius: 3.40282e38px;
         display: inline-flex
@@ -881,26 +938,38 @@
     }
 
     #dark-theme-option {
-        background-image: linear-gradient(to right, var(--color-dark-0), var(--color-dark-1), var(--color-dark-2), var(--color-dark-3))
+        background-image: linear-gradient(to right, var(--color-dark-0), var(--color-dark-1), var(--color-dark-2), var(--color-dark-3), var(--color-dark-4))
     }
 
     #light-theme-option {
-        background-image: linear-gradient(to left, var(--color-light-0), var(--color-light-1), var(--color-light-2), var(--color-light-3))
+        background-image: linear-gradient(to left, var(--color-light-0), var(--color-light-1), var(--color-light-2), var(--color-light-3), var(--color-light-4))
     }
 
     #green-theme-option {
-        background-image: linear-gradient(to left, var(--color-green-0), var(--color-green-1), var(--color-green-2), var(--color-green-3))
+        background-image: linear-gradient(to left, var(--color-green-0), var(--color-green-1), var(--color-green-2), var(--color-green-3), var(--color-green-4))
     }
 
-    #search-console,
+    #desktop-navigation-bar #search-console,
     .profile-link,
     #main-user,
-    #qick-submit,
     #nav-tabs,
-    #upload-nav-tabs {
-        white-space: nowrap;
+    #upload-nav-tabs,
+    #main-user-tap-metadata,
+    #nav-bar-right,
+    #nav-bar-left {
         flex-wrap: wrap;
+        align-items: center;
         display: flex
+    }
+
+    #mobile-menu #search-console {
+        flex-wrap: nowrap;
+        align-items: center;
+        display: flex
+    }
+
+    #main-user-tab {
+        white-space: nowrap
     }
 
     #search-console,
@@ -917,7 +986,11 @@
     .upload-tab,
     #points-balance,
     #login-submit-box,
-    #rules-and-privacy-popup-submit-box {
+    #rules-and-privacy-popup-submit-box,
+    #main-user-tab,
+    #main-user-tap-metadata,
+    #nav-bar-right,
+    #nav-bar-left {
         gap: calc(var(--spacing)*2)
     }
 
@@ -1141,10 +1214,12 @@
     }
 
     button,
-    .submit,
-    #go-to-account {
-        padding-inline: calc(var(--spacing)*4);
-        padding-block: calc(var(--spacing)*1)
+    .submit {
+        padding-inline: calc(var(--spacing)*4)
+    }
+
+    button {
+        margin-block: calc(var(--spacing)*2)
     }
 
     #watch-user:not(.unwatch) {
@@ -1156,7 +1231,7 @@
     }
 
     .submit:enabled,
-    a.submit {
+    div.submit {
         background-color: #00bd5e
     }
 
@@ -1171,13 +1246,16 @@
 
     #cancel:enabled,
     #edit:enabled,
-    #go-to-account {
-        background-color: var(--color-gray-400)
+    #go-to-account-settings,
+    #go-to-profile,
+    #submit-image,
+    #submit-journal {
+        background-color: var(--color-neutral-400)
     }
 
     #cancel:disabled,
     #edit:disabled {
-        background-color: var(--color-gray-500)
+        background-color: var(--color-neutral-500)
     }
 
     .vertical-hr {
@@ -1307,7 +1385,7 @@
 
     body.dark-theme {
         background-color: var(--color-dark-3);
-        color: #d3d3d3
+        color: var(--color-neutral-50)
     }
 
     body.dark-theme nav,
@@ -1338,8 +1416,12 @@
         background-color: var(--color-dark-1)
     }
 
-    body.dark-theme .dorp-down-content,
-    body.dark-theme #settings,
+    :is(body.dark-theme #main-user-tab:hover, body.dark-theme #qick-submit:hover) .dorp-down-content,
+    :is(body.dark-theme #main-user-tab:hover, body.dark-theme #qick-submit:hover) #main-user-tap-metadata,
+    :is(body.dark-theme #main-user-tab:hover, body.dark-theme #qick-submit:hover) {
+        background-color: var(--color-dark-4)
+    }
+
     body.dark-theme #login-box,
     body.dark-theme #rules-and-privacy-popup-content,
     body.dark-theme .journal-content {
@@ -1408,8 +1490,12 @@
         background-color: var(--color-light-1)
     }
 
-    body.light-theme .dorp-down-content,
-    body.light-theme #settings,
+    :is(body.light-theme #main-user-tab:hover, body.light-theme #qick-submit:hover) .dorp-down-content,
+    :is(body.light-theme #main-user-tab:hover, body.light-theme #qick-submit:hover) #main-user-tap-metadata,
+    :is(body.light-theme #main-user-tab:hover, body.light-theme #qick-submit:hover) {
+        background-color: var(--color-light-4)
+    }
+
     body.light-theme #login-box,
     body.light-theme #rules-and-privacy-popup-content,
     body.light-theme .journal-content {
@@ -1478,8 +1564,12 @@
         background-color: var(--color-green-1)
     }
 
-    body.green-theme .dorp-down-content,
-    body.green-theme #settings,
+    :is(body.green-theme #main-user-tab:hover, body.green-theme #qick-submit:hover) .dorp-down-content,
+    :is(body.green-theme #main-user-tab:hover, body.green-theme #qick-submit:hover) #main-user-tap-metadata,
+    :is(body.green-theme #main-user-tab:hover, body.green-theme #qick-submit:hover) {
+        background-color: var(--color-green-4)
+    }
+
     body.green-theme #login-box,
     body.green-theme #rules-and-privacy-popup-content,
     body.green-theme .journal-content {

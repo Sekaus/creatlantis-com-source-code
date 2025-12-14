@@ -9,7 +9,7 @@
     <?php include_once("./html_elements/head.html"); ?>
   </head>
   <body>
-    <?php include_once("./html_elements/navigation_bar.html"); ?>
+    <?php include_once("./html_elements/navigation_bar.php"); ?>
     <?php include_once("./setup.php"); ?>
 
     <ol id="upload-nav-taps" alt="Upload nav taps">

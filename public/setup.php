@@ -56,28 +56,40 @@
             });
         });
 
+        /* Navigation actions */
+        $(document).ready(function () {
+            $("#logout").click(function () {
+                logout();
+            });
+        });
+
+        function logout() {
+            $.post("logout.php", function () {
+                location.reload();
+            });
+        }
+
         // Show logout if the user is logged in, else show login
         <?php if (!isset($login)): ?>
-            $("#logout").hide();
-            $("#login").show();
+            $("#logout, #logout:hidden").hide();
+            $("#go-to-profile, #go-to-profile:hidden").hide();
+            $("#go-to-account-settings, #go-to-account-settings:hidden").hide()
+            $("#points-balance, #points-balance:hidden").hide();
         <?php else: ?>
             $("#login").hide();
-            $("#logout").show();
-        <?php endif; ?>
 
-        // Change login info in the nav bar
-        $("#main-user .user-name").text("<?php echo $user->username(); ?>");
+            // Change login info in the nav bar
+            $("#main-user .user-name").text("<?php echo $user->username(); ?>");
 
-        var profileImage = "./images/default_pp.webp";
+            var profileImage = "./images/default_pp.webp";
 
-        <?php 
-            if ($user->profileImage() !== null) 
-                echo 'profileImage = "' . $dh->GetURLOnSingleFile($user->profileImage()) . '";';
-        ?>
-        
-        $("#main-user .user-icon").attr("src", profileImage);
+            <?php 
+                if ($user->profileImage() !== null) 
+                    echo 'profileImage = "' . $dh->GetURLOnSingleFile($user->profileImage()) . '";';
+            ?>
+            
+            $("#main-user .user-icon").attr("src", profileImage);
 
-        <?php if ($user->uuid() != ""): ?>
             $("#main-user .profile-link").attr("href", window.location.origin + "/profile/<?php echo $user->username(); ?>");
         <?php endif; ?>
     });

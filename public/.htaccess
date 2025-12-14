@@ -27,6 +27,7 @@ RewriteRule ^profile/([A-Za-z0-9_-]+)/([A-Za-z0-9_-]+)/?$ profile.php?username=$
 # The URL the user sees will be http://example.com/post/123
 RewriteRule ^post/([A-Za-z0-9_-]+)$ post_display.php?key=$1 [L,NC]
 
-# Optional: Add a general catch-all for any request that still looks like an old-style user UUID, 
-# assuming UUIDs are distinct from post IDs. This is less robust than using prefixes but resolves the original conflict.
-# RewriteRule ^([a-zA-Z0-9_-]+)$ profile.php?uuid=$1 [L,NC]
+# Rewrite for Upload: Matches /upload/postType 
+# The URL the user sees will be http://example.com/upload/image
+RewriteRule ^upload/([a-zA-Z0-9_-]+)$ upload.php?type=$1 [L,NC]
+RewriteRule ^upload$ upload.php [L,NC]

@@ -71,15 +71,32 @@
 
         // Show logout if the user is logged in, else show login
         <?php if (!isset($login)): ?>
+            $("#login, #login:hidden").click(function() {
+                window.location.href = "./login.php";
+            });
+
             $("#logout, #logout:hidden").hide();
+            $("#go-to-profile, #go-to-profile:hidden").hide();
             $("#go-to-profile, #go-to-profile:hidden").hide();
             $("#go-to-account-settings, #go-to-account-settings:hidden").hide()
             $("#points-balance, #points-balance:hidden").hide();
+            $("#qick-submit, #qick-submit:hidden").hide()
         <?php else: ?>
-            $("#login").hide();
+            $("#login, #login:hidden").hide();
+            
+            var $qickSubmit = $("#qick-submit, #qick-submit:hidden");
 
-            // Change login info in the nav bar
-            $("#main-user .user-name").text("<?php echo $user->username(); ?>");
+            $qickSubmit.find("#submit-image").click(function() {
+                window.location.href = window.location.origin + "/upload/image";
+            });
+
+            $qickSubmit.find("#submit-journal").click(function() {
+                window.location.href = window.location.origin + "/upload/journal";
+            });
+
+            /* Change login info in the nav bar */
+
+            $("#main-user-tap-metadata, #main-user-tap-metadata:hidden").find(".user-name").text("<?php echo $user->username(); ?>");
 
             var profileImage = "./images/default_pp.webp";
 
@@ -88,9 +105,11 @@
                     echo 'profileImage = "' . $dh->GetURLOnSingleFile($user->profileImage()) . '";';
             ?>
             
-            $("#main-user .user-icon").attr("src", profileImage);
+            $("#main-user-tap-metadata, #main-user-tap-metadata:hidden").find(".user-icon").attr("src", profileImage);
 
-            $("#main-user .profile-link").attr("href", window.location.origin + "/profile/<?php echo $user->username(); ?>");
+            $("#go-to-profile, #go-to-profile:hidden").click(function() {
+                window.location.href = window.location.origin + "/profile/<?php echo $user->username(); ?>";
+            });
         <?php endif; ?>
     });
 </script>

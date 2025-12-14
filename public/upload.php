@@ -9,7 +9,7 @@
     <?php include_once("./html_elements/head.html"); ?>
   </head>
   <body>
-    <?php include_once("./html_elements/navigation_bar.php"); ?>
+    <?php include_once("./navigation_bar.php"); ?>
     <?php include_once("./setup.php"); ?>
 
     <ol id="upload-nav-taps" alt="Upload nav taps">
@@ -87,15 +87,14 @@
       $("#upload-post-icons button").prop('disabled', true);
       $("#progress").hide();
 
-      // Handle post type selection
-      $("#submit-options").on("change", function() {
+      function typeValueChange(type) {
         $(".upload-part").hide();
 
         // Disable requirements first
         $("#journal-body").prop("required", false);
         $("#file-input-button").prop("required", false);
 
-        switch ($(this).val()) {
+        switch (type) {
             case "image":
                 $("#image-file-upload-part").show();
                 $("#image-file-input-title").show();
@@ -107,6 +106,11 @@
                 $("#journal-body").prop("required", true);
                 break;
         }
+      }
+
+      // Handle post type selection
+      $("#submit-options").on("change", function() {
+        typeValueChange($(this).val());
       });
 
       // Enable buttons when an image is selected
@@ -133,6 +137,13 @@
           $("#upload-post-icons button").prop('disabled', true);
           $("#file-input-button").show();
       });
+
+      // Load 'type' post value
+      <?php if(isset($_GET['type'])): ?>
+        $("[value=''").attr("selected", false);
+        $("[value='<?php echo $_GET['type']; ?>'").attr("selected", true);
+        typeValueChange("<?php echo $_GET['type']; ?>");
+      <?php endif; ?>
 
       $("#upload-new-post").on("submit", function(event) {
         event.preventDefault();

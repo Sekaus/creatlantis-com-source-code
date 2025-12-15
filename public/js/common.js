@@ -52,8 +52,68 @@ export function Comment(stackUUID, body) {
         <div class="comment" data-stack-uuid="${stackUUID}">
           ${UserMetadata()}
           <div class="comment-body">${body}</div>
+          <div class="loaded-replies">
+            <button class="load-replies" title="Load more replies from this comment">Replies</button>
+            <!-- Load in replies here -->
+        </div>
         </div>
     `;
+}
+
+export function LoadCommentStack(commentStack) {
+    const comments = JSON.parse(commentStack);
+
+    comments.forEach(comment => {
+        const $commentBody = $(Comment(comment.stack_uuid, comment.comment));
+
+        const $loadBtn = $commentBody.find(".load-replies");
+        const $replyContainer = $commentBody.find(".loaded-replies");
+
+        $loadBtn.one("click", function () {
+            LoadReplies(comment.stack_uuid);
+            $(this).remove();
+        });
+
+        $("#comment-container").append($commentBody);
+    });
+}
+
+function LoadReplies(stackUUID) {
+    const $container = $("[data-stack-uuid='" + stackUUID + "']");
+
+    // Guard: already loaded
+    if ($container.data("replies-loaded")) return;
+    $container.data("replies-loaded", true);
+
+    $.ajax({
+        url: "comment_handler.php",
+        type: "POST",
+        dataType: "json",
+        data: {
+            stack_uuid: stackUUID,
+            stack_command: "load_replies"
+        },
+        success: function (json) {
+            if (!json || !json.success || !json.array.length) return;
+
+            json.array.forEach(comment => {
+                const $commentBody = $(Comment(comment.stack_uuid, comment.comment));
+
+                const $loadBtn = $commentBody.find(".load-replies");
+                const $replyContainer = $commentBody.find(".loaded-replies");
+
+                $loadBtn.one("click", function () {
+                    LoadReplies(comment.stack_uuid);
+                    $(this).remove();
+                });
+
+                $container.find(".loaded-replies").append($commentBody);
+            });
+        },
+        error: function (xhr) {
+            console.error(xhr.responseText);
+        }
+    });
 }
 
 export function CommentSection() {

@@ -418,16 +418,16 @@ class DataHandle {
         return null;
     }
 
-    public function loadCommentStack($shortUUID, $profileUUID, int $maxKeys = 5, int $offset = 0) {
+    public function loadCommentStack(?string $shortUUID, ?string $profileUUID, int $maxKeys = 5, int $offset = 0) {
         if(isset($shortUUID)) {
             $postID = $this->shortUUIDToPostID($shortUUID);
             if($postID != null) {
-                $stmt = $this->mysqli->prepare("SELECT * FROM comment_stack WHERE post_id=? LIMIT ? OFFSET ?");
+                $stmt = $this->mysqli->prepare("SELECT * FROM comment_stack WHERE post_id=? AND reply_uuid IS NULL LIMIT ? OFFSET ?");
                 $stmt->bind_param("sii", $postID, $maxKeys, $offset);
             }
         }
         else if(isset($profileUUID)) {
-            $stmt = $this->mysqli->prepare("SELECT * FROM comment_stack WHERE profile_uuid=?, LIMIT ? OFFSET ?");
+            $stmt = $this->mysqli->prepare("SELECT * FROM comment_stack WHERE profile_uuid=? AND reply_uuid IS NULL LIMIT ? OFFSET ?");
             $stmt->bind_param("sii", $profileUUID, $maxKeys, $offset);
         }
         else
@@ -459,8 +459,36 @@ class DataHandle {
         return json_encode($comments);
     }
 
+    public function loadReplies(string $stackUUID, int $maxKeys = 5, int $offset = 0) {
+        $stmt = $this->mysqli->prepare("SELECT * FROM comment_stack WHERE reply_uuid=? LIMIT ? OFFSET ?");
+        $stmt->bind_param("sii", $stackUUID, $maxKeys, $offset);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $stmt->close();
+
+        /* Wrap the comment stack replies into an array */
+
+        $comments = [];
+         
+        $i = 0;
+        while($row = $result->fetch_assoc()) {
+            $userData = $this->getUserInfoByUUID($row['uuid']);
+            $comment = [
+                'profile_image' => $userData->profileImage(), 
+                'username' => $userData->username(),
+                'comment' => filterUnwantedCode(convertQuotesToUnicode($row['comment'])), 
+                'date' => $row['date'], 
+                'stack_uuid' => $row['stack_uuid'], 
+                'reply_uuid' => $row['reply_uuid']
+            ];
+
+            $comments[$i++] = $comment;
+        }
+
+        return json_encode(['success' => true, 'array' => $comments]);
+    }
+
     public function loadSingleFile(string $key) {
-        // sanitize/normalize just a bit
         $stmt = $this->mysqli->prepare("SELECT * FROM post_list WHERE `key`=? LIMIT 1");
         $stmt->bind_param("s", $key);
         $stmt->execute();

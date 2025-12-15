@@ -604,7 +604,6 @@
     #delete,
     #watch-user,
     .tab,
-    .navigation-icon,
     :not(input).navigation-bar-input,
     #folder-filter-list li,
     #folder-list li,
@@ -621,8 +620,7 @@
     #star-rateing,
     #inbox-filter-list li,
     #inbox-content-list li,
-    button,
-    a {
+    button {
         cursor: pointer
     }
 
@@ -1249,7 +1247,8 @@
     #go-to-account-settings,
     #go-to-profile,
     #submit-image,
-    #submit-journal {
+    #submit-journal,
+    .load-replies {
         background-color: var(--color-neutral-400)
     }
 

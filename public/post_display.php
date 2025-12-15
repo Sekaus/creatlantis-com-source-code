@@ -85,7 +85,7 @@
         <?php include_once("./html_elements/footer.html"); ?>
 
         <script type="module">
-            import {Image, Journal, PostType, CommentSection, Comment} from "./js/common.js";
+            import {Image, Journal, PostType, CommentSection, Comment, LoadCommentStack} from "./js/common.js";
 
             /* Load post data */
             <?php if($viewedPost != null): ?>
@@ -113,18 +113,11 @@
                 // Load comments (no repies)
                 <?php if($commentStack != null): ?>
                     $(document).ready(function() {
-                        let comments = JSON.parse(`<?php echo $commentStack ?>`);
-                        
-                        comments.forEach(comment => {
-                            if (comment.reply_uuid !== null) {
-                                var commentBody = Comment(comment.stack_uuid, comment.comment);
-                                $("#comment-container").append(commentBody);
-                            }
-                        });
+                        LoadCommentStack(`<?php echo $commentStack; ?>`);
                     });
                 <?php endif; ?>
             <?php else: ?>
-                $("#post-display").html(/*html*/`
+                $("#post-display").html(/*html*/ `
                     <div id="post-feedback">
                         <div>
                             <h1 class="extra-big-text">ERROR 404</h1>

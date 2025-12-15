@@ -1,7 +1,7 @@
 <!-- Desktop layout -->
 <nav id="desktop-navigation-bar">
     <div id="nav-bar-left">
-        <img src="../images/TestIcon.webp" alt="Webside logo icon" class="navigation-icon"/>
+        <a href="index.php"><img src="../images/TestIcon.webp" alt="Webside logo icon" class="navigation-icon"/></a>
         <?php include("./html_elements/search_console.html"); ?>
 
         <?php include("./html_elements/qick_submit.html"); ?>
@@ -27,7 +27,7 @@
             <img id="show-more" src="../images/icons/moreIcon.webp" alt="Show more icon" class="navigation-icon"/>
         </label>
 
-        <img src="../images/TestIcon.webp" alt="Webside logo icon" class="navigation-icon"/>
+        <a href="index.php"><img src="../images/TestIcon.webp" alt="Webside logo icon" class="navigation-icon"/></a>
 
         <?php include("./html_elements/main_user_tab.html"); ?>
 

@@ -456,7 +456,7 @@ class DataHandle {
             $comments[$i++] = $comment;
         }
 
-        return json_encode($comments);
+        return json_encode(['success' => true, 'array' => $comments]);
     }
 
     public function loadReplies(string $stackUUID, int $maxKeys = 5, int $offset = 0) {

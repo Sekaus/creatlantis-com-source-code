@@ -14,7 +14,7 @@
         $viewedPost = $dh_read->loadSingleFile($key);
   }
 
-  $commentStack = $dh_read->loadCommentStack($_GET['key'], null);
+  $_POST['key'] = $_GET['key'];
 ?>
 
 <!DOCTYPE html>
@@ -85,7 +85,8 @@
         <?php include_once("./html_elements/footer.html"); ?>
 
         <script type="module">
-            import {Image, Journal, PostType, CommentSection, Comment, LoadCommentStack} from "./js/common.js";
+            import { Image, Journal, PostType, CommentSection, LoadComments } from "./js/common.js";
+
 
             /* Load post data */
             <?php if($viewedPost != null): ?>
@@ -107,15 +108,15 @@
                         $postContainer.prepend(Journal(postData.body));
                         break;
                 }
+                
+                /* Load comments and repies */
 
                 $postContainer.append(CommentSection());
-                
-                // Load comments (no repies)
-                <?php if($commentStack != null): ?>
-                    $(document).ready(function() {
-                        LoadCommentStack(`<?php echo $commentStack; ?>`);
-                    });
-                <?php endif; ?>
+
+                $(document).ready(async function () {
+                    await LoadComments("<?php echo $_GET['key']; ?>", null);
+                });
+
             <?php else: ?>
                 $("#post-display").html(/*html*/ `
                     <div id="post-feedback">

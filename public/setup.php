@@ -38,7 +38,7 @@
     import { ChangeTheme, Themes, RulesAndPrivacyPopup } from "./js/setup.js";
 
     $(document).ready(() => {
-        ChangeTheme(Themes.dark);
+        ChangeTheme("<?php echo $user->colorTheme(); ?>");
         
         // Show popup for the new user
         <?php if ($shouldShowPopup): ?>
@@ -60,6 +60,20 @@
         $(document).ready(function () {
             $("#logout").click(function () {
                 logout();
+            });
+
+            $(".theme-option").click(function () {
+                switch($(this).attr('id')) {
+                    case "dark-theme-option":
+                        ChangeTheme(Themes.dark, true);
+                        break;
+                    case "light-theme-option":
+                        ChangeTheme(Themes.light, true);
+                        break;
+                    case "green-theme-option":
+                        ChangeTheme(Themes.green, true);
+                        break;
+                }
             });
         });
 

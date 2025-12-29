@@ -45,26 +45,50 @@ export function RulesAndPrivacyPopup(update = false) {
 }
 
 export const Themes = {
-    green: 0,
-    dark: 1,
-    light: 2
+    dark: "dark",
+    light: "light",
+    green: "green"
 };
 
-export function ChangeTheme(theme) {
+export function ChangeTheme(theme, updateServer = false) {
     $("body").removeClass();
+
+    $(".theme-option").removeClass("selected-theme")
 
     let themeClass = "";
     switch (theme) {
         case Themes.dark:
             themeClass = "dark-theme";
+            $("#dark-theme-option").addClass("selected-theme");
             break;
         case Themes.light:
             themeClass = "light-theme";
+            $("#light-theme-option").addClass("selected-theme");
             break;
         case Themes.green:
             themeClass = "green-theme";
+            $("#green-theme-option").addClass("selected-theme");
             break;
     }
-    
-    $("body").addClass(themeClass);
+
+    if(updateServer) {
+        $.ajax({
+                url: `./settings_handler.php`,
+                method: "POST",
+                data: {
+                    command: "swap_theme",
+                    theme: theme
+                },
+                success: function (response) {
+                    location.reload();
+                },
+                error: function (xhr) {
+                    let msg = 'Unknown error';
+                    try { msg = JSON.parse(xhr.responseText).error; } catch (e) {}
+                    alert("Settings update failed: " + msg);
+                }
+        });
+    }
+    else
+        $("body").addClass(themeClass);
 }

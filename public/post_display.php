@@ -10,8 +10,12 @@
 
   if(isset($_GET['key'])) {
     $key = $dh_read->getKeyFromShortUUID($_GET['key']);
-    if($key)
+    if($key) {
         $viewedPost = $dh_read->loadSingleFile($key);
+        $decodedJSON = json_decode($viewedPost);
+        $decodedJSON->metadata->owner->profile_image = $dh_read->GetURLOnSingleFile($decodedJSON->metadata->owner->profile_image);
+        $viewedPost = json_encode($decodedJSON);
+    }
   }
 
   $_POST['key'] = $_GET['key'];
@@ -41,6 +45,10 @@
             </div>
 
             <p id="post-display-title" class="extra-big-text">Title</p>
+
+            <div id="post-owner-info">
+                <!-- Post owner info here -->
+            </div>
 
             <div id="post-feedback">
                 <div class="vertical-hr"></div>
@@ -85,13 +93,12 @@
         <?php include_once("./html_elements/footer.html"); ?>
 
         <script type="module">
-            import { Image, Journal, PostType, CommentSection, LoadComments } from "./js/common.js";
+            import { Image, Journal, PostType, CommentSection, LoadComments, UserMetadata } from "./js/common.js";
 
 
             /* Load post data */
             <?php if($viewedPost != null): ?>
                 let postData = JSON.parse(<?php echo json_encode($viewedPost); ?>);
-                 
                 $(document).prop('title', postData.metadata.title);
                 $("#post-display-title").html(postData.metadata.title);
 
@@ -108,6 +115,19 @@
                         $postContainer.prepend(Journal(postData.body));
                         break;
                 }
+
+                /* Load owner info */
+
+                $(document).ready(function () {
+                    $("#post-owner-info").append(UserMetadata());
+
+                    $("#post-owner-info .profile-link").attr("href", "profile/" + postData.metadata.owner.username);
+                    $("#post-owner-info .user-icon").attr("src", postData.metadata.owner.profile_image);
+                    $("#post-owner-info .user-name").html(postData.metadata.owner.username);
+                    $("#post-owner-info .user-tagline").html(postData.metadata.owner.tagline);
+
+                    postData.owner
+                });
                 
                 /* Load comments and repies */
 

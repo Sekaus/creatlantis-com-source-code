@@ -54,6 +54,11 @@ export function RenderComment(comment) {
         <div class="comment" data-stack-uuid="${comment.stackUUID}">
             ${UserMetadata()}
             <div class="comment-body">${comment.body}</div>
+            <div class="make-a-reply-container">
+                <button class="reply" title="Start sending a reply to this comment">Reply</button>
+                <!-- Reply form can be loaded here !-->
+                <textarea class="reply-form" cols="100" name="reply" rows="3">Add a reply...</textarea>
+            </div>
             <div class="loaded-replies">
                 <button class="load-replies" title="Load more replies from this comment">Replies</button>
                 <!-- Load in replies here -->

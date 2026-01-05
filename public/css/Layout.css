@@ -1248,7 +1248,8 @@
     #go-to-profile,
     #submit-image,
     #submit-journal,
-    .load-replies {
+    .load-replies,
+    .reply {
         background-color: var(--color-neutral-400)
     }
 
@@ -1411,7 +1412,8 @@
     body.dark-theme #inbox-map,
     body.dark-theme .note-text,
     body.dark-theme #post-display-title,
-    body.dark-theme #description {
+    body.dark-theme #description,
+    body.dark-theme .reply-form {
         background-color: var(--color-dark-1)
     }
 
@@ -1485,7 +1487,8 @@
     body.light-theme #inbox-map,
     body.light-theme .note-text,
     body.light-theme #post-display-title,
-    body.light-theme #description {
+    body.light-theme #description,
+    body.light-theme .reply-form {
         background-color: var(--color-light-1)
     }
 
@@ -1559,7 +1562,8 @@
     body.green-theme #inbox-map,
     body.green-theme .note-text,
     body.green-theme #post-display-title,
-    body.green-theme #description {
+    body.green-theme #description,
+    body.green-theme .reply-form {
         background-color: var(--color-green-1)
     }
 

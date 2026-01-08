@@ -57,7 +57,6 @@ export function RenderComment(comment) {
             <div class="make-a-reply-container">
                 <button class="reply" title="Start sending a reply to this comment">Reply</button>
                 <!-- Reply form can be loaded here !-->
-                <textarea class="reply-form" cols="100" name="reply" rows="3">Add a reply...</textarea>
             </div>
             <div class="loaded-replies">
                 <button class="load-replies" title="Load more replies from this comment">Replies</button>
@@ -65,6 +64,20 @@ export function RenderComment(comment) {
             </div>
         </div>
     `;
+}
+
+export function SetupReplyContainer($comment) {
+    if ($comment.find(".reply-form").length) return;
+
+    $(".reply").hide();
+    
+    
+    $comment.find(".make-a-reply-container").parent().append(/*html*/ `<textarea class="reply-form" cols="100" name="reply" rows="3">Add a reply...</textarea>`);
+}
+
+export function DestroyReplyContainer() {
+    $(".reply").show();
+    $(".reply-form").remove();
 }
 
 export class CommentData {

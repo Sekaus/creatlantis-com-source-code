@@ -93,7 +93,7 @@
         <?php include_once("./html_elements/footer.html"); ?>
 
         <script type="module">
-            import { Image, Journal, PostType, CommentSection, LoadComments, UserMetadata } from "./js/common.js";
+            import { Image, Journal, PostType, CommentSection, LoadComments, UserMetadata, SetupReplyContainer, DestroyReplyContainer } from "./js/common.js";
 
 
             /* Load post data */
@@ -132,6 +132,11 @@
                 /* Load comments and repies */
 
                 $postContainer.append(CommentSection());
+
+                $(document).on("click", ".reply", function () {
+                    const $comment = $(this).closest(".comment");
+                    SetupReplyContainer($comment);
+                });
 
                 $(document).ready(async function () {
                     await LoadComments("<?php echo $_GET['key']; ?>", null);

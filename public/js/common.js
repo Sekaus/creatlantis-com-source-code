@@ -69,15 +69,23 @@ export function RenderComment(comment) {
 export function SetupReplyContainer($comment) {
     if ($comment.find(".reply-form").length) return;
 
-    $(".reply").hide();
+    $(".reply, #add-new-comment").hide();
     
     
-    $comment.find(".make-a-reply-container").parent().append(/*html*/ `<textarea class="reply-form" cols="100" name="reply" rows="3">Add a reply...</textarea>`);
+    $comment.find(".make-a-reply-container").parent().append(/*html*/ `
+        <textarea class="reply-form" cols="100" name="reply" rows="3">Add a reply...</textarea>
+        <br/>
+        <button id="cancel">Cancel</button>
+    `);
+
+    $comment.find("#cancel").on("click", () => {
+        DestroyReplyContainer();
+    });
 }
 
 export function DestroyReplyContainer() {
-    $(".reply").show();
-    $(".reply-form").remove();
+    $(".reply, #add-new-comment").show();
+    $(".reply-form, #cancel").remove();
 }
 
 export class CommentData {

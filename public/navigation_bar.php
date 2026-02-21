@@ -12,7 +12,7 @@
 
         <?php include("./html_elements/main_user_tab.html"); ?>
 
-        <img src="../images/icons/noteIcon.webp" title="Go to your mailbox" alt="Mail icon" class="navigation-icon"/>
+        <img id="go-to-your-mailbox" src="../images/icons/noteIcon.webp" title="Go to your mailbox" alt="Mail icon" class="navigation-icon"/>
         <var id="inbox-count" title="The content count in the inbox that are marked as not readed">-1</var>
         <p>(<var id="note-count">-1 Notes</var>)</p>
     </div>

@@ -620,7 +620,8 @@
     #star-rateing,
     #inbox-filter-list li,
     #inbox-content-list li,
-    button {
+    button,
+    .navigation-icon {
         cursor: pointer
     }
 

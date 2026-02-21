@@ -121,8 +121,18 @@
             
             $("#main-user-tap-metadata, #main-user-tap-metadata:hidden").find(".user-icon").attr("src", profileImage);
 
+            /* Navigation buttons */
+            
             $("#go-to-profile, #go-to-profile:hidden").click(function() {
                 window.location.href = window.location.origin + "/profile/<?php echo $user->username(); ?>";
+            });
+
+            $("#go-to-account-settings, #go-to-account-settings:hidden").click(function() {
+                window.location.href = window.location.origin + "/account_settings.php";
+            });
+
+            $("#go-to-your-mailbox, #go-to-your-mailbox:hidden").click(function() {
+                window.location.href = window.location.origin + "/inbox.php";
             });
         <?php endif; ?>
     });

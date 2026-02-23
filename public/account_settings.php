@@ -1,3 +1,15 @@
+<?php
+    require_once("./user_classes.php");
+    require_once("./config.php");
+    require_once("./data_handler.php");
+
+    $dh = new DataHandle($dbConfig, $s3Config);
+
+    $user = unserialize($_SESSION["user_data"]);
+    $login = unserialize($_SESSION["user_login"]);
+    $unfilteredData = $user->unfilteredData($login);
+?>
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -99,4 +111,28 @@
 
         <?php include_once("./html_elements/footer.html"); ?>
     </body>
+    <script>
+        /* Populate the form fields with the user's current data. */
+
+        var user = {
+            icon: '<?php echo $dh->GetURLOnSingleFile($user->profileImage()) ?? "../images/default_pp.webp"; ?>',
+            name: '<?php echo $unfilteredData["name"] ?? ""; ?>',
+            email: '<?php echo $login->email(); ?>',
+            dateOfBirth: '<?php echo $unfilteredData["dateOfBirth"] ?? ""; ?>',
+            username: '<?php echo $user->username(); ?>',
+            dateOfBirth: '<?php echo $user->dateOfBirth(); ?>',
+            tagline: '<?php echo $user->tagline(); ?>',
+            hobbies: '<?php echo $user->hobbies(); ?>',
+            bio: '<?php echo $user->biography(); ?>'
+        }
+        
+        $(".user-icon").attr("src", user.icon);
+        $("#name-input").val(user.name);
+        $("#email-input").val(user.email);
+        $("#date-of-birth-input").val(user.dateOfBirth);
+        $("#username-input").val(user.username);
+        $("#tagline-input").val(user.tagline);
+        $("#hobbies-input").val(user.hobbies);
+        $("#bio-input").val(user.bio);
+    </script>
 </html>

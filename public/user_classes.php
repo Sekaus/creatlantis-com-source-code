@@ -21,6 +21,7 @@
         private string $land = "";
         private bool $landVisible = false;
         private string $hobbies = "";
+        private ?string $name = null;
 
         // Constructor - accepts an associative row (from DB) or null
         public function __construct(?array $dataRow = null) {
@@ -59,7 +60,8 @@
                 return [
                     'dateOfBirth' => $this->dateOfBirth,
                     'gender'      => $this->gender,
-                    'land'        => $this->land
+                    'land'        => $this->land,
+                    'name'        => $this->name
                 ];
             }
 
@@ -70,8 +72,6 @@
         public function uuid(): string { return $this->uuid; }
         public function username(): string { return $this->username; }
         public function tagline(): string { return $this->tagline; }
-
-        // FIXED typo: biography getter name corrected
         public function biography(): string { return $this->biography; }
 
         // Date of birth getter with visibility control

@@ -42,6 +42,7 @@
                 $this->landVisible = (bool)($dataRow["land_visible"] ?? $this->landVisible);
                 $this->lastVersionOfReadAndAccept = $dataRow["last_version_of_read_and_accept"] ?? '';
                 $this->hobbies = $dataRow["hobbies"] ?? $this->hobbies;
+                $this->name = $dataRow["name"] ?? $this->name;
             }
         }
 
@@ -52,8 +53,6 @@
         public function unfilteredData(Login $login): ?array {
             global $dbConfig, $s3Config;
 
-            // Pass appropriate S3BotType (readOnly) if your DataHandle requires it.
-            // If DataHandle constructor requires 3 args, include S3BotType::readOnly.
             $dh = new DataHandle($dbConfig, $s3Config, S3BotType::readOnly);
 
             if ($dh->verifyOwnership($login->email(), $login->password(), $this->username)) {
@@ -67,14 +66,33 @@
 
             return null;
         }
+        public function setUnfilteredData(Login $login,array $data): void {
+            global $dbConfig, $s3Config;
+
+            $dh = new DataHandle($dbConfig, $s3Config, S3BotType::readOnly);
+            if ($dh->verifyOwnership($login->email(), $login->password(), $this->username)) {
+                $this->dateOfBirth = $data['dateOfBirth'] ?? $this->dateOfBirth;
+                $this->dateOfBirthVisible = (bool)($data['dateOfBirthVisible'] ?? false);
+                $this->gender = $data['gender'] ?? $this->gender;
+                $this->genderVisible = (bool)($data['genderVisible'] ?? false);
+                $this->land = $data['land'] ?? $this->land;
+                $this->landVisible = (bool)($data['landVisible'] ?? false);
+                $this->name = $data['name'] ?? $this->name;
+            }
+        }
 
         // ----- Getters & Setters -----
         public function uuid(): string { return $this->uuid; }
+        
         public function username(): string { return $this->username; }
-        public function tagline(): string { return $this->tagline; }
-        public function biography(): string { return $this->biography; }
+        public function setUsername(string $u): void { $this->username = $u; }
 
-        // Date of birth getter with visibility control
+        public function tagline(): string { return $this->tagline; }
+        public function setTagline(string $t): void { $this->tagline = $t; }
+
+        public function biography(): string { return $this->biography; }
+        public function setBiography(string $b): void { $this->biography = $b; }
+        
         public function dateOfBirth(): string {
             return $this->dateOfBirthVisible ? $this->dateOfBirth : "Not public";
         }
@@ -83,6 +101,7 @@
         public function gender(): string {
             return $this->genderVisible ? $this->gender : "Not public";
         }
+        public function setGender(string $g): void { $this->gender = $g; }
         public function genderVisible(): bool { return $this->genderVisible; }
 
         public function registrationDate(): string { return $this->registrationDate; }
@@ -100,6 +119,8 @@
             return $this->profileImage;
         }
 
+        public function setProfileImage(?string $filename): void { $this->profileImage = $filename; }
+
         public function lastVersionOfReadAndAccept(): string { return $this->lastVersionOfReadAndAccept; }
         public function setLastVersionOfReadAndAccept(string $v): void { $this->lastVersionOfReadAndAccept = $v; }
 
@@ -116,16 +137,13 @@
     class Login {
         private string $email = "";
         private string $password = "";
-        private string $name = "";
 
-        public function __construct(string $email, string $password, string $name = "") {
+        public function __construct(string $email, string $password) {
             $this->email = $email;
             $this->password = $password;
-            $this->name = $name;
         }
 
         public function email(): string { return $this->email; }
         public function password(): string { return $this->password; }
-        public function name(): string { return $this->name; }
     }
 ?>

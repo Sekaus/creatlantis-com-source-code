@@ -26,7 +26,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Main</title>
+        <title><?php echo $viewedUserUsername; ?></title>
         <?php include_once("./html_elements/head.html"); ?>
         <script type="module" src="./js/profile.js"></script>
     </head>

@@ -13,18 +13,29 @@
                 $user->setColorTheme($_POST["theme"]);
             else if($_POST["command"] == "update_profile") {
                 // Added simple validation to ensure fields exist
-                $user->setName($_POST["name"] ?? "");
-                $user->setEmail($_POST["email"] ?? "");
-                $user->setLand($_POST["land"] ?? "");
-                $user->setDateOfBirth($_POST["dateOfBirth"] ?? "");
-                $user->setGender($_POST["gender"] ?? "");
+                $FilteredData = [
+                    'dateOfBirth' => $_POST["dateOfBirth"] ?? "",
+                    'dateOfBirthVisible' => $_POST["dateOfBirthVisible"] ?? 0,
+                    'gender' => $_POST["gender"] ?? "",
+                    'genderVisible' => $_POST["genderVisible"] ?? 0,
+                    'name' => $_POST["name"] ?? "",
+                    'email' => $_POST["email"] ?? "",
+                    'land' => $_POST["land"] ?? "",
+                    'landVisible' => $_POST["landVisible"] ?? 0
+                ];
+
+                $user->setFilteredData(unserialize($_SESSION["user_login"]), $FilteredData);
+                
                 $user->setUsername($_POST["username"] ?? "");
                 $user->setTagline($_POST["tagline"] ?? "");
                 $user->setHobbies($_POST["hobbies"] ?? "");
                 $user->setBiography($_POST["bio"] ?? "");
             }
-            else
-                return ['success' => false, 'error' => 'Invalid command. ' . $_POST["command"]];
+            else {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'error' => 'Invalid command.']);
+                exit;
+            }
 
             if(isset($_SESSION["user_login"])) {
                 $login = unserialize($_SESSION["user_login"]);
@@ -35,8 +46,14 @@
 
             $_SESSION["user_data"] = serialize($user);
 
-            return ['success' => true];
+            // Clear any previous output buffers to ensure only JSON is sent
+            if (ob_get_length()) ob_clean(); 
+
+            header('Content-Type: application/json');
+            echo json_encode(['success' => true]);
+            exit;
         }
+
         return ['success' => false, 'error' => 'Missing parameters.'];
     }
 ?>

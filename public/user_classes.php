@@ -66,17 +66,17 @@
 
             return null;
         }
-        public function setUnfilteredData(Login $login,array $data): void {
+        public function setFilteredData(Login $login, array $data): void {
             global $dbConfig, $s3Config;
 
             $dh = new DataHandle($dbConfig, $s3Config, S3BotType::readOnly);
             if ($dh->verifyOwnership($login->email(), $login->password(), $this->username)) {
                 $this->dateOfBirth = $data['dateOfBirth'] ?? $this->dateOfBirth;
-                $this->dateOfBirthVisible = (bool)($data['dateOfBirthVisible'] ?? false);
+                $this->dateOfBirthVisible = filter_var($data['dateOfBirthVisible'] ?? false, FILTER_VALIDATE_BOOLEAN);
                 $this->gender = $data['gender'] ?? $this->gender;
-                $this->genderVisible = (bool)($data['genderVisible'] ?? false);
+                $this->genderVisible = filter_var($data['genderVisible'] ?? false, FILTER_VALIDATE_BOOLEAN);
                 $this->land = $data['land'] ?? $this->land;
-                $this->landVisible = (bool)($data['landVisible'] ?? false);
+                $this->landVisible = filter_var($data['landVisible'] ?? false, FILTER_VALIDATE_BOOLEAN);
                 $this->name = $data['name'] ?? $this->name;
             }
         }
@@ -101,7 +101,7 @@
         public function gender(): string {
             return $this->genderVisible ? $this->gender : "Not public";
         }
-        public function setGender(string $g): void { $this->gender = $g; }
+        
         public function genderVisible(): bool { return $this->genderVisible; }
 
         public function registrationDate(): string { return $this->registrationDate; }

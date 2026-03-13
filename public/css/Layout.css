@@ -907,8 +907,10 @@
 
     #folder-filter-list,
     #category-list,
-    #inbox-filter-list {
-        padding: calc(var(--spacing)*5)
+    #inbox-filter-list,
+    #inbox-content-list {
+        padding: calc(var(--spacing)*5);
+        white-space: nowrap
     }
 
     .user-metadata {

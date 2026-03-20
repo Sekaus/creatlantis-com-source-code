@@ -14,10 +14,10 @@
 
     <div id="index-box">
       <ol id="category-list">
-        <li className="selected-category">All</li>
-        <li className="">Drawings</li>
-        <li className="">Paintings</li>
-        <li className="">Other</li>
+        <li className="category-filter selected-category">All</li>
+        <li className="category-filter">Drawings</li>
+        <li className="category-filter">Paintings</li>
+        <li className="category-filter">Other</li>
       </ol>
 
       <div id="content-view">
@@ -46,7 +46,18 @@
       DisplayLoadedPost(posts, "#content-view");
 
       $(document).ready(function() {
+        const category = {
+          "all": 0,
+          "drawings": 1,
+          "paintings": 2,
+          "other": 3
+        }
+
+        let selectedCategory = category.all;
+
         $(".post").click(function() {
+          $()
+
           OnPostThumbClick(this);
         });
       });

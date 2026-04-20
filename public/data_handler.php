@@ -763,6 +763,40 @@ class DataHandle {
         return ['success' => true, 'updated' => true, 'rows' => $affected];
     }
 
+    public function loadUserInboxNotes(Login $login, User $user, int $maxKeys = 50, int $offset = 0) {
+        // Validate types (login/user may be serialized objects from session)
+        if (!($login instanceof Login) || !($user instanceof User)) {
+            return ['success' => false, 'error' => 'Invalid login/user.'];
+        }
+
+        // Verify ownership (this will prevent unauthorized updates)
+        if (!$this->verifyOwnership($login->email(), $login->password(), $user->username())) {
+            return ['success' => false, 'error' => 'Not authorized.'];
+        }
+
+        $stmt = $this->mysqli->prepare("SELECT * FROM note_stack WHERE transmitter=? OR recipient=? ORDER BY date DESC LIMIT ? OFFSET ?");
+        $profileUUID = filterUnwantedCode($user->uuid());
+        $stmt->bind_param("ssii", $profileUUID, $profileUUID, $maxKeys, $offset);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $stmt->close();
+
+        $notes = [];
+        while ($row = $result->fetch_assoc()) {
+            $notes[] = [
+                'uuid' => $row['uuid'],
+                'reply' => $row['reply'],
+                'transmitter' => $row['transmitter'],
+                'text' => filterUnwantedCode(convertQuotesToUnicode($row['text'])),
+                'title' => filterUnwantedCode(convertQuotesToUnicode($row['title'])),
+                'date' => $row['date'],
+                'readed' => $row['readed']
+            ];
+        }
+
+        return json_encode(['success' => true, 'notes' => $notes]);
+    }
+
     public function __destruct() {
         if (isset($this->mysqli)) $this->mysqli->close();
     }

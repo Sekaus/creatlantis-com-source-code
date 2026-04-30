@@ -556,7 +556,7 @@ class DataHandle {
         return null;
     }
 
-    public function loadAllFiles(FileType $filter, string $search, FileLoadOrder $order, int $maxKeys = 10, int $offset = 0): string {
+    public function loadAllFiles(FileType $filter, string $search, FileLoadOrder $order, int $maxKeys = 10, int $offset = 0): array {
         $searchLike = '%' . $this->mysqli->real_escape_string($search) . '%';
         $orderString = $order->value;
         $limit = max(1, $maxKeys);
@@ -601,7 +601,7 @@ class DataHandle {
         }
 
         $stmt->close();
-        return json_encode($items);
+        return $items;
     }
 
     public function GetURLOnSingleFile($key): string {

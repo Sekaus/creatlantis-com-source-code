@@ -38,3 +38,45 @@
         <?php include("./html_elements/search_console.html"); ?>
     </div>
 </nav>
+
+<!-- Search engine -->
+<script type="module">
+    import {Global} from "./js/globals.js";
+
+    // Initialize the channel
+    const searchChannel = new BroadcastChannel('search_sync');
+
+    function reload() {
+        $.ajax({
+            type: "POST",
+            url: "search_data.php",
+            data: {
+                type: $('[name="post-type"]').val(),
+                text: $('[name="search-text"]').val(),
+                order: $('[name="order"]').val()
+            },
+            success: function(data) {
+                Global.searchData = data;
+                // Broadcast the data to all other tabs
+                searchChannel.postMessage(data);
+
+                console.log("Search data loaded and broadcasted:", data);
+                
+                // If the current page has a refresh function, call it
+                if (typeof refreshGallery === "function") {
+                    refreshGallery();
+                }
+            },
+            error: function(error) {
+                console.error("Failed to load search data:", error);
+            }
+        });
+    }
+    $(document).ready(function() {
+        reload();
+
+        $(".navigation-bar-input").on("change", function() {
+            reload();
+        });
+    });
+</script>

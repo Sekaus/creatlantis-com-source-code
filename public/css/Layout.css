@@ -897,7 +897,7 @@
         position: absolute
     }
 
-    #search-console,
+    .search-console,
     #main-user,
     #main-user .profile-link,
     #main-user-tap-metadata,
@@ -950,7 +950,7 @@
         background-image: linear-gradient(to left, var(--color-green-0), var(--color-green-1), var(--color-green-2), var(--color-green-3), var(--color-green-4))
     }
 
-    #desktop-navigation-bar #search-console,
+    #desktop-navigation-bar .search-console,
     .profile-link,
     #main-user,
     #nav-tabs,
@@ -963,7 +963,7 @@
         display: flex
     }
 
-    #mobile-menu #search-console {
+    #mobile-menu .search-console {
         flex-wrap: nowrap;
         align-items: center;
         display: flex
@@ -973,7 +973,7 @@
         white-space: nowrap
     }
 
-    #search-console,
+    .search-console,
     .profile-link,
     #main-user,
     #qick-submit,
@@ -1290,6 +1290,7 @@
     }
 
     #content-view {
+        width: 100vw;
         height: 100vh;
         padding-top: calc(var(--spacing)*4);
         padding-bottom: calc(var(--spacing)*30);

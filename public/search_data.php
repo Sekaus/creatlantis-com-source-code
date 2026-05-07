@@ -2,18 +2,18 @@
     include_once("./config.php");
     include_once("./data_handler.php");
 
-    $search_type = isset($_POST["type"]) ? $_POST["type"] : null;
+    $search_type = isset($_POST["type"]) ? $_POST["type"] : "all";
     $search_text = isset($_POST["text"]) ? $_POST["text"] : "";
-    $search_order = isset($_POST["order"]) ? $_POST["order"] : null;
+    $search_order = isset($_POST["order"]) ? $_POST["order"] : "newest";
 
     $type = FileType::all;
     $order = FileLoadOrder::newest;
 
     if ($search_type === "all")
         $type = FileType::all;
-    else if ($search_type === "images")
+    else if ($search_type === "image")
         $type = FileType::image;
-    else if ($search_type === "journals")
+    else if ($search_type === "journal")
         $type = FileType::journal;
 
     if ($search_order === "newest")

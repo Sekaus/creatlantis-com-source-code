@@ -46,15 +46,11 @@
     // Initialize the channel
     const searchChannel = new BroadcastChannel('search_sync');
 
-    function reload() {
+    function reload(data) {
         $.ajax({
             type: "POST",
             url: "search_data.php",
-            data: {
-                type: $('[name="post-type"]').val(),
-                text: $('[name="search-text"]').val(),
-                order: $('[name="order"]').val()
-            },
+            data: data,
             success: function(data) {
                 Global.searchData = data;
                 // Broadcast the data to all other tabs
@@ -73,10 +69,16 @@
         });
     }
     $(document).ready(function() {
-        reload();
+        reload(null);
 
         $(".navigation-bar-input").on("change", function() {
-            reload();
+            const $container = $(this).closest(".search-console");
+            
+            reload({
+                type: $container.find('[name="post-type"]').val(),
+                text: $container.find('[name="search-text"]').val(),
+                order: $container.find('[name="order"]').val()
+            });
         });
     });
 </script>

@@ -47,6 +47,10 @@
           $("[name='search-text']").val(Global.searchData ? Global.searchData.search.text : '');
           $("[name='post-type']").val(Global.searchData ? Global.searchData.search.type : '');
           $("[name='order']").val(Global.searchData ? Global.searchData.search.order : '');
+
+          $(".post").click(function() {
+          OnPostThumbClick(this);
+        });
       };
 
       $(document).ready(function() {
@@ -59,10 +63,6 @@
           const isNotes = $(this).text() === "Notes";
           $("#note-content").toggle(isNotes);
           $("#watching-content").toggle(!isNotes);
-        });
-
-        $(".post").click(function() {
-          OnPostThumbClick(this);
         });
       });
     </script>

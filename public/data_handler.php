@@ -418,6 +418,20 @@ class DataHandle {
         return null;
     }
 
+    public function countCommentsOnSingleFile(string $key) {
+        $postID = $this->shortUUIDToPostID($key);
+        if($postID != null) {
+            $stmt = $this->mysqli->prepare("SELECT count(*) as comment_count FROM comment_stack WHERE post_id=?");
+            $stmt->bind_param("s", $postID);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $row = $result->fetch_assoc();
+            $stmt->close();
+            return $row['comment_count'];
+        }
+        return 0;
+    }
+
     public function loadCommentStack(?string $shortUUID, ?string $profileUUID, int $maxKeys = 5, int $offset = 0) {
         if(isset($shortUUID)) {
             $postID = $this->shortUUIDToPostID($shortUUID);
@@ -486,6 +500,68 @@ class DataHandle {
         }
 
         return json_encode(['success' => true, 'array' => $comments]);
+    }
+
+    public function countViews($postID) {
+        if($postID != null) {
+            $stmt = $this->mysqli->prepare("SELECT count(*) as view_count FROM feedback WHERE post_id=?");
+            $stmt->bind_param("s", $postID);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $row = $result->fetch_assoc();
+            $stmt->close();
+            return $row['view_count'];
+        }
+        return 0;
+    }
+
+    public function getStarRateReviewsCount($postID) {
+        if($postID != null) {
+            $stmt = $this->mysqli->prepare("SELECT count(*) as review_count FROM feedback WHERE post_id=? AND star_rate IS NOT NULL");
+            $stmt->bind_param("s", $postID);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $row = $result->fetch_assoc();
+            $stmt->close();
+            return $row['review_count'];
+        }
+        return 0;
+    }
+
+    public function loadFeedbackOnSingleFile($postID) {
+        if($postID != null) {
+            $stmt = $this->mysqli->prepare("SELECT * FROM feedback WHERE post_id=?");
+            $stmt->bind_param("s", $postID);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $viewCount = $this->countViews($postID);
+
+            $stmt->close();
+
+            /* Wrap the feedback into an array */
+
+            $feedback = [];
+            
+            while($row = $result->fetch_assoc()) {
+                $starRateReviewsCount = $this->getStarRateReviewsCount($postID);
+                $feedback[] = [
+                    'views_count' => $viewCount,
+                    'star_rate_reviews_count' => $starRateReviewsCount,
+                    'star_average' => $starRateReviewsCount > 0 ? round($row['star_rate'] / $starRateReviewsCount, 2) : 0,
+                    'fave_count' => $row['fave']
+                ];
+            }
+
+            return $feedback;
+        }
+
+        return [
+                'views_count' => 0,
+                'star_rate_reviews_count' => 0,
+                'star_average' => 0,
+                'fave_count' => 0
+            ];
     }
 
     public function loadSingleFile(string $key) {

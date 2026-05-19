@@ -10,11 +10,16 @@
 
   if(isset($_GET['key'])) {
     $key = $dh_read->getKeyFromShortUUID($_GET['key']);
+    $postID = $dh_read->shortUUIDToPostID($_GET['key']);
+    
     if($key) {
         $viewedPost = $dh_read->loadSingleFile($key);
-        $decodedJSON = json_decode($viewedPost);
-        $decodedJSON->metadata->owner->profile_image = $dh_read->GetURLOnSingleFile($decodedJSON->metadata->owner->profile_image);
-        $viewedPost = json_encode($decodedJSON);
+        $decodedPostJSON = json_decode($viewedPost);
+        $decodedPostJSON->metadata->owner->profile_image = $dh_read->GetURLOnSingleFile($decodedPostJSON->metadata->owner->profile_image);
+        $viewedPost = json_encode($decodedPostJSON);
+
+        $feedback = $dh_read->loadFeedbackOnSingleFile($postID);
+        $feedbackJSON = json_encode($feedback);
     }
   }
 
@@ -124,7 +129,7 @@
                     $("#post-owner-info .profile-link").attr("href", "profile/" + postData.metadata.owner.username);
                     $("#post-owner-info .user-icon").attr("src", postData.metadata.owner.profile_image);
                     $("#post-owner-info .user-name").html(postData.metadata.owner.username);
-                    $("#post-owner-info .user-tagline").html(postData.metadata.owner.tagline);
+                    $("#post-owner-info .user-tagline").html(postData.metadata.owner.tagline);''
 
                     postData.owner
                 });
@@ -141,6 +146,25 @@
                 $(document).ready(async function () {
                     await LoadComments("<?php echo $_GET['key']; ?>", null);
                 });
+
+                <?php if($feedback): ?>
+                    /* Load feedback */
+                    var rawData = <?php echo $feedbackJSON; ?>;
+
+                    // Check if it's an array and take the first item, otherwise use it as is
+                    var feedbackData = Array.isArray(rawData) ? rawData[0] : rawData;
+
+                    var starRatePercentage = feedbackData.star_average * 20; // Convert to percentage (assuming star_average is out of 5)
+
+                    $(document).ready(function () {
+                        $("#star-rate-reviews-count").html(feedbackData.star_rate_reviews_count);
+                        $("#star-rate-average").html(feedbackData.star_average); 
+                        $("body").get(0).style.setProperty('--star-rating', starRatePercentage + '%');
+                        $("#fave-count").html(feedbackData.fave_count);
+                        $("#view-count").html(feedbackData.views_count);
+                        $("#comment-count").html(<?php echo $dh_read->countCommentsOnSingleFile($_GET['key']); ?>);
+                    });
+                <?php endif; ?>
 
             <?php else: ?>
                 $("#post-display").html(/*html*/ `

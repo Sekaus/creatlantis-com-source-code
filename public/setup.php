@@ -1,5 +1,6 @@
 <?php
-    static $lastUpdateOnRulesAndPrivacy = "2025-11-16";
+    const LAST_UPDATE_ON_RULES_AND_PRIVACY = "2025-11-16";
+    const ANON_CONSENT_COOKIE = "rules_privacy_accept_version";
 
     include_once("./config.php");
     include_once("./data_handler.php");
@@ -18,18 +19,42 @@
 
     $user = unserialize($_SESSION["user_data"]);
 
-    $shouldShowPopup = $user->lastVersionOfReadAndAccept() !== $lastUpdateOnRulesAndPrivacy;
-    $isNotANewUser = $user->lastVersionOfReadAndAccept() !== "";
+    // If the user is NOT logged in, use the cookie as the source of truth
+    if (!$login && isset($_COOKIE[ANON_CONSENT_COOKIE])) {
+        $user->setLastVersionOfReadAndAccept($_COOKIE[ANON_CONSENT_COOKIE]);
+        $_SESSION["user_data"] = serialize($user);
+    }
+
+    $consentVersion = $login
+        ? $user->lastVersionOfReadAndAccept()
+        : ($_COOKIE[ANON_CONSENT_COOKIE] ?? "");
+
+    $shouldShowPopup = $consentVersion !== LAST_UPDATE_ON_RULES_AND_PRIVACY;
+    $isNotANewUser = $consentVersion !== "";
 
     if (isset($_POST["agreed"]) && $_POST["agreed"] === "yes") {
 
-        $user->setLastVersionOfReadAndAccept($lastUpdateOnRulesAndPrivacy);
+        $user->setLastVersionOfReadAndAccept($LAST_UPDATE_ON_RULES_AND_PRIVACY);
 
-        // NOW $login is properly set
-        if ($login)
+        if ($login) {
             $dh->updateUserInfo($user, $login);
+        } else {
+
+            setcookie(ANON_CONSENT_COOKIE, $LAST_UPDATE_ON_RULES_AND_PRIVACY, [
+                "expires"  => time() + (60 * 60 * 24 * 365 * 2),
+                "path"     => "/",
+                "secure"   => !empty($_SERVER["HTTPS"]),
+                "httponly" => true,
+                "samesite" => "Lax",
+            ]);
+
+            // IMPORTANT:
+            // Make the cookie available immediately in THIS request
+            $_COOKIE[ANON_CONSENT_COOKIE] = $LAST_UPDATE_ON_RULES_AND_PRIVACY;
+        }
 
         $_SESSION["user_data"] = serialize($user);
+
         exit;
     }
 ?>
@@ -42,39 +67,48 @@
         
         // Show popup for the new user
         <?php if ($shouldShowPopup): ?>
-            $(document).ready(() => {
-                if(!location.pathname.includes("login"))
-                    $("body").prepend(RulesAndPrivacyPopup(<?php echo ($isNotANewUser ? "true" : "false") ?>));
-            });
+            if (
+                !location.pathname.includes("login") &&
+                !sessionStorage.getItem("rulesAccepted")
+            ) {
+                $("body").prepend(
+                    RulesAndPrivacyPopup(<?php echo ($isNotANewUser ? "true" : "false") ?>)
+                );
+            }
         <?php endif; ?>
 
         $(document).on("submit", "#rules-privacy-form", function (event) {
             event.preventDefault();
 
             $.post(window.location.pathname, $(this).serialize(), () => {
-                location.reload(); // refresh page so PHP sees updated session
+
+                // HARD REMOVE popup immediately
+                $("[data-rules-popup='true']").remove();
+
+                // prevent any re-insertion flicker
+                sessionStorage.setItem("rulesAccepted", "1");
+
+                location.reload();
             });
         });
 
         /* Navigation actions */
-        $(document).ready(function () {
-            $("#logout").click(function () {
-                logout();
-            });
+        $("#logout").click(function () {
+            logout();
+        });
 
-            $(".theme-option").click(function () {
-                switch($(this).attr('id')) {
-                    case "dark-theme-option":
-                        ChangeTheme(Themes.dark, true);
-                        break;
-                    case "light-theme-option":
-                        ChangeTheme(Themes.light, true);
-                        break;
-                    case "green-theme-option":
-                        ChangeTheme(Themes.green, true);
-                        break;
-                }
-            });
+        $(".theme-option").click(function () {
+            switch($(this).attr('id')) {
+                case "dark-theme-option":
+                    ChangeTheme(Themes.dark, true);
+                    break;
+                case "light-theme-option":
+                    ChangeTheme(Themes.light, true);
+                    break;
+                case "green-theme-option":
+                    ChangeTheme(Themes.green, true);
+                    break;
+            }
         });
 
         function logout() {

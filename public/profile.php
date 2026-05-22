@@ -136,6 +136,8 @@
             /* Load selected profile tap */
             switch ("<?php echo $_GET["tab"]; ?>") {
                 case "profile":
+                    $("#custom-profile-view").show();
+
                     $("#date-of-birth").text("<?php echo $viewedUser->dateOfBirth(); ?>");
                     $("#gender").text("<?php echo $viewedUser->gender(); ?>");
                     $("#land").text("<?php echo $viewedUser->land(); ?>");
@@ -143,6 +145,9 @@
                     $("#show-profile").addClass("selected-nav-tab");
                     break;
                 case "gallery":
+                    $("#custom-profile-view").hide();
+
+
                     $("#profile-container").append(Gallery());
 
                     $("#short-user-description").hide();
@@ -150,6 +155,8 @@
                     $("#show-gallery").addClass("selected-nav-tab");
                     break;
                 case "faves":
+                    $("#custom-profile-view").hide();
+
                     $("#profile-container").append(Favorites());
 
                     $("#short-user-description").hide();
@@ -157,6 +164,8 @@
                     $("#show-faves").addClass("selected-nav-tab");
                     break;
                 case "journals":
+                    $("#custom-profile-view").hide();
+
                     $("#profile-container").append(Journals());
 
                     $("#short-user-description").hide();

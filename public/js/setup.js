@@ -5,7 +5,7 @@ export function RulesAndPrivacyPopup(update = false) {
         title = `We have updated our Terms of Service and Privacy Policy. Please review them first before proceeding.`
 
     return /*html*/ `
-            <div id="rules-and-privacy-popup">
+            <div id="rules-and-privacy-popup" data-rules-popup="true">
                 <div id="rules-and-privacy-popup-content">
                     <form id="rules-privacy-form" enctype="multipart/form-data" action="" method="POST">
                         <p class="big-text">${title}</p>

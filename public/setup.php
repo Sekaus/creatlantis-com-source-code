@@ -1,5 +1,5 @@
 <?php
-    const LAST_UPDATE_ON_RULES_AND_PRIVACY = "2025-11-16";
+    const LAST_UPDATE_ON_RULES_AND_PRIVACY = "2026-05-22";
     const ANON_CONSENT_COOKIE = "rules_privacy_accept_version";
 
     include_once("./config.php");

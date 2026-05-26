@@ -891,7 +891,7 @@
     }
 
     .dorp-down-content {
-        left: calc(var(--spacing)*0);
+        right: calc(var(--spacing)*0);
         font-size: var(--text-base);
         line-height: calc(var(--spacing)*10);
         position: absolute
@@ -1021,6 +1021,20 @@
     #inbox-box,
     #index-box {
         display: flex
+    }
+
+    #points-balance {
+        align-items: center
+    }
+
+    #points-balance div {
+        gap: calc(var(--spacing)*1)
+    }
+
+    @media (min-width:48rem) {
+        #points-balance img {
+            padding-right: calc(var(--spacing)*5)
+        }
     }
 
     #login-form-box {
@@ -1166,31 +1180,29 @@
         }
     }
 
-    .folder-icon,
     #point-icon {
+        height: calc(var(--spacing)*5);
+        padding-right: calc(var(--spacing)*1)
+    }
+
+    .folder-icon {
         height: calc(var(--spacing)*2.5)
     }
 
     @media (min-width:40rem) {
-
-        .folder-icon,
-        #point-icon {
+        .folder-icon {
             height: calc(var(--spacing)*3)
         }
     }
 
     @media (min-width:48rem) {
-
-        .folder-icon,
-        #point-icon {
+        .folder-icon {
             height: calc(var(--spacing)*3.5)
         }
     }
 
     @media (min-width:64rem) {
-
-        .folder-icon,
-        #point-icon {
+        .folder-icon {
             height: calc(var(--spacing)*5)
         }
     }

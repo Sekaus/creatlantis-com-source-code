@@ -1,5 +1,5 @@
 <?php
-    const LAST_UPDATE_ON_RULES_AND_PRIVACY = "2026-05-22";
+    const LAST_UPDATE_ON_RULES_AND_PRIVACY = "2026-05-26";
     const ANON_CONSENT_COOKIE = "rules_privacy_accept_version";
 
     include_once("./config.php");
@@ -128,7 +128,10 @@
             $("#go-to-profile, #go-to-profile:hidden").hide();
             $("#go-to-account-settings, #go-to-account-settings:hidden").hide()
             $("#points-balance, #points-balance:hidden").hide();
-            $("#qick-submit, #qick-submit:hidden").hide()
+            $("#qick-submit, #qick-submit:hidden").hide();
+            $("#inbox-count, #inbox-count:hidden").hide();
+            $("#note-count-container, #note-count-container:hidden").hide();
+            $("#go-to-your-mailbox, #go-to-your-mailbox:hidden").hide();
         <?php else: ?>
             $("#login, #login:hidden").hide();
             

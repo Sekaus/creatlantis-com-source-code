@@ -873,7 +873,29 @@ class DataHandle {
         return json_encode(['success' => true, 'notes' => $notes]);
     }
 
+    public function countUnreadedInboxNotes(Login $login, User $user) {
+        // Validate types (login/user may be serialized objects from session)
+        if (!($login instanceof Login) || !($user instanceof User)) {
+            return ['success' => false, 'error' => 'Invalid login/user.'];
+        }
+
+        // Verify ownership (this will prevent unauthorized updates)
+        if (!$this->verifyOwnership($login->email(), $login->password(), $user->username())) {
+            return ['success' => false, 'error' => 'Not authorized.'];
+        }
+
+        $stmt = $this->mysqli->prepare("SELECT count(*) as unread_count FROM note_stack WHERE recipient=? AND (readed=0 OR readed IS NULL)");
+        $profileUUID = filterUnwantedCode($user->uuid());
+        $stmt->bind_param("s", $profileUUID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $stmt->close();
+
+        return $row['unread_count'] ?? 0;
+    }
+
     public function __destruct() {
         if (isset($this->mysqli)) $this->mysqli->close();
-    }
+    } 
 }

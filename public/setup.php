@@ -8,6 +8,8 @@
 
     $dh = new DataHandle($dbConfig, $s3Config, S3BotType::readOnly);
 
+    $unreadNoteCount = 0;
+
     // Load login FIRST
     $login = null;
     if (isset($_SESSION["user_login"]))
@@ -40,8 +42,10 @@
             $dh->updateUserInfo($user, $login);
         } else {
 
-            setcookie(ANON_CONSENT_COOKIE, $LAST_UPDATE_ON_RULES_AND_PRIVACY, [
-                "expires"  => time() + (60 * 60 * 24 * 365 * 2),
+            $cookieExpiration = (new DateTime("+2 years"))->getTimestamp();
+
+            setcookie(ANON_CONSENT_COOKIE, LAST_UPDATE_ON_RULES_AND_PRIVACY, [
+                "expires"  => $cookieExpiration,
                 "path"     => "/",
                 "secure"   => !empty($_SERVER["HTTPS"]),
                 "httponly" => true,
@@ -57,12 +61,18 @@
 
         exit;
     }
+
+    if ($login) {
+        $unreadNoteCount = $dh->countUnreadedInboxNotes($login, $user);
+    }
 ?>
 
 <script type="module">
     import { ChangeTheme, Themes, RulesAndPrivacyPopup } from "./js/setup.js";
 
     $(document).ready(() => {
+        $("#note-count").html("<?php echo $unreadNoteCount; ?>");
+
         ChangeTheme("<?php echo $user->colorTheme(); ?>");
         
         // Show popup for the new user

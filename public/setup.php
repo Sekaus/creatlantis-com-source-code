@@ -135,7 +135,6 @@
 
             $("#logout, #logout:hidden").hide();
             $("#go-to-profile, #go-to-profile:hidden").hide();
-            $("#go-to-profile, #go-to-profile:hidden").hide();
             $("#go-to-account-settings, #go-to-account-settings:hidden").hide()
             $("#points-balance, #points-balance:hidden").hide();
             $("#qick-submit, #qick-submit:hidden").hide();
@@ -182,5 +181,14 @@
                 window.location.href = window.location.origin + "/inbox.php";
             });
         <?php endif; ?>
+
+        /* Profile links */
+        $(document).on("click", ".profile-link", function() {
+            event.preventDefault();
+
+            var username = $(this).data("key");
+            
+            window.location.href = `${window.location.origin}/profile/${username}`;
+        });
     });
 </script>

@@ -1,16 +1,17 @@
 export const PostType = {
     IMAGE: "image",
-    JOURNAL: "journal"
+    JOURNAL: "journal",
+    PROFILE: "profile"
 }
 
 export function UserMetadata(main = false) {
     return /*html*/`
         <a id="${main ? 'main-user' : ""}" href="#" title="Go to the user's profile" class="profile-link">
-          <img class="user-icon" src="../images/default_pp.webp"/>
-          <div class="user-metadata">
-            <p class="user-name big-text">Name</p>
-            <p class="user-tagline">Tagline</p>
-          </div>
+            <img class="user-icon" src="../images/default_pp.webp"/>
+            <div class="user-metadata">
+                <p class="user-name big-text">Name</p>
+                <p class="user-tagline">Tagline</p>
+            </div>
         </a>
     `;
 }
@@ -29,6 +30,18 @@ export function Journal(content, key = "") {
     `;
 }
 
+export function Profile(username, tagline, profileImage) {
+    return /*html*/`
+        <a href="#" title="Go to the user's profile" class="profile-link" data-key="${username}">
+            <img class="user-icon" src="${profileImage}"/>
+            <div class="user-metadata">
+                <p class="user-name big-text">${username}</p>   
+                <p class="user-tagline">${tagline}</p>
+            </div>
+        </a>
+    `;
+} 
+
 export function DisplayLoadedPost(posts, traget) {
     if (!Array.isArray(posts) || posts.length === 0) return;
 
@@ -39,6 +52,9 @@ export function DisplayLoadedPost(posts, traget) {
                 break;
             case PostType.JOURNAL:
                 $(traget).append(Journal(element.body, element.key));
+                break;
+            case PostType.PROFILE:
+                $(traget).append(Profile(element.username, element.tagline, element.profile_image));
                 break;
         }
     });

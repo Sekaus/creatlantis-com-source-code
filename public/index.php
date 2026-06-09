@@ -33,7 +33,13 @@
       const searchChannel = new BroadcastChannel('search_sync');
 
       export function refreshGallery() {
-          const currentPosts = Global.searchData ? Global.searchData.files : [];
+          const currentPosts = Global.searchData ? (Global.searchData?.files || Global.searchData?.profiles || []) : [];
+
+          if (currentPosts.length === 0) {
+              $("#content-view").html("<p style='text-align: center; margin-top: 20px;'>No results found.</p>");
+              return;
+          }
+
           $("#content-view").empty();
           DisplayLoadedPost(currentPosts, "#content-view");
       }

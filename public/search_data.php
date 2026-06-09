@@ -15,6 +15,8 @@
         $type = FileType::image;
     else if ($search_type === "journal")
         $type = FileType::journal;
+    else if ($search_type === "profile")
+        $type = FileType::profile;
 
     if ($search_order === "newest")
         $order = FileLoadOrder::newest;
@@ -24,15 +26,19 @@
     $dh = new DataHandle($dbConfig, $s3Config, S3BotType::readOnly);
 
     // Prepare response data as a PHP associative array
+
     $response = [
-        "status" => "success",
-        "files" => $dh->loadAllFiles($type, $search_text, $order, 10, 0),
+        "status" => "success", 
         "search" => [
             "type" => $type->name,
             "text" => $search_text,
             "order" => $order->name
-        ]
-    ];
+        ]];
+
+    if ($type != FileType::profile)
+        $response["files"] = $dh->loadAllFiles($type, $search_text, $order, 10, 0);
+    else
+        $response["profiles"] = $dh->loadProfiles($search_text, $order, 10, 0);
 
     // Correctly encode as JSON and echo
     header('Content-Type: application/json');

@@ -18,6 +18,7 @@ enum FileType : string {
     case all = "all";
     case image = "image";
     case journal = "journal";
+    case profile = "profile";
 }
 
 enum FileLoadOrder : string {
@@ -674,6 +675,36 @@ class DataHandle {
                     $items[] = ['type' => 'journal', 'body' => preg_replace('/[\\x00-\\x1F\\x7F]/', '', $body), 'title' => $row['title'], 'key' => $row['short_uuid']];
                 }
             }
+        }
+
+        $stmt->close();
+        return $items;
+    }
+
+    public function loadProfiles(string $search, FileLoadOrder $order, int $maxKeys = 10, int $offset = 0): array {
+        $searchLike = '%' . $this->mysqli->real_escape_string($search) . '%';
+        $orderString = $order->value;
+        $limit = max(1, $maxKeys);
+        $offset = max(0, $offset);
+
+        $stmt = $this->mysqli->prepare("SELECT uuid, username, tagline, profile_image FROM user_info WHERE username LIKE ? ORDER BY registration_date {$orderString} LIMIT ? OFFSET ?");
+        $stmt->bind_param("sii", $searchLike, $limit, $offset);
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $items = [];
+        while ($row = $result->fetch_assoc()) {
+            $uuid = $row['uuid'] ?? '';
+            $username = $row['username'] ?? '';
+            $tagline = $row['tagline'] ?? '';
+            $profile_image = $row['profile_image'] ?? '';
+
+            if (!$username) continue;
+
+            $key = "$uuid/$profile_image";
+
+            $items[] = ['type' => 'profile', 'username' => $username, 'tagline' => $tagline, 'profile_image' => $this->GetURLOnSingleFile($key)];
         }
 
         $stmt->close();

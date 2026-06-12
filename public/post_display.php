@@ -98,7 +98,16 @@
         <?php include_once("./html_elements/footer.html"); ?>
 
         <script type="module">
-            import { Image, Journal, PostType, CommentSection, LoadComments, UserMetadata, SetupReplyContainer, DestroyReplyContainer } from "./js/common.js";
+            import { 
+                Image, 
+                Journal, 
+                PostType, 
+                CommentSection, 
+                LoadComments, 
+                UserMetadata, 
+                SetupReplyContainer, 
+                DestroyReplyContainer 
+            } from "./js/common.js";
 
 
             /* Load post data */
